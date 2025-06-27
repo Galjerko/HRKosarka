@@ -1,0 +1,88 @@
+﻿@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Error - Basketball Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    <MudPaper Elevation="4" Class="pa-8">
+        <div style="text-align: center;">
+            <MudIcon Icon="@Icons.Material.Filled.Error"
+                     Size="Size.Large"
+                     Color="Color.Error"
+                     Style="font-size: 4rem; margin-bottom: 16px;" />
+
+            <MudText Typo="Typo.h3" Color="Color.Error" GutterBottom="true">
+                Oops! Something went wrong
+            </MudText>
+
+            <MudText Typo="Typo.h6" Color="Color.Error" GutterBottom="true">
+                An error occurred while processing your request.
+            </MudText>
+        </div>
+
+        @if (ShowRequestId)
+        {
+            <MudDivider Class="my-4" />
+            <MudAlert Severity="Severity.Info">
+                <MudText Typo="Typo.body2">
+                    <strong>Request ID:</strong> <code>@RequestId</code>
+                </MudText>
+            </MudAlert>
+        }
+
+        <MudDivider Class="my-6" />
+
+        <MudExpansionPanels>
+            <MudExpansionPanel Text="Development Information">
+                <MudText Typo="Typo.body1" GutterBottom="true">
+                    <strong>Development Mode</strong>
+                </MudText>
+                <MudText Typo="Typo.body2" GutterBottom="true">
+                    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
+                </MudText>
+                <MudAlert Severity="Severity.Warning" Class="mt-4">
+                    <MudText Typo="Typo.body2">
+                        <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
+                        It can result in displaying sensitive information from exceptions to end users.
+                    </MudText>
+                </MudAlert>
+                <MudText Typo="Typo.body2" Class="mt-2">
+                    For local debugging, enable the <strong>Development</strong> environment by setting the
+                    <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
+                    and restarting the app.
+                </MudText>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+
+        <MudDivider Class="my-6" />
+
+        <div style="text-align: center;">
+            <MudButtonGroup Variant="Variant.Outlined">
+                <MudButton StartIcon="@Icons.Material.Filled.Home"
+                           Href="/"
+                           Color="Color.Primary">
+                    Go Home
+                </MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="@(() => NavigationManager.Refresh())"
+                           Color="Color.Secondary">
+                    Try Again
+                </MudButton>
+            </MudButtonGroup>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

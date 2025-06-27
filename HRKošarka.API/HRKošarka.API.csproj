@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>58aa6c73-bc43-4f36-88ca-2a2161f16952</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HRKošarka.Identity\HRKošarka.Identity.csproj" />
+    <ProjectReference Include="..\HRKošarka.Application\HRKošarka.Application.csproj" />
+    <ProjectReference Include="..\HRKošarka.Infrastructure\HRKošarka.Infrastructure.csproj" />
+    <ProjectReference Include="..\HRKošarka.Persistence\HRKošarka.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

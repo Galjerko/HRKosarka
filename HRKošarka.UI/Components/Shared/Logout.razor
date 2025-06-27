@@ -1,0 +1,38 @@
+﻿@page "/logout"
+@using HRKošarka.UI.Contracts
+@inject IAuthenticationService authService
+@inject NavigationManager navManager
+
+<PageTitle>Signing Out - Basketball Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Elevation="4" Class="pa-8">
+        <div style="text-align: center;">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+
+            <MudText Typo="Typo.h5" Class="mt-4" GutterBottom="true">
+                Signing you out...
+            </MudText>
+
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Please wait while we securely sign you out of your account.
+            </MudText>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await authService.LogoutAsync();
+            await Task.Delay(1000); 
+            navManager.NavigateTo("/");
+        }
+        catch (Exception)
+        {
+            navManager.NavigateTo("/");
+        }
+    }
+}

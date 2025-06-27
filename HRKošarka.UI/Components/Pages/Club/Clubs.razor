@@ -1,0 +1,42 @@
+﻿@page "/clubs"
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5">Clubs</MudText>
+
+    <MudTextField @bind-Value="_searchTerm" Placeholder="Search clubs..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mb-4" Immediate="true" OnBlur="ReloadClubs" />
+
+    <MudTable Items="_clubs" ServerData="LoadServerData" SortLabel="Sort by" Sortable="true" Loading="_loading">
+        <ToolBarContent>
+            @if (_canCreate)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateClub">Add Club</MudButton>
+            }
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh SortBy="nameof(ClubDTO.Name)">Name</MudTh>
+            <MudTh SortBy="nameof(ClubDTO.City)">City</MudTh>
+            <MudTh SortBy="nameof(ClubDTO.FoundedYear)">Founded Year</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="City">@context.City</MudTd>
+            <MudTd DataLabel="Founded Year">@context.FoundedYear</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => ViewClub(context.Id))" StartIcon="@Icons.Material.Filled.Visibility">View</MudButton>
+                @if (_canEdit)
+                {
+                    <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="@(() => EditClub(context.Id))" StartIcon="@Icons.Material.Filled.Edit">Edit</MudButton>
+                }
+                @if (_canDeactivate)
+                {
+                    <MudButton Variant="Variant.Text" Color="Color.Warning" OnClick="@(() => DeactivateClub(context.Id))" StartIcon="@Icons.Material.Filled.Block">Deactivate</MudButton>
+                }
+                @if (_canDelete)
+                {
+                    <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => DeleteClub(context.Id))" StartIcon="@Icons.Material.Filled.Delete">Delete</MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>

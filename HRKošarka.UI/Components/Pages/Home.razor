@@ -1,0 +1,69 @@
+﻿@page "/"
+
+<PageTitle>HRKošarka - Basketball Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudPaper Elevation="2" Class="pa-6 ma-4">
+        <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">
+            Welcome to Basketball Management System
+        </MudText>
+
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4">
+            Explore Croatian basketball clubs, teams, and matches
+        </MudText>
+
+        <MudGrid>
+            <MudItem xs="12" md="6" lg="3">
+                <MudCard Elevation="2" Class="pa-4">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6">Clubs</MudText>
+                        <MudText Typo="Typo.body2">Browse basketball clubs across Croatia</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Href="/clubs" Color="Color.Primary">View Clubs</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6" lg="3">
+                <MudCard Elevation="2" Class="pa-4">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Secondary" />
+                        <MudText Typo="Typo.h6">Teams</MudText>
+                        <MudText Typo="Typo.body2">Discover teams and their rosters</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Href="/teams" Color="Color.Secondary">View Teams</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6" lg="3">
+                <MudCard Elevation="2" Class="pa-4">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.SportsBasketball" Size="Size.Large" Color="Color.Tertiary" />
+                        <MudText Typo="Typo.h6">Matches</MudText>
+                        <MudText Typo="Typo.body2">Check match schedules and results</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Href="/matches" Color="Color.Tertiary">View Matches</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6" lg="3">
+                <MudCard Elevation="2" Class="pa-4">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Success" />
+                        <MudText Typo="Typo.h6">Leagues</MudText>
+                        <MudText Typo="Typo.body2">Follow league standings and tournaments</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Href="/leagues" Color="Color.Success">View Leagues</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
