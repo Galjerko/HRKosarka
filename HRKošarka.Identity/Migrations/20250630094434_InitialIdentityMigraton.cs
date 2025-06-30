@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HRKošarka.Identity.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialIdentityMigration : Migration
+    public partial class InitialIdentityMigraton : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -173,7 +173,7 @@ namespace HRKošarka.Identity.Migrations
                 {
                     { "c4f21b48-2097-4d98-a590-8b9f937f08e2", "admin-role-stamp", "Administrator", "ADMINISTRATOR" },
                     { "cac43a6e-f7bb-4448-baaf-1add431ccbbf", "regular-user-role-stamp", "RegularUser", "REGULARUSER" },
-                    { "edf1f7a1-401e-4f20-868e-e3b5c0702630", "team-representative-role-stamp", "TeamRepresentative", "TEAMREPRESENTATIVE" }
+                    { "edf1f7a1-401e-4f20-868e-e3b5c0702630", "club-manager-role-stamp", "ClubManager", "CLUBMANAGER" }
                 });
 
             migrationBuilder.InsertData(

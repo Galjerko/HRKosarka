@@ -1,6 +1,4 @@
-﻿using HRKošarka.Application.Features.LeaveType.Queries;
-
-namespace HRKošarka.Application.Features.Club.Queries.GetClubDetails
+﻿namespace HRKošarka.Application.Features.Club.Queries.GetClubDetails
 {
     public class ClubDetailsDTO : BaseDTO
     {

@@ -1,4 +1,4 @@
-﻿namespace HRKošarka.Application.Features.LeaveType.Queries
+﻿namespace HRKošarka.Application.Features
 {
     public abstract class BaseDTO
     {

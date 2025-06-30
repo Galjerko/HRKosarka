@@ -178,9 +178,9 @@ namespace HRKošarka.Identity.Migrations
                         new
                         {
                             Id = "edf1f7a1-401e-4f20-868e-e3b5c0702630",
-                            ConcurrencyStamp = "team-representative-role-stamp",
-                            Name = "TeamRepresentative",
-                            NormalizedName = "TEAMREPRESENTATIVE"
+                            ConcurrencyStamp = "club-manager-role-stamp",
+                            Name = "ClubManager",
+                            NormalizedName = "CLUBMANAGER"
                         });
                 });
 

@@ -25,15 +25,5 @@ HRKošarka is a web-based basketball management system developed as part of a ma
 - **Blazor Server:**  
   Modern server-side UI with [MudBlazor](https://mudblazor.com/) components.
 
-## Project Structure
-
-HRKošarka/
-├── Domain/         # Core entities & business logic
-├── Application/    # CQRS, use cases, MediatR, validation
-├── Infrastructure/ # External service integrations
-├── Persistence/    # EF Core, repositories
-├── Identity/       # Auth & authorization
-├── API/            # ASP.NET Core Web API
-└── UI/             # Blazor Server frontend
 
 

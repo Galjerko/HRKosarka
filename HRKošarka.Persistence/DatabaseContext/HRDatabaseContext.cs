@@ -22,9 +22,6 @@ namespace HRKošarka.Persistence.DatabaseContext
             _httpContextAccessor = null;
         }
 
-        public DbSet<LeaveType> LeaveTypes { get; set; }
-        public DbSet<LeaveAllocation> LeaveAllocations { get; set; }
-        public DbSet<LeaveRequest> LeaveRequests { get; set; }
         public DbSet<Club> Clubs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -21,4 +21,8 @@
     <ProjectReference Include="..\HRKošarka.Application\HRKošarka.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Configurations\" />
+  </ItemGroup>
+
 </Project>
