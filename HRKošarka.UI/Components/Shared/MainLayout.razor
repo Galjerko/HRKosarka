@@ -1,19 +1,21 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @inherits LayoutComponentBase
 
-<MudThemeProvider />
+<MudThemeProvider @ref="@_mudThemeProvider" Theme="@_currentTheme" @bind-IsDarkMode="@_isDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="1">
-        <MudIconButton Icon="Icons.Material.Filled.Menu"
+    <MudAppBar Elevation="0" Class="custom-appbar" Fixed="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
                        Color="Color.Inherit"
                        Edge="Edge.Start"
-                       OnClick="DrawerToggle" />
-        <MudSpacer />
-        <MudText Typo="Typo.h6">HRKošarka - Basketball Management</MudText>
+                       OnClick="DrawerToggle"
+                       Class="menu-button"
+                       Size="Size.Medium" />
+
+        <MudText Typo="Typo.h6" Class="app-title ml-3">HRKošarka</MudText>
         <MudSpacer />
 
         <AuthorizeView>
@@ -21,8 +23,9 @@
                 <MudButton Variant="Variant.Text"
                            Color="Color.Inherit"
                            StartIcon="@Icons.Material.Filled.Logout"
-                           OnClick="@(() => NavigationManager.NavigateTo("/logout"))">
-                    Logout (@authContext.User?.Identity?.Name)
+                           OnClick="@(() => NavigationManager.NavigateTo("/logout"))"
+                           Class="auth-button">
+                    Logout
                 </MudButton>
             </Authorized>
             <NotAuthorized>
@@ -30,25 +33,38 @@
                            Variant="Variant.Text"
                            Color="Color.Inherit"
                            StartIcon="@Icons.Material.Filled.Login"
-                           Class="mr-2">
+                           Class="auth-button mr-3">
                     Login
                 </MudButton>
                 <MudButton Href="/register"
                            Variant="Variant.Text"
                            Color="Color.Inherit"
-                           StartIcon="@Icons.Material.Filled.PersonAdd">
+                           StartIcon="@Icons.Material.Filled.PersonAdd"
+                           Class="auth-button">
                     Register
                 </MudButton>
             </NotAuthorized>
         </AuthorizeView>
     </MudAppBar>
 
-    <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer @bind-Open="@_drawerOpen"
+               ClipMode="DrawerClipMode.Always"
+               Elevation="1"
+               Variant="DrawerVariant.Mini"
+               OpenMiniOnHover="true"
+               Class="custom-drawer">
+        <MudDrawerHeader Class="custom-drawer-header">
+            <div class="drawer-logo">
+                <MudIcon Icon="@Icons.Material.Filled.SportsBasketball"
+                         Class="logo-icon" />
+                <MudText Typo="Typo.h6" Class="drawer-title">HRKošarka</MudText>
+            </div>
+        </MudDrawerHeader>
         <NavMenu />
     </MudDrawer>
 
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudMainContent Class="custom-main-content">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="main-container">
             @Body
         </MudContainer>
     </MudMainContent>

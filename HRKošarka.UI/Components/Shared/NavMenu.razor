@@ -1,13 +1,27 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 
-<MudNavMenu>
-    <MudText Typo="Typo.h6" Class="px-4 py-2">Navigation</MudText>
+<MudNavMenu Class="enhanced-nav-menu">
+    <MudNavLink Href="/"
+                Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.Dashboard"
+                Class="nav-item nav-item-primary">
+        <MudText Typo="Typo.body2">Dashboard</MudText>
+    </MudNavLink>
 
-    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
-        Dashboard
+    <MudNavLink Href="/clubs"
+                Icon="@Icons.Material.Filled.Groups"
+                Class="nav-item nav-item-secondary">
+        <MudText Typo="Typo.body2">Clubs</MudText>
     </MudNavLink>
-    <MudNavLink Href="/clubs" Icon="@Icons.Material.Filled.Groups">
-        Clubs
-    </MudNavLink>
+
+    <MudDivider Class="nav-divider" />
+
+    <AuthorizeView Roles="Administrator">
+        <MudNavLink Href="/admin"
+                    Icon="@Icons.Material.Filled.AdminPanelSettings"
+                    Class="nav-item nav-item-admin">
+            <MudText Typo="Typo.body2">Administration</MudText>
+        </MudNavLink>
+    </AuthorizeView>
 </MudNavMenu>

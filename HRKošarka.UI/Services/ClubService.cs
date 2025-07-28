@@ -30,11 +30,11 @@ namespace HRKošarka.UI.Services
 
                 return new PaginatedResponse<ClubDTO>
                 {
-                    Data = response.Data.ToList(),
-                    Pagination = response.Pagination,
+                    Data = response.Data?.ToList() ?? new List<ClubDTO>(),
+                    Pagination = response.Pagination ?? new PaginationMetadata(),
                     IsSuccess = response.IsSuccess,
                     Message = response.Message,
-                    Errors = response.Errors == null ? new List<string>() : new List<string>(response.Errors)
+                    Errors = response.Errors?.ToList() ?? new List<string>()
                 };
             }
             catch (ApiException ex)
@@ -55,7 +55,7 @@ namespace HRKošarka.UI.Services
                     Data = response.Data,
                     IsSuccess = response.IsSuccess,
                     Message = response.Message,
-                    Errors = response.Errors == null ? new List<string>() : new List<string>(response.Errors)
+                    Errors = response.Errors?.ToList() ?? new List<string>()
                 };
             }
             catch (ApiException ex)
@@ -76,8 +76,12 @@ namespace HRKošarka.UI.Services
                     Data = response.Data,
                     IsSuccess = response.IsSuccess,
                     Message = response.Message,
-                    Errors = response.Errors == null ? new List<string>() : new List<string>(response.Errors)
+                    Errors = response.Errors?.ToList() ?? new List<string>()
                 };
+            }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<Guid>(ex);
             }
             catch (ApiException ex)
             {
@@ -95,6 +99,10 @@ namespace HRKošarka.UI.Services
 
                 return CommandResponse<bool>.Success(true, "Club updated successfully");
             }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
             catch (ApiException ex)
             {
                 return ConvertApiExceptions<bool>(ex);
@@ -110,6 +118,10 @@ namespace HRKošarka.UI.Services
 
                 return CommandResponse<bool>.Success(true, "Club deactivated successfully");
             }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
             catch (ApiException ex)
             {
                 return ConvertApiExceptions<bool>(ex);
@@ -124,6 +136,10 @@ namespace HRKošarka.UI.Services
                 await _client.DeleteClubAsync(id);
 
                 return CommandResponse<bool>.Success(true, "Club deleted successfully");
+            }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
             }
             catch (ApiException ex)
             {

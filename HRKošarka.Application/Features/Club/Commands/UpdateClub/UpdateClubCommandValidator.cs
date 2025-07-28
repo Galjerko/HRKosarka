@@ -13,7 +13,8 @@ namespace HRKošarka.Application.Features.Club.Commands.UpdateClub
 
             RuleFor(c => c.Id)
                 .NotEmpty().WithMessage("Club ID is required.")
-                .MustAsync(ClubMustExist).WithMessage("Club not found.");
+                .MustAsync(ClubMustExist).WithMessage("Club not found.")
+                .MustAsync(ClubIsNotDeactivatedOrDeleted).WithMessage("Club is already deactivted or deleted.");
 
             RuleFor(c => c.Name)
                 .NotEmpty().WithMessage("Name is required.")
@@ -76,5 +77,12 @@ namespace HRKošarka.Application.Features.Club.Commands.UpdateClub
         {
             return await _clubRepository.IsClubNameUnique(command.Name, command.Id);
         }
+
+        private async Task<bool> ClubIsNotDeactivatedOrDeleted(Guid id, CancellationToken token)
+        {
+            var club = await _clubRepository.GetByIdAsync(id);
+            return club != null && club.IsActive && !club.DateDeleted.HasValue;
+        }
+
     }
 }

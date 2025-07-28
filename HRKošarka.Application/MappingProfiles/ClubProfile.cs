@@ -12,7 +12,12 @@ namespace HRKošarka.Application.MappingProfiles
         public ClubProfile()
         {
             CreateMap<ClubDTO, Club>().ReverseMap();
-            CreateMap<Club, ClubDetailsDTO>();
+
+            CreateMap<Club, ClubDetailsDTO>()
+                .ForMember(dest => dest.FoundedYear, opt => opt.MapFrom(src => src.FoundedYear.Year));
+
+            CreateMap<ClubDetailsDTO, Club>()
+                .ForMember(dest => dest.FoundedYear, opt => opt.MapFrom(src => new DateTime(src.FoundedYear, 1, 1)));
 
             CreateMap<CreateClubCommand, Club>();
             CreateMap<UpdateClubCommand, Club>();

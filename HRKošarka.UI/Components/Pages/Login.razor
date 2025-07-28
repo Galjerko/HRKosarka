@@ -2,50 +2,40 @@
 
 <PageTitle>Login - Basketball Management</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-    <MudPaper Elevation="4" Class="pa-8">
-        <div style="text-align: center; margin-bottom: 32px;">
-            <MudIcon Icon="@Icons.Material.Filled.SportsBasketball"
-                     Size="Size.Large"
-                     Color="Color.Primary"
-                     Style="font-size: 3rem; margin-bottom: 16px;" />
+<MudContainer MaxWidth="MaxWidth.Small" Class="form-page-container">
+    <MudPaper Class="form-card">
+        <div class="form-header">
+            <MudAvatar Size="Size.Large" Class="form-icon-avatar">
+                <MudIcon Icon="@Icons.Material.Filled.SportsBasketball" Size="Size.Large" />
+            </MudAvatar>
 
-            <MudText Typo="Typo.h4" GutterBottom="true">
-                Basketball Management
-            </MudText>
-
-            <MudText Typo="Typo.h6" Color="Color.Secondary">
-                Sign in to your account
-            </MudText>
+            <MudText Typo="Typo.h4" Class="form-title">Basketball Management</MudText>
+            <MudText Typo="Typo.h6" Class="form-subtitle">Sign in to your account</MudText>
         </div>
 
         @if (!string.IsNullOrEmpty(Message))
         {
-            <MudAlert Severity="Severity.Error" Class="mb-4">
-                @Message
-            </MudAlert>
+            <MudAlert Severity="Severity.Error" Class="mb-4">@Message</MudAlert>
         }
 
         <EditForm Model="@Model" OnValidSubmit="HandleLogin">
             <DataAnnotationsValidator />
 
-            <MudGrid>
+            <MudGrid Spacing="3">
                 <MudItem xs="12">
                     <MudTextField @bind-Value="Model.Email"
                                   Label="Email or Username"
-                                  Variant="Variant.Outlined"
-                                  InputType="InputType.Text"
+                                  Variant="Variant.Text"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.AccountCircle"
                                   Required="true"
-                                  HelperText="Enter your email address or username"
                                   For="@(() => Model.Email)" />
                 </MudItem>
 
                 <MudItem xs="12">
                     <MudTextField @bind-Value="Model.Password"
                                   Label="Password"
-                                  Variant="Variant.Outlined"
+                                  Variant="Variant.Text"
                                   InputType="@_passwordInput"
                                   Adornment="Adornment.End"
                                   AdornmentIcon="@_passwordInputIcon"

@@ -1,42 +1,170 @@
 ﻿@page "/clubs"
+@using HRKošarka.UI.Services.Base
 
 <MudPaper Class="pa-4">
-    <MudText Typo="Typo.h5">Clubs</MudText>
+    <MudText Typo="Typo.h5" Class="mb-4">Clubs Management</MudText>
 
-    <MudTextField @bind-Value="_searchTerm" Placeholder="Search clubs..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mb-4" Immediate="true" OnBlur="ReloadClubs" />
+    <MudTextField @bind-Value="_searchTerm"
+                  Placeholder="Search clubs by name or city..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Class="mb-4"
+                  Immediate="true"
+                  DebounceInterval="300"
+                  OnDebounceIntervalElapsed="OnSearchChanged" />
 
-    <MudTable Items="_clubs" ServerData="LoadServerData" SortLabel="Sort by" Sortable="true" Loading="_loading">
+    <MudTable @ref="_table"
+              ServerData="LoadServerData"
+              SortLabel="Sort by"
+              Sortable="true"            
+              Loading="_loading"
+              Hover="true"
+              Striped="true"
+              Dense="true"
+              FixedHeader="true"
+              Height="600px">
+
         <ToolBarContent>
+            <MudText Typo="Typo.h6">Clubs</MudText>
+            <MudSpacer />
             @if (_canCreate)
             {
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateClub">Add Club</MudButton>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="CreateClub">
+                    Add Club
+                </MudButton>
             }
         </ToolBarContent>
+
         <HeaderContent>
-            <MudTh SortBy="nameof(ClubDTO.Name)">Name</MudTh>
-            <MudTh SortBy="nameof(ClubDTO.City)">City</MudTh>
-            <MudTh SortBy="nameof(ClubDTO.FoundedYear)">Founded Year</MudTh>
-            <MudTh></MudTh>
+            <MudTh>
+                <MudTableSortLabel T="ClubDTO" SortLabel="Name">Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel T="ClubDTO" SortLabel="City">City</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel T="ClubDTO" SortLabel="FoundedYear">Year Founded</MudTableSortLabel>
+            </MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="text-align: center">Actions</MudTh>
         </HeaderContent>
+
+
         <RowTemplate>
-            <MudTd DataLabel="Name">@context.Name</MudTd>
-            <MudTd DataLabel="City">@context.City</MudTd>
-            <MudTd DataLabel="Founded Year">@context.FoundedYear</MudTd>
-            <MudTd>
-                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => ViewClub(context.Id))" StartIcon="@Icons.Material.Filled.Visibility">View</MudButton>
-                @if (_canEdit)
-                {
-                    <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="@(() => EditClub(context.Id))" StartIcon="@Icons.Material.Filled.Edit">Edit</MudButton>
-                }
-                @if (_canDeactivate)
-                {
-                    <MudButton Variant="Variant.Text" Color="Color.Warning" OnClick="@(() => DeactivateClub(context.Id))" StartIcon="@Icons.Material.Filled.Block">Deactivate</MudButton>
-                }
-                @if (_canDelete)
-                {
-                    <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => DeleteClub(context.Id))" StartIcon="@Icons.Material.Filled.Delete">Delete</MudButton>
-                }
+            <MudTd DataLabel="Name">
+                <MudText Typo="Typo.body2">@context.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel="City">
+                <MudText Typo="Typo.body2">@context.City</MudText>
+            </MudTd>
+            <MudTd DataLabel="Founded Year">
+                <MudText Typo="Typo.body2">@context.FoundedYear.Year</MudText>
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip T="string"
+                         Color="@(context.IsActive ? Color.Success : Color.Error)"
+                         Size="Size.Small">
+                    @(context.IsActive ? "Active" : "Inactive")
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Actions" Style="text-align: center">
+                <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   OnClick="@(() => ViewClub(context.Id))"
+                                   Title="View Details" />
+
+                    @if (_canEdit && context.IsActive)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Secondary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditClub(context.Id))"
+                                       Title="Edit Club" />
+                    }
+
+                    @if (_canDeactivate && context.IsActive)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Block"
+                                       Color="Color.Warning"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeactivateClub(context.Id))"
+                                       Title="Deactivate Club" />
+                    }
+
+                    @if (_canDelete)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteClub(context.Id))"
+                                       Title="Delete Club" />
+                    }
+                </MudButtonGroup>
             </MudTd>
         </RowTemplate>
+
+
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                @if (!string.IsNullOrWhiteSpace(_searchTerm))
+                {
+                    <span>No clubs found matching "@_searchTerm"</span>
+                }
+                else
+                {
+                    <span>No clubs available</span>
+                }
+            </MudText>
+        </NoRecordsContent>
+
+        <LoadingContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                Loading clubs...
+            </MudText>
+        </LoadingContent>
+        <PagerContent>
+            <MudTablePager HidePageNumber="false" PageSizeOptions="@_pageSizeOptions" />
+        </PagerContent>
+
+
     </MudTable>
 </MudPaper>
+
+<MudDialog @bind-Visible="_showDeleteDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-3" Color="Color.Error" />
+            Confirm Deletion
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>Are you sure you want to delete this club? This action cannot be undone.</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CancelDelete">Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete">Delete</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-Visible="_showDeactivateDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-3" Color="Color.Warning" />
+            Confirm Deactivation
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>Are you sure you want to deactivate this club?</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CancelDeactivate">Cancel</MudButton>
+        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="ConfirmDeactivate">Deactivate</MudButton>
+    </DialogActions>
+</MudDialog>
+

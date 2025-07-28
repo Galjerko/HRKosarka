@@ -2,38 +2,30 @@
 
 <PageTitle>Register - Basketball Management</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
-    <MudPaper Elevation="4" Class="pa-8">
-        <div style="text-align: center; margin-bottom: 32px;">
-            <MudIcon Icon="@Icons.Material.Filled.SportsBasketball"
-                     Size="Size.Large"
-                     Color="Color.Primary"
-                     Style="font-size: 3rem; margin-bottom: 16px;" />
+<MudContainer MaxWidth="MaxWidth.Small" Class="form-page-container">
+    <MudPaper Class="form-card">
+        <div class="form-header">
+            <MudAvatar Size="Size.Large" Class="form-icon-avatar">
+                <MudIcon Icon="@Icons.Material.Filled.SportsBasketball" Size="Size.Large" />
+            </MudAvatar>
 
-            <MudText Typo="Typo.h4" GutterBottom="true">
-                Join Basketball Management
-            </MudText>
-
-            <MudText Typo="Typo.h6" Color="Color.Secondary">
-                Create your account to get started
-            </MudText>
+            <MudText Typo="Typo.h4" Class="form-title">Join Basketball Management</MudText>
+            <MudText Typo="Typo.h6" Class="form-subtitle">Create your account to get started</MudText>
         </div>
 
         @if (!string.IsNullOrEmpty(Message))
         {
-            <MudAlert Severity="Severity.Error" Class="mb-4">
-                @Message
-            </MudAlert>
+            <MudAlert Severity="Severity.Error" Class="mb-4">@Message</MudAlert>
         }
 
         <EditForm Model="@Model" OnValidSubmit="HandleRegister">
             <DataAnnotationsValidator />
 
-            <MudGrid>
+            <MudGrid Spacing="3">
                 <MudItem xs="12" md="6">
                     <MudTextField @bind-Value="Model.FirstName"
                                   Label="First Name"
-                                  Variant="Variant.Outlined"
+                                  Variant="Variant.Text"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.Person"
                                   Required="true"
@@ -43,7 +35,7 @@
                 <MudItem xs="12" md="6">
                     <MudTextField @bind-Value="Model.LastName"
                                   Label="Last Name"
-                                  Variant="Variant.Outlined"
+                                  Variant="Variant.Text"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.Person"
                                   Required="true"
@@ -53,7 +45,7 @@
                 <MudItem xs="12">
                     <MudTextField @bind-Value="Model.Email"
                                   Label="Email Address"
-                                  Variant="Variant.Outlined"
+                                  Variant="Variant.Text"
                                   InputType="InputType.Email"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.Email"
@@ -64,7 +56,7 @@
                 <MudItem xs="12">
                     <MudTextField @bind-Value="Model.UserName"
                                   Label="Username"
-                                  Variant="Variant.Outlined"
+                                  Variant="Variant.Text"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.AccountCircle"
                                   Required="true"
@@ -74,7 +66,7 @@
                 <MudItem xs="12">
                     <MudTextField @bind-Value="Model.Password"
                                   Label="Password"
-                                  Variant="Variant.Outlined"
+                                  Variant="Variant.Text"
                                   InputType="@_passwordInput"
                                   Adornment="Adornment.End"
                                   AdornmentIcon="@_passwordInputIcon"

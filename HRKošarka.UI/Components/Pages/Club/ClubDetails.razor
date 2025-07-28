@@ -1,0 +1,298 @@
+﻿@page "/clubs/{id:guid}"
+@using HRKošarka.UI.Services.Base
+
+<PageTitle>Club Details - Basketball Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="details-container">
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.h6">Loading club details...</MudText>
+        </div>
+    }
+    else if (_club != null)
+    {
+        <MudPaper Class="details-paper" Elevation="2">
+
+            <div class="club-actions-row">
+                <div class="club-actions-group">
+                    <AuditHistory DateCreated="@_club.DateCreated"
+                                  DateModified="@_club.DateModified"
+                                  DateDeleted="@_club.DateDeleted"
+                                  CreatedBy="@_club.CreatedBy"
+                                  ModifiedBy="@_club.ModifiedBy"
+                                  DeletedBy="@_club.DeletedBy" />
+
+                    <AuthorizeView Roles="Administrator,ClubManager">
+                        <Authorized>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Edit"
+                                       OnClick="@(() => NavigationManager.NavigateTo($"/clubs/edit/{Id}"))"
+                                       Class="action-btn club-action-btn">
+                                Edit
+                            </MudButton>
+                            @if (_club.IsActive)
+                            {
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Warning"
+                                           StartIcon="@Icons.Material.Filled.Pause"
+                                           OnClick="DeactivateClub"
+                                           Disabled="@_isProcessing"
+                                           Class="action-btn club-action-btn">
+                                    Deactivate
+                                </MudButton>
+                            }
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Administrator">
+                        <Authorized>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Error"
+                                       StartIcon="@Icons.Material.Filled.Delete"
+                                       OnClick="DeleteClub"
+                                       Disabled="@_isProcessing"
+                                       Class="action-btn club-action-btn">
+                                Delete
+                            </MudButton>
+                        </Authorized>
+                    </AuthorizeView>
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.ArrowBack"
+                               OnClick="@(() => NavigationManager.NavigateTo("/clubs"))"
+                               Class="action-btn club-action-btn back-action-btn">
+                        Back
+                    </MudButton>
+                </div>
+            </div>
+
+            <div class="club-info-row">
+                <MudAvatar Size="Size.Large" Class="club-logo">
+                    @if (!string.IsNullOrEmpty(_club.LogoUrl))
+                    {
+                        <MudImage Src="@_club.LogoUrl" Alt="@_club.Name" Style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" />
+                    }
+                </MudAvatar>
+                <MudText Typo="Typo.h3" Class="club-name">@_club.Name</MudText>
+                <MudChip T="string"
+                         Color="@(_club.IsActive ? Color.Success : Color.Error)"
+                         Size="Size.Small"
+                         Class="status-chip">
+                    @(_club.IsActive ? "Active" : "Inactive")
+                </MudChip>
+            </div>
+
+            <MudDivider Class="my-4" />
+
+            <MudExpansionPanels Elevation="0" Class="expansion-panels">
+                <MudExpansionPanel IsInitiallyExpanded="true" Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">Basic Information</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <MudText Class="info-label">Club Name</MudText>
+                                    <MudText Class="info-value">@_club.Name</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">City</MudText>
+                                    <MudText Class="info-value">@_club.City</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Country</MudText>
+                                    <MudText Class="info-value">@_club.Country</MudText>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <MudText Class="info-label">Founded Year</MudText>
+                                    <MudText Class="info-value">@_club.FoundedYear</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Status</MudText>
+                                    <MudText Class="info-value" Color="@(_club.IsActive ? Color.Success : Color.Error)">
+                                        @(_club.IsActive ? "Active" : $"Deactivated on {_club.DeactivateDate?.ToString("dd/MM/yyyy")}")
+                                    </MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Logo URL</MudText>
+                                    @if (!string.IsNullOrEmpty(_club.LogoUrl))
+                                    {
+                                        <MudLink Href="@_club.LogoUrl" Target="_blank" Color="Color.Primary" Class="info-value">
+                                            View Logo
+                                        </MudLink>
+                                    }
+                                    else
+                                    {
+                                        <MudText Class="info-value"></MudText>
+                                    }
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-item info-item-full">
+                                    <MudText Class="info-label">Description</MudText>
+                                    <MudText Class="info-value">@_club.Description</MudText>
+                                </div>
+                            </div>
+                        </div>
+                    </ChildContent>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.ContactMail" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">Contact Information</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <MudText Class="info-label">Email Address</MudText>
+                                    @if (!string.IsNullOrEmpty(_club.Email))
+                                    {
+                                        <MudLink Href="@($"mailto:{_club.Email}")" Color="Color.Primary" Class="info-value">
+                                            @_club.Email
+                                        </MudLink>
+                                    }
+                                    else
+                                    {
+                                        <MudText Class="info-value"></MudText>
+                                    }
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Phone Number</MudText>
+                                    @if (!string.IsNullOrEmpty(_club.PhoneNumber))
+                                    {
+                                        <MudLink Href="@($"tel:{_club.PhoneNumber}")" Color="Color.Primary" Class="info-value">
+                                            @_club.PhoneNumber
+                                        </MudLink>
+                                    }
+                                    else
+                                    {
+                                        <MudText Class="info-value"></MudText>
+                                    }
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Website</MudText>
+                                    @if (!string.IsNullOrEmpty(_club.Website))
+                                    {
+                                        <MudLink Href="@_club.Website" Target="_blank" Color="Color.Primary" Class="info-value">
+                                            @_club.Website
+                                        </MudLink>
+                                    }
+                                    else
+                                    {
+                                        <MudText Class="info-value"></MudText>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </ChildContent>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">Address Information</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <MudText Class="info-label">Street Address</MudText>
+                                    <MudText Class="info-value">@_club.Address</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Postal Code</MudText>
+                                    <MudText Class="info-value">@_club.PostalCode</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Full Address</MudText>
+                                    <MudText Class="info-value">
+                                        @{
+                                            var fullAddress = new List<string>();
+                                            if (!string.IsNullOrEmpty(_club.Address)) fullAddress.Add(_club.Address);
+                                            if (!string.IsNullOrEmpty(_club.City)) fullAddress.Add(_club.City);
+                                            if (!string.IsNullOrEmpty(_club.PostalCode)) fullAddress.Add(_club.PostalCode);
+                                            if (!string.IsNullOrEmpty(_club.Country)) fullAddress.Add(_club.Country);
+                                        }
+                                        @(fullAddress.Any() ? string.Join(", ", fullAddress) : "")
+                                    </MudText>
+                                </div>
+                            </div>
+                        </div>
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudPaper>
+    }
+    else
+    {
+        <div class="error-state">
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Large" Color="Color.Error" />
+            <MudText Typo="Typo.h5" Color="Color.Error">Club Not Found</MudText>
+            <MudText Typo="Typo.body1">The club you're looking for doesn't exist or has been removed.</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="@(() => NavigationManager.NavigateTo("/clubs"))">
+                Back to Clubs
+            </MudButton>
+        </div>
+    }
+</MudContainer>
+
+<MudDialog @bind-Visible="_showDeactivateDialog" Options="_dialogOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Confirm Deactivation</MudText>
+        <MudText>Are you sure you want to deactivate <strong>@_club?.Name</strong>?</MudText>
+        <MudText Class="mt-2" Color="Color.Warning">This action can be reversed later.</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _showDeactivateDialog = false)">Cancel</MudButton>
+        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="ConfirmDeactivate" Disabled="@_isProcessing">
+            @if (_isProcessing)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <MudText>Deactivate</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-Visible="_showDeleteDialog" Options="_dialogOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Confirm Deletion</MudText>
+        <MudText>Are you sure you want to permanently delete <strong>@_club?.Name</strong>?</MudText>
+        <MudText Class="mt-2" Color="Color.Error">This action cannot be undone!</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _showDeleteDialog = false)">Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete" Disabled="@_isProcessing">
+            @if (_isProcessing)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <MudText>Delete</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

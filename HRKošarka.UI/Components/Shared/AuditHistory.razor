@@ -1,0 +1,102 @@
+﻿@using Microsoft.AspNetCore.Authorization
+
+<AuthorizeView Roles="Administrator,ClubManager">
+    <Authorized>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Secondary"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.History"
+                   OnClick="ShowHistory"
+                   Class="audit-button">
+            View History
+        </MudButton>
+    </Authorized>
+</AuthorizeView>
+
+<MudDialog @bind-Visible="_showDialog" Options="_dialogOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h5" Class="mb-4">
+            <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
+            Audit History
+        </MudText>
+        <MudStack Spacing="3">
+            <MudCard Elevation="2" Class="audit-card">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Success" Class="mr-2" />
+                            Creation
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="audit-content">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Created On</MudText>
+                            <MudText Typo="Typo.body1">@DateCreated.ToString("dd/MM/yyyy HH:mm")</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Created By</MudText>
+                            <MudText Typo="Typo.body1">@(CreatedBy ?? "")</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+            @if (DateModified.HasValue)
+            {
+                <MudCard Elevation="2" Class="audit-card">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Class="mr-2" />
+                                Last Modified
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent Class="audit-content">
+                        <MudGrid Spacing="2">
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Modified On</MudText>
+                                <MudText Typo="Typo.body1">@DateModified.Value.ToString("dd/MM/yyyy HH:mm")</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Modified By</MudText>
+                                <MudText Typo="Typo.body1">@(ModifiedBy ?? "")</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            }
+            @if (DateDeleted.HasValue)
+            {
+                <MudCard Elevation="2" Class="audit-card delete-audit">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="mr-2" />
+                                Deleted
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent Class="audit-content">
+                        <MudGrid Spacing="2">
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Deleted On</MudText>
+                                <MudText Typo="Typo.body1">@DateDeleted.Value.ToString("dd/MM/yyyy HH:mm")</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Deleted By</MudText>
+                                <MudText Typo="Typo.body1">@(DeletedBy ?? "")</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDialog" Color="Color.Primary" Variant="Variant.Filled">
+            Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
