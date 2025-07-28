@@ -110,34 +110,26 @@
                                     <MudText Class="info-value">@_club.City</MudText>
                                 </div>
                                 <div class="info-item">
-                                    <MudText Class="info-label">Country</MudText>
-                                    <MudText Class="info-value">@_club.Country</MudText>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-item">
                                     <MudText Class="info-label">Founded Year</MudText>
                                     <MudText Class="info-value">@_club.FoundedYear</MudText>
                                 </div>
+                            </div>
+                            <div class="info-row">
                                 <div class="info-item">
                                     <MudText Class="info-label">Status</MudText>
                                     <MudText Class="info-value" Color="@(_club.IsActive ? Color.Success : Color.Error)">
                                         @(_club.IsActive ? "Active" : $"Deactivated on {_club.DeactivateDate?.ToString("dd/MM/yyyy")}")
                                     </MudText>
                                 </div>
-                                <div class="info-item">
-                                    <MudText Class="info-label">Logo URL</MudText>
-                                    @if (!string.IsNullOrEmpty(_club.LogoUrl))
-                                    {
-                                        <MudLink Href="@_club.LogoUrl" Target="_blank" Color="Color.Primary" Class="info-value">
-                                            View Logo
-                                        </MudLink>
-                                    }
-                                    else
-                                    {
-                                        <MudText Class="info-value"></MudText>
-                                    }
+                                 <div class="info-item">
+                                    <MudText Class="info-label">Venue</MudText>
+                                    <MudText Class="info-value">@_club.VenueName</MudText>
                                 </div>
+
+                                <div class="info-item">
+                                    <MudText Class="info-label">Venue capacity</MudText>
+                                    <MudText Class="info-value">@_club.VenueCapacity</MudText>
+                                </div> 
                             </div>
                             <div class="info-row">
                                 <div class="info-item info-item-full">

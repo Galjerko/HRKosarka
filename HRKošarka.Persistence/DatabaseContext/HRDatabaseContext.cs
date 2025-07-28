@@ -9,12 +9,11 @@ namespace HRKošarka.Persistence.DatabaseContext
 {
     public class HRDatabaseContext : DbContext
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
+
         public HRDatabaseContext(DbContextOptions<HRDatabaseContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
         {
-
             _httpContextAccessor = httpContextAccessor;
-
         }
 
         public HRDatabaseContext(DbContextOptions<HRDatabaseContext> options) : base(options)
@@ -23,6 +22,21 @@ namespace HRKošarka.Persistence.DatabaseContext
         }
 
         public DbSet<Club> Clubs { get; set; }
+        public DbSet<Team> Teams { get; set; }
+        public DbSet<AgeCategory> AgeCategories { get; set; }
+        public DbSet<Season> Seasons { get; set; }
+        public DbSet<League> Leagues { get; set; }
+        public DbSet<LeagueTeam> LeagueTeams { get; set; }
+        public DbSet<Player> Players { get; set; }
+        public DbSet<PlayerTeamHistory> PlayerTeamHistory { get; set; }
+        public DbSet<TeamRepresentative> TeamRepresentatives { get; set; }
+        public DbSet<Match> Matches { get; set; }
+        public DbSet<MatchReschedulingRequest> MatchReschedulingRequests { get; set; }
+        public DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
+        public DbSet<PlayerSeasonStats> PlayerSeasonStats { get; set; }
+        public DbSet<LeagueStanding> LeagueStandings { get; set; }
+        public DbSet<UserFavoriteTeam> UserFavoriteTeams { get; set; }
+        public DbSet<EmailNotification> EmailNotifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,7 +49,7 @@ namespace HRKošarka.Persistence.DatabaseContext
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var currentUserId = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var now = DateTime.Now;
 
             foreach (var entry in ChangeTracker.Entries<BaseEntity>())
@@ -47,8 +61,16 @@ namespace HRKošarka.Persistence.DatabaseContext
                         entry.Entity.CreatedBy = currentUserId;
                         break;
                     case EntityState.Modified:
+                        entry.Property(e => e.DateCreated).IsModified = false;
+                        entry.Property(e => e.CreatedBy).IsModified = false;
+
                         entry.Entity.DateModified = now;
                         entry.Entity.ModifiedBy = currentUserId;
+                        break;
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Modified;
+                        entry.Entity.DateDeleted = now;
+                        entry.Entity.DeletedBy = currentUserId;
                         break;
                 }
             }
@@ -75,6 +97,5 @@ namespace HRKošarka.Persistence.DatabaseContext
                 entityType.SetQueryFilter(entityNotDeleted);
             }
         }
-
     }
 }

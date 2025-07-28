@@ -1348,6 +1348,12 @@ namespace HRKošarka.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("logoUrl")]
         public string LogoUrl { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("venueName")]
+        public string VenueName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("venueCapacity")]
+        public int? VenueCapacity { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.4.0.0 (NJsonSchema v11.3.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -1401,6 +1407,12 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("logoUrl")]
         public string LogoUrl { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("venueName")]
+        public string VenueName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("venueCapacity")]
+        public int? VenueCapacity { get; set; }
 
     }
 
@@ -1600,6 +1612,12 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("logoUrl")]
         public string LogoUrl { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("venueName")]
+        public string VenueName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("venueCapacity")]
+        public int? VenueCapacity { get; set; }
 
     }
 

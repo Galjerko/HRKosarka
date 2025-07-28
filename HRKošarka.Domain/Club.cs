@@ -5,10 +5,11 @@ namespace HRKošarka.Domain
 {
     public class Club : BaseEntity
     {
+        [Required]
         [MaxLength(150)]
         public string Name { get; set; } = string.Empty;
 
-        [MaxLength(1000)] 
+        [MaxLength(1000)]
         public string? Description { get; set; }
 
         [MaxLength(200)]
@@ -17,16 +18,16 @@ namespace HRKošarka.Domain
         [MaxLength(100)]
         public string? City { get; set; }
 
-        [MaxLength(20)] 
+        [MaxLength(20)]
         public string? PhoneNumber { get; set; }
 
-        [MaxLength(255)] 
+        [MaxLength(255)]
         public string? Email { get; set; }
 
-        [MaxLength(255)]  
+        [MaxLength(255)]
         public string? Website { get; set; }
 
-        [MaxLength(20)] 
+        [MaxLength(20)]
         public string? PostalCode { get; set; }
 
         public DateTime FoundedYear { get; set; }
@@ -37,5 +38,12 @@ namespace HRKošarka.Domain
 
         [MaxLength(500)]
         public string? LogoUrl { get; set; }
+
+        [MaxLength(200)]
+        public string? VenueName { get; set; }
+
+        public int? VenueCapacity { get; set; }
+
+        public virtual ICollection<Team> Teams { get; set; } = new List<Team>();
     }
 }

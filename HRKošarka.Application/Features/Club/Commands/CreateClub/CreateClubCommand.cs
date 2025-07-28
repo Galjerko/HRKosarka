@@ -18,6 +18,9 @@ namespace HRKošarka.Application.Features.Club.Commands.CreateClub
         [SwaggerSchema(Format = "date")]
         public DateTime FoundedYear { get; set; }
         public string? LogoUrl { get; set; }
+        public string? VenueName { get; set; }
+        public int? VenueCapacity { get; set; }
+
     }
 }
 

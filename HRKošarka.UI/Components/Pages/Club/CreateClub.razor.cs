@@ -219,6 +219,34 @@ namespace HRKošarka.UI.Components.Pages.Club
             return patterns.Any(pattern => Regex.IsMatch(phone, pattern));
         }
 
+
+        private IEnumerable<string> ValidateVenueName(string venueName)
+        {
+            if (!string.IsNullOrEmpty(venueName))
+            {
+                if (venueName.Length > 200)
+                {
+                    yield return "Venue name must not exceed 200 characters";
+                }
+            }
+        }
+
+        private IEnumerable<string> ValidateVenueCapacityNumeric(int? capacity)
+        {
+            if (capacity.HasValue)
+            {
+                if (capacity <= 0)
+                {
+                    yield return "Venue capacity must be a positive number";
+                }
+                else if (capacity > 200000)
+                {
+                    yield return "Venue capacity cannot exceed 200,000";
+                }
+            }
+        }
+
+
         private bool IsValidUrl(string url)
         {
             return Uri.TryCreate(url, UriKind.Absolute, out var result) &&

@@ -58,6 +58,10 @@ namespace HRKošarka.Application.Features.Club.Commands.UpdateClub
                 .MaximumLength(500).WithMessage("Logo URL must not exceed 500 characters.")
                 .When(c => !string.IsNullOrEmpty(c.LogoUrl));
 
+            RuleFor(c => c.VenueName)
+                .MaximumLength(200).WithMessage("Venue name must not exceed 200 characters.")
+                .When(c => !string.IsNullOrEmpty(c.VenueName));
+
             RuleFor(c => c.FoundedYear)
                 .NotEmpty().WithMessage("Founded year is required.")
                 .LessThanOrEqualTo(DateTime.Now).WithMessage("Founded year cannot be in the future.");

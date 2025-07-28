@@ -76,6 +76,8 @@ namespace HRKošarka.UI.Components.Pages.Club
                         Website = _club.Website ?? string.Empty,
                         Address = _club.Address ?? string.Empty,
                         PostalCode = _club.PostalCode ?? string.Empty,
+                        VenueName = _club.VenueName ?? string.Empty,
+                        VenueCapacity = _club.VenueCapacity,
                         FoundedYear = new DateTimeOffset(new DateTime(_club.FoundedYear, 1, 1)) 
                     };
                 }
@@ -265,6 +267,34 @@ namespace HRKošarka.UI.Components.Pages.Club
                 }
             }
         }
+
+        private IEnumerable<string> ValidateVenueName(string venueName)
+        {
+            if (!string.IsNullOrEmpty(venueName))
+            {
+                if (venueName.Length > 200)
+                {
+                    yield return "Venue name must not exceed 200 characters";
+                }
+            }
+        }
+
+        private IEnumerable<string> ValidateVenueCapacityNumeric(int? capacity)
+        {
+            if (capacity.HasValue)
+            {
+                if (capacity <= 0)
+                {
+                    yield return "Venue capacity must be a positive number";
+                }
+                else if (capacity > 200000)
+                {
+                    yield return "Venue capacity cannot exceed 200,000";
+                }
+            }
+        }
+
+
 
         private bool IsValidEmail(string email)
         {

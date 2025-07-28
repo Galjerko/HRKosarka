@@ -16,5 +16,7 @@ namespace HRKošarka.Application.Features.Club.Commands.UpdateClub
         public string? PostalCode { get; set; }
         public DateTime FoundedYear { get; set; }
         public string? LogoUrl { get; set; }
+        public string? VenueName { get; set; }
+        public int? VenueCapacity { get; set; }
     }
 }
