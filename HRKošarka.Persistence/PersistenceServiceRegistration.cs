@@ -17,7 +17,10 @@ namespace HRKošarka.Persistence
             });
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            services.AddScoped<IAgeCategoryRepository, AgeCategoryRepository>();
             services.AddScoped<IClubRepository, ClubRepository>();
+            services.AddScoped<ITeamRepository, TeamRepository>();
 
             return services;
         }

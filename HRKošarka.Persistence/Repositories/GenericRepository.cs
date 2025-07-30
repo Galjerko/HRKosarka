@@ -28,13 +28,11 @@ namespace HRKošarka.Persistence.Repositories
         {
             var query = _context.Set<T>().AsQueryable();
 
-            // ✅ Generic search using request properties
             if (!string.IsNullOrEmpty(request.SearchTerm) && request.SearchableProperties.Any())
             {
                 query = ApplyGenericSearch(query, request.SearchTerm, request.SearchableProperties);
             }
 
-            // ✅ Generic sorting using request properties
             query = ApplyGenericSorting(query, request);
 
             var totalCount = await query.CountAsync();

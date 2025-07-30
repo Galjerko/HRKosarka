@@ -1125,3 +1125,48 @@ html, body {
         gap: 1rem !important;
     }
 }
+
+.teams-section {
+    margin-bottom: 1rem;
+}
+
+.teams-section-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--mud-palette-primary);
+}
+
+.teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.team-card {
+    border-left: 4px solid var(--mud-palette-primary);
+}
+
+.team-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.team-name {
+    margin: 0;
+}
+
+.team-category {
+    color: var(--mud-palette-text-secondary);
+}
+
+.no-teams-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    gap: 1rem;
+}

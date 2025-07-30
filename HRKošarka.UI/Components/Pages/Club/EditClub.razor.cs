@@ -68,7 +68,6 @@ namespace HRKošarka.UI.Components.Pages.Club
                         Id = _club.Id,
                         Name = _club.Name ?? string.Empty,
                         City = _club.City ?? string.Empty,
-                        Country = _club.Country ?? string.Empty,
                         Description = _club.Description ?? string.Empty,
                         LogoUrl = _club.LogoUrl ?? string.Empty,
                         Email = _club.Email ?? string.Empty,

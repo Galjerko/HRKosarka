@@ -16,5 +16,7 @@
         public string? LogoUrl { get; set; }
         public string? VenueName { get; set; }
         public int? VenueCapacity { get; set; }
+
+        public List<TeamInfoDTO> Teams { get; set; } = new List<TeamInfoDTO>();
     }
 }

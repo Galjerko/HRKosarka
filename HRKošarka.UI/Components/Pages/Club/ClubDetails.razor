@@ -121,7 +121,7 @@
                                         @(_club.IsActive ? "Active" : $"Deactivated on {_club.DeactivateDate?.ToString("dd/MM/yyyy")}")
                                     </MudText>
                                 </div>
-                                 <div class="info-item">
+                                <div class="info-item">
                                     <MudText Class="info-label">Venue</MudText>
                                     <MudText Class="info-value">@_club.VenueName</MudText>
                                 </div>
@@ -129,7 +129,7 @@
                                 <div class="info-item">
                                     <MudText Class="info-label">Venue capacity</MudText>
                                     <MudText Class="info-value">@_club.VenueCapacity</MudText>
-                                </div> 
+                                </div>
                             </div>
                             <div class="info-row">
                                 <div class="info-item info-item-full">
@@ -221,13 +221,123 @@
                                             if (!string.IsNullOrEmpty(_club.Address)) fullAddress.Add(_club.Address);
                                             if (!string.IsNullOrEmpty(_club.City)) fullAddress.Add(_club.City);
                                             if (!string.IsNullOrEmpty(_club.PostalCode)) fullAddress.Add(_club.PostalCode);
-                                            if (!string.IsNullOrEmpty(_club.Country)) fullAddress.Add(_club.Country);
                                         }
                                         @(fullAddress.Any() ? string.Join(", ", fullAddress) : "")
                                     </MudText>
                                 </div>
                             </div>
                         </div>
+                    </ChildContent>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Groups" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">Teams (@_club.Teams.Count)</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        @if (_club.Teams.Any())
+                        {
+
+                            var maleTeams = _club.Teams.Where(t => t.Gender == Gender._0).ToList();
+                            var femaleTeams = _club.Teams.Where(t => t.Gender == Gender._1).ToList();
+
+
+                            @if (maleTeams.Any())
+                            {
+                                <div class="teams-section">
+                                    <MudText Typo="Typo.h6" Class="teams-section-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.Man" Class="mr-2" />
+                                        Male Teams (@maleTeams.Count)
+                                    </MudText>
+                                    <div class="teams-grid">
+                                        @foreach (var team in maleTeams)
+                                        {
+                                            <MudCard Class="team-card" Elevation="1">
+                                                <MudCardContent>
+                                                    <div class="team-card-header">
+                                                        <MudText Typo="Typo.h6" Class="team-name">@team.Name</MudText>
+                                                        <MudChip T="string"
+                                                                 Color="@(team.IsActive ? Color.Success : Color.Error)"
+                                                                 Size="Size.Small">
+                                                            @(team.IsActive ? "Active" : "Inactive")
+                                                        </MudChip>
+                                                    </div>
+                                                    <MudText Typo="Typo.body2" Class="team-category">
+                                                        @team.AgeCategoryCode
+                                                    </MudText>
+                                                </MudCardContent>
+                                                <MudCardActions>
+                                                    <MudButton Variant="Variant.Text"
+                                                               Color="Color.Primary"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => NavigationManager.NavigateTo($"/teams/{team.Id}"))">
+                                                        View Details
+                                                    </MudButton>
+                                                </MudCardActions>
+                                            </MudCard>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (femaleTeams.Any())
+                            {
+                                <div class="teams-section @(maleTeams.Any() ? "mt-4" : "")">
+                                    <MudText Typo="Typo.h6" Class="teams-section-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.Woman" Class="mr-2" />
+                                        Female Teams (@femaleTeams.Count)
+                                    </MudText>
+                                    <div class="teams-grid">
+                                        @foreach (var team in femaleTeams)
+                                        {
+                                            <MudCard Class="team-card" Elevation="1">
+                                                <MudCardContent>
+                                                    <div class="team-card-header">
+                                                        <MudText Typo="Typo.h6" Class="team-name">@team.Name</MudText>
+                                                        <MudChip T="string"
+                                                                 Color="@(team.IsActive ? Color.Success : Color.Error)"
+                                                                 Size="Size.Small">
+                                                            @(team.IsActive ? "Active" : "Inactive")
+                                                        </MudChip>
+                                                    </div>
+                                                    <MudText Typo="Typo.body2" Class="team-category">
+                                                        @team.AgeCategoryCode
+                                                    </MudText>
+                                                </MudCardContent>
+                                                <MudCardActions>
+                                                    <MudButton Variant="Variant.Text"
+                                                               Color="Color.Primary"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => NavigationManager.NavigateTo($"/teams/{team.Id}"))">
+                                                        View Details
+                                                    </MudButton>
+                                                </MudCardActions>
+                                            </MudCard>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="no-teams-state">
+                                <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Tertiary" />
+                                <MudText Typo="Typo.body1" Color="Color.Tertiary">No teams found for this club.</MudText>
+                                <AuthorizeView Roles="Administrator,ClubManager">
+                                    <Authorized>
+                                        <MudButton Variant="Variant.Outlined"
+                                                   Color="Color.Primary"
+                                                   StartIcon="@Icons.Material.Filled.Add"
+                                                   OnClick="@(() => NavigationManager.NavigateTo($"/teams/create?clubId={Id}"))">
+                                            Create First Team
+                                        </MudButton>
+                                    </Authorized>
+                                </AuthorizeView>
+                            </div>
+                        }
                     </ChildContent>
                 </MudExpansionPanel>
             </MudExpansionPanels>

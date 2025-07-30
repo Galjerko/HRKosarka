@@ -23,5 +23,12 @@ namespace HRKošarka.Persistence.Repositories
             return await query.AnyAsync() == false;
         }
 
+        public async Task<Club?> GetClubWithTeamsAsync(Guid clubId)
+        {
+            return await _context.Clubs
+                .Include(c => c.Teams.Where(t => t.DateDeleted == null))
+                    .ThenInclude(t => t.AgeCategory)
+                .FirstOrDefaultAsync(c => c.Id == clubId);
+        }
     }
 }

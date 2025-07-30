@@ -1,7 +1,5 @@
 ﻿using HRKošarka.Domain.Common;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace HRKošarka.Domain
 {

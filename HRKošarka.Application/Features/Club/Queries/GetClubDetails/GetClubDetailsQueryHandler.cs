@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
-using HRKošarka.Application.Features.Club.Queries.GetClubDetails;
 using HRKošarka.Application.Models.Responses;
 using MediatR;
 
@@ -20,16 +19,31 @@ namespace HRKošarka.Application.Features.Club.Queries.GetClubDetails
 
         public async Task<QueryResponse<ClubDetailsDTO>> Handle(GetClubDetailsQuery request, CancellationToken cancellationToken)
         {
-            var club = await _clubRepository.GetByIdAsync(request.Id);
+            var club = await _clubRepository.GetClubWithTeamsAsync(request.Id);
 
             if (club == null)
             {
                 throw new NotFoundException(nameof(Club), request.Id);
             }
 
-            var data = _mapper.Map<ClubDetailsDTO>(club);
+            var clubDetailsDto = _mapper.Map<ClubDetailsDTO>(club);
 
-            return QueryResponse<ClubDetailsDTO>.Success(data);
+            clubDetailsDto.Teams = club.Teams
+                .OrderBy(t => t.Gender) 
+                .ThenByDescending(t => t.AgeCategory.Name) 
+                .Select(t => new TeamInfoDTO
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    Gender = t.Gender,
+                    AgeCategoryId = t.AgeCategoryId,
+                    AgeCategoryName = t.AgeCategory.Name,
+                    AgeCategoryCode = t.AgeCategory.Code,
+                    IsActive = t.IsActive
+                })
+                .ToList();
+
+            return QueryResponse<ClubDetailsDTO>.Success(clubDetailsDto);
         }
     }
 }

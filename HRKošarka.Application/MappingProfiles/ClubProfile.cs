@@ -14,10 +14,12 @@ namespace HRKošarka.Application.MappingProfiles
             CreateMap<ClubDTO, Club>().ReverseMap();
 
             CreateMap<Club, ClubDetailsDTO>()
-                .ForMember(dest => dest.FoundedYear, opt => opt.MapFrom(src => src.FoundedYear.Year));
+                .ForMember(dest => dest.FoundedYear, opt => opt.MapFrom(src => src.FoundedYear.Year))
+                .ForMember(dest => dest.Teams, opt => opt.Ignore());
 
             CreateMap<ClubDetailsDTO, Club>()
-                .ForMember(dest => dest.FoundedYear, opt => opt.MapFrom(src => new DateTime(src.FoundedYear, 1, 1)));
+                .ForMember(dest => dest.FoundedYear, opt => opt.MapFrom(src => new DateTime(src.FoundedYear, 1, 1)))
+                .ForMember(dest => dest.Teams, opt => opt.Ignore());
 
             CreateMap<CreateClubCommand, Club>();
             CreateMap<UpdateClubCommand, Club>();
