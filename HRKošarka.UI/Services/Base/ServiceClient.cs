@@ -119,12 +119,12 @@ namespace HRKošarka.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties);
+        System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(System.Guid? ageCategoryId, Gender? gender, bool? isActive, int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(System.Guid? ageCategoryId, Gender? gender, bool? isActive, int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -1251,15 +1251,15 @@ namespace HRKošarka.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties)
+        public virtual System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(System.Guid? ageCategoryId, Gender? gender, bool? isActive, int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties)
         {
-            return GetAllTeamsAsync(page, pageSize, sortBy, sortDirection, searchTerm, searchableProperties, sortableProperties, System.Threading.CancellationToken.None);
+            return GetAllTeamsAsync(ageCategoryId, gender, isActive, page, pageSize, sortBy, sortDirection, searchTerm, searchableProperties, sortableProperties, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(System.Guid? ageCategoryId, Gender? gender, bool? isActive, int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1275,6 +1275,18 @@ namespace HRKošarka.UI.Services.Base
                     // Operation Path: "api/teams"
                     urlBuilder_.Append("api/teams");
                     urlBuilder_.Append('?');
+                    if (ageCategoryId != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("AgeCategoryId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(ageCategoryId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (gender != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("Gender")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(gender, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (isActive != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("IsActive")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(isActive, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
                     if (page != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("Page")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(page, System.Globalization.CultureInfo.InvariantCulture))).Append('&');

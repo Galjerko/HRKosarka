@@ -1,0 +1,228 @@
+﻿@page "/teams"
+@using HRKošarka.UI.Services.Base
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Teams Management</MudText>
+
+    <MudPaper Elevation="2" Class="pa-4 mb-4 team-filter-card" Square="false">
+        <div class="team-filters-header">
+            <MudIcon Icon="@Icons.Material.Filled.FilterAlt" Color="Color.Secondary" Class="mr-2" />
+            <MudText Typo="Typo.h6" Class="team-filters-title">Filter Teams</MudText>
+            <MudSpacer />
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       OnClick="ResetFilters"
+                       Class="filter-reset-btn">Reset</MudButton>
+        </div>
+        <div class="team-filters-container">
+
+            <MudTextField @bind-Value="_searchTerm"
+                          Placeholder="🔍 Search teams..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          DebounceInterval="300"
+                          OnDebounceIntervalElapsed="@OnSearchChanged"
+                          Class="team-filter-field filter-field-with-border" />
+
+            <MudSelect T="Guid?" @bind-Value="FilterAgeCategory"
+                       Label="Age Category"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Dense="true"
+                       Class="team-filter-field filter-field-with-border">
+                <MudSelectItem T="Guid?" Value="@null">
+                    <MudIcon Icon="@Icons.Material.Filled.Category" Class="mr-1" /> (All)
+                </MudSelectItem>
+                @foreach (var cat in _ageCategories)
+                {
+                    <MudSelectItem T="Guid?" Value="@cat.Id">
+                        <MudIcon Icon="@Icons.Material.Filled.Category" Class="mr-1 mud-theme-primary" /> @cat.Code
+                    </MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="Gender?" @bind-Value="FilterGender"
+                       Label="Gender"
+                       Variant="Variant.Filled"
+                       Color="Color.Secondary"
+                       Dense="true"
+                       Class="team-filter-field filter-field-with-border">
+                <MudSelectItem T="Gender?" Value="@null">
+                    <MudIcon Icon="@Icons.Material.Filled.Wc" Class="mr-1" /> (All)
+                </MudSelectItem>
+                <MudSelectItem T="Gender?" Value="@Gender._0">
+                    <MudIcon Icon="@Icons.Material.Filled.Man" Class="mr-1 mud-theme-primary" /> Male
+                </MudSelectItem>
+                <MudSelectItem T="Gender?" Value="@Gender._1">
+                    <MudIcon Icon="@Icons.Material.Filled.Woman" Class="mr-1 mud-theme-secondary" /> Female
+                </MudSelectItem>
+            </MudSelect>
+
+            <MudSelect T="bool?" @bind-Value="FilterActive"
+                       Label="Status"
+                       Variant="Variant.Filled"
+                       Color="Color.Info"
+                       Dense="true"
+                       Class="team-filter-field filter-field-with-border">
+                <MudSelectItem T="bool?" Value="@null">
+                    <MudIcon Icon="@Icons.Material.Filled.AllInclusive" Class="mr-1" /> (All)
+                </MudSelectItem>
+                <MudSelectItem T="bool?" Value="true">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Class="mr-1" /> Active
+                </MudSelectItem>
+                <MudSelectItem T="bool?" Value="false">
+                    <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Class="mr-1" /> Inactive
+                </MudSelectItem>
+            </MudSelect>
+        </div>
+    </MudPaper>
+
+    <MudTable @ref="_table"
+              ServerData="LoadServerData"
+              SortLabel="Sort by"
+              Loading="_loading"
+              Hover="true"
+              Striped="true"
+              Dense="true"
+              FixedHeader="true"
+              Height="600px">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Teams</MudText>
+            <MudSpacer />
+            @if (_canCreate)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="CreateTeam">
+                    Add Team
+                </MudButton>
+            }
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel T="TeamDTO" SortLabel="Name">Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel T="TeamDTO" SortLabel="ClubName">Club</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel T="TeamDTO" SortLabel="Gender">Gender</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel T="TeamDTO" SortLabel="AgeCategoryName">Age Category</MudTableSortLabel>
+            </MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="text-align: center">Actions</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="Club">@context.ClubName</MudTd>
+            <MudTd DataLabel="Gender">
+                @((context.Gender == Gender._0) ? "Male" : "Female")
+            </MudTd>
+            <MudTd DataLabel="Age Category">@context.AgeCategoryName</MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip T="string"
+                         Color="@(context.IsActive ? Color.Success : Color.Error)"
+                         Size="Size.Small">
+                    @(context.IsActive ? "Active" : "Inactive")
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Actions" Style="text-align: center">
+                <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   OnClick="@(() => ViewTeam(context.Id))"
+                                   Title="View Details" />
+                    @if (_canEdit && context.IsActive)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Secondary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditTeam(context.Id))"
+                                       Title="Edit Team" />
+                    }
+                    @if (_canDeactivate && context.IsActive)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Block"
+                                       Color="Color.Warning"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeactivateTeam(context.Id))"
+                                       Title="Deactivate Team" />
+                    }
+                    @if (_canDelete)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteTeam(context.Id))"
+                                       Title="Delete Team" />
+                    }
+                </MudButtonGroup>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                @if (!string.IsNullOrWhiteSpace(_searchTerm))
+                {
+                    <span>No teams found matching "@_searchTerm"</span>
+                }
+                else
+                {
+                    <span>No teams available</span>
+                }
+            </MudText>
+        </NoRecordsContent>
+
+        <LoadingContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                Loading teams...
+            </MudText>
+        </LoadingContent>
+
+        <PagerContent>
+            <MudTablePager HidePageNumber="false" PageSizeOptions="@_pageSizeOptions" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+<MudDialog @bind-Visible="_showDeleteDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-3" Color="Color.Error" />
+            Confirm Deletion
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>Are you sure you want to delete this team? This action cannot be undone.</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CancelDelete">Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete">Delete</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-Visible="_showDeactivateDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-3" Color="Color.Warning" />
+            Confirm Deactivation
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>Are you sure you want to deactivate this team?</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CancelDeactivate">Cancel</MudButton>
+        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="ConfirmDeactivate">Deactivate</MudButton>
+    </DialogActions>
+</MudDialog>
+

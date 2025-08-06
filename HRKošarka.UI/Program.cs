@@ -30,7 +30,9 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 
+builder.Services.AddScoped<IAgeCategoryService, AgeCategoryService>();
 builder.Services.AddScoped<IClubService, ClubService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());    
