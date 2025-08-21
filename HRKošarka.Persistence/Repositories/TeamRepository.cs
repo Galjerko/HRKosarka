@@ -33,11 +33,27 @@ namespace HRKošarka.Persistence.Repositories
                 .AsQueryable();
 
             if (request.AgeCategoryId.HasValue)
+            {
                 query = query.Where(t => t.AgeCategoryId == request.AgeCategoryId.Value);
+            }
+
             if (request.Gender.HasValue)
+            {
                 query = query.Where(t => t.Gender == request.Gender.Value);
+            }
+
             if (request.IsActive.HasValue)
-                query = query.Where(t => t.IsActive == request.IsActive.Value);
+            {
+                if (request.IsActive.Value)
+                {
+                    query = query.Where(t => t.DeactivateDate == null);
+                }
+                else
+                {
+                    query = query.Where(t => t.DeactivateDate != null);
+                }
+            }
+
 
             if (!string.IsNullOrEmpty(request.SearchTerm))
             {
@@ -72,5 +88,12 @@ namespace HRKošarka.Persistence.Repositories
                 $"Retrieved {items.Count} teams from page {request.Page}");
         }
 
+        public async Task<Team?> GetByIdWithIncludesAsync(Guid teamId)
+        {
+            return await _context.Teams
+                .Include(t => t.Club)
+                .Include(t => t.AgeCategory)
+                .FirstOrDefaultAsync(t => t.Id == teamId);
+        }
     }
 }

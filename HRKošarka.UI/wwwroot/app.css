@@ -782,20 +782,20 @@ html, body {
     background: var(--mud-palette-surface, #21262d);
 }
 
-.club-actions-row {
+.details-actions-row {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 1.5rem;
     width: 100%;
 }
 
-.club-actions-group {
+.details-actions-group {
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 
-.action-btn, .club-action-btn {
+.details-action-btn {
     min-width: 80px !important;
     font-size: 0.9rem !important;
     font-weight: 500 !important;
@@ -809,7 +809,7 @@ html, body {
     font-weight: 600 !important;
 }
 
-.club-info-row {
+.details-info-row {
     display: flex;
     align-items: center;
     gap: 1.5rem;
@@ -817,14 +817,14 @@ html, body {
     flex-wrap: nowrap;
 }
 
-.club-logo {
+.details-logo {
     width: 70px !important;
     height: 70px !important;
     border-radius: 12px;
     flex-shrink: 0;
 }
 
-.club-name {
+.details-name {
     font-size: 2rem !important;
     font-weight: 700 !important;
     color: var(--text-primary, #f0f6fc);
@@ -932,18 +932,18 @@ html, body {
 }
 
 @media (max-width: 900px) {
-    .club-actions-row {
+    .details-actions-row {
         justify-content: stretch;
     }
 
-    .club-actions-group {
+    .details-actions-group {
         flex-direction: column;
         align-items: stretch;
         gap: 0.75rem;
         width: 100%;
     }
 
-    .action-btn, .club-action-btn {
+    .details-action-btn {
         width: 100% !important;
         min-width: 0 !important;
     }
@@ -952,7 +952,7 @@ html, body {
         margin-left: 0;
     }
 
-    .club-info-row {
+    .details-info-row {
         flex-wrap: wrap;
         justify-content: center;
         text-align: center;
@@ -978,30 +978,30 @@ html, body {
         grid-column: span 1;
     }
 
-    .club-name {
+    .details-name {
         font-size: 1.5rem !important;
         white-space: normal;
         text-align: center;
     }
 
-    .club-logo {
+    .details-logo {
         width: 56px !important;
         height: 56px !important;
     }
 }
 
 @media (max-width: 480px) {
-    .club-info-row {
+    .details-info-row {
         flex-direction: column;
         align-items: center;
         gap: 0.75rem;
     }
 
-    .club-name {
+    .details-name {
         font-size: 1.25rem !important;
     }
 
-    .club-logo {
+    .details-logo {
         width: 48px !important;
         height: 48px !important;
     }

@@ -8,5 +8,7 @@ namespace HRKošarka.Application.Contracts.Persistence
     {
         Task<bool> IsTeamNameUniqueInClub(string name, Guid clubId, Guid ageCategoryId, Guid? excludeId = null);
         Task<PaginatedResponse<Team>> GetPagedWithIncludesAsync(GetTeamsQuery request);
+        Task<Team?> GetByIdWithIncludesAsync(Guid teamId);
+
     }
 }

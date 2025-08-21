@@ -15,8 +15,8 @@
     {
         <MudPaper Class="details-paper" Elevation="2">
 
-            <div class="club-actions-row">
-                <div class="club-actions-group">
+            <div class="details-actions-row">
+                <div class="details-actions-group">
                     <AuditHistory DateCreated="@_club.DateCreated"
                                   DateModified="@_club.DateModified"
                                   DateDeleted="@_club.DateDeleted"
@@ -30,7 +30,7 @@
                                        Color="Color.Primary"
                                        StartIcon="@Icons.Material.Filled.Edit"
                                        OnClick="@(() => NavigationManager.NavigateTo($"/clubs/edit/{Id}"))"
-                                       Class="action-btn club-action-btn">
+                                       Class="action-btn details-action-btn">
                                 Edit
                             </MudButton>
                             @if (_club.IsActive)
@@ -40,7 +40,7 @@
                                            StartIcon="@Icons.Material.Filled.Pause"
                                            OnClick="DeactivateClub"
                                            Disabled="@_isProcessing"
-                                           Class="action-btn club-action-btn">
+                                           Class="action-btn details-action-btn">
                                     Deactivate
                                 </MudButton>
                             }
@@ -53,7 +53,7 @@
                                        StartIcon="@Icons.Material.Filled.Delete"
                                        OnClick="DeleteClub"
                                        Disabled="@_isProcessing"
-                                       Class="action-btn club-action-btn">
+                                       Class="action-btn details-action-btn">
                                 Delete
                             </MudButton>
                         </Authorized>
@@ -62,14 +62,14 @@
                                Color="Color.Secondary"
                                StartIcon="@Icons.Material.Filled.ArrowBack"
                                OnClick="@(() => NavigationManager.NavigateTo("/clubs"))"
-                               Class="action-btn club-action-btn back-action-btn">
+                               Class="action-btn details-action-btn back-action-btn">
                         Back
                     </MudButton>
                 </div>
             </div>
 
-            <div class="club-info-row">
-                <MudAvatar Size="Size.Large" Class="club-logo">
+            <div class="details-info-row">
+                <MudAvatar Size="Size.Large" Class="details-logo">
                     @if (!string.IsNullOrEmpty(_club.LogoUrl))
                     {
                         <MudImage Src="@_club.LogoUrl" Alt="@_club.Name" Style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />
@@ -79,7 +79,7 @@
                         <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" />
                     }
                 </MudAvatar>
-                <MudText Typo="Typo.h3" Class="club-name">@_club.Name</MudText>
+                <MudText Typo="Typo.h3" Class="details-name">@_club.Name</MudText>
                 <MudChip T="string"
                          Color="@(_club.IsActive ? Color.Success : Color.Error)"
                          Size="Size.Small"
