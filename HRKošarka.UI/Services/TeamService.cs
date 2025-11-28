@@ -125,6 +125,24 @@ public class TeamService : BaseHttpService, ITeamService
         }
     }
 
+    public async Task<CommandResponse<bool>> ActivateTeam(Guid id)
+    {
+        try
+        {
+            await AddBearerToken();
+            await _client.ActivateTeamAsync(id);
+            return CommandResponse<bool>.Success(true, "Team activated successfully");
+        }
+        catch (ApiException<CustomProblemDetails> ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+    }
+
     public async Task<CommandResponse<bool>> DeleteTeam(Guid id)
     {
         try

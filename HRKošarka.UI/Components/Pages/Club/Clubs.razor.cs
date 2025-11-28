@@ -26,6 +26,7 @@ namespace HRKošarka.UI.Components.Pages.Club
 
         private bool _showDeleteDialog = false;
         private bool _showDeactivateDialog = false;
+        private bool _showActivateDialog = false;
         private Guid _selectedClubId = Guid.Empty;
         private string? _selectedClubName;
 
@@ -205,12 +206,6 @@ namespace HRKošarka.UI.Components.Pages.Club
             }
         }
 
-        private void CancelDeactivate()
-        {
-            _showDeactivateDialog = false;
-            _selectedClubId = Guid.Empty;
-        }
-
         private void DeleteClub(Guid id, string name)
         {
             _selectedClubId = id;
@@ -245,10 +240,38 @@ namespace HRKošarka.UI.Components.Pages.Club
             }
         }
 
-        private void CancelDelete()
+        private void ActivateClub(Guid id, string name)
         {
-            _showDeleteDialog = false;
-            _selectedClubId = Guid.Empty;
+            _selectedClubId = id;
+            _selectedClubName = name;
+            _showActivateDialog = true;
+        }
+
+        private async Task ConfirmActivate()
+        {
+            try
+            {
+                var result = await ClubService.ActivateClub(_selectedClubId);
+
+                if (result.IsSuccess)
+                {
+                    Snackbar.Add("Club activated successfully.", Severity.Success);
+                    await _table.ReloadServerData();
+                }
+                else
+                {
+                    Snackbar.Add(result.Message ?? "Failed to activate club", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error activating club: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                _showActivateDialog = false;
+                _selectedClubId = Guid.Empty;
+            }
         }
 
         public void Dispose()

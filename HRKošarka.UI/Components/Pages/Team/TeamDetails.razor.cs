@@ -16,6 +16,7 @@ namespace HRKošarka.UI.Components.Pages.Team
         private bool _isLoading = true;
         private bool _isProcessing = false;
         private bool _showDeactivateDialog = false;
+        private bool _showActivateDialog = false;
         private bool _showDeleteDialog = false;
         private bool _showRenameDialog = false;
         private string _newTeamName = string.Empty;
@@ -31,6 +32,10 @@ namespace HRKošarka.UI.Components.Pages.Team
                 ? string.Empty
                 : $"Are you sure you want to permanently delete <strong>{_team.Name}</strong>?";
 
+        private string ActivateMessage =>
+            _team is null
+                ? string.Empty
+                : $"Are you sure you want to activate <strong>{_team.Name}</strong>?";
 
         private readonly DialogOptions _dialogOptions = new()
         {
@@ -207,6 +212,53 @@ namespace HRKošarka.UI.Components.Pages.Team
             {
                 Snackbar.Add("An unexpected error occurred while deleting the team.", Severity.Error);
                 Console.WriteLine($"Error deleting team: {ex.Message}");
+            }
+            finally
+            {
+                _isProcessing = false;
+            }
+        }
+
+        private void ActivateTeam()
+        {
+            _showActivateDialog = true;
+        }
+
+        private async Task ConfirmActivate()
+        {
+            if (_team == null) return;
+
+            _isProcessing = true;
+
+            try
+            {
+                var response = await TeamService.ActivateTeam(_team.Id);
+
+                if (response.IsSuccess)
+                {
+                    Snackbar.Add("Team activated successfully!", Severity.Success);
+                    _showActivateDialog = false;
+                    await LoadTeamDetails();
+                }
+                else
+                {
+                    if (response.Errors?.Any() == true)
+                    {
+                        foreach (var error in response.Errors)
+                        {
+                            Snackbar.Add(error, Severity.Error);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add(response.Message ?? "Failed to activate team", Severity.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add("An unexpected error occurred while activating the team.", Severity.Error);
+                Console.WriteLine($"Error activating team: {ex.Message}");
             }
             finally
             {

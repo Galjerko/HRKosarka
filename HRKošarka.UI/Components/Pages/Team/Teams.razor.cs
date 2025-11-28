@@ -27,6 +27,7 @@ namespace HRKošarka.UI.Components.Pages.Team
         private Guid? _filterAgeCategory = null;
         private string? _selectedTeamName;
         private bool _showRenameDialog = false;
+        private bool _showActivateDialog = false;
         private string _newTeamName = string.Empty;
         private bool _isRenaming = false;
 
@@ -197,19 +198,6 @@ namespace HRKošarka.UI.Components.Pages.Team
             }
         }
 
-
-        private void CreateTeam()
-        {
-            try
-            {
-                Navigation.NavigateTo("/teams/create");
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Navigation error: {ex.Message}", Severity.Error);
-            }
-        }
-
         private void EditTeam(Guid id, string name)
         {
             _selectedTeamId = id;
@@ -316,6 +304,40 @@ namespace HRKošarka.UI.Components.Pages.Team
                 _selectedTeamId = Guid.Empty;
             }
         }
+
+        private void ActivateTeam(Guid id, string name)
+        {
+            _selectedTeamId = id;
+            _selectedTeamName = name;
+            _showActivateDialog = true;
+        }
+
+        private async Task ConfirmActivate()
+        {
+            try
+            {
+                var result = await TeamService.ActivateTeam(_selectedTeamId);
+
+                if (result.IsSuccess)
+                {
+                    Snackbar.Add("Team activated successfully.", Severity.Success);
+                    await _table.ReloadServerData();
+                }
+                else
+                {
+                    Snackbar.Add(result.Message ?? "Failed to activate team", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error activating team: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                _showActivateDialog = false;
+                _selectedTeamId = Guid.Empty;
+            }
+        }
         private void ResetFilters()
         {
             FilterAgeCategory = null;
@@ -323,12 +345,6 @@ namespace HRKošarka.UI.Components.Pages.Team
             FilterActive = null;
             _searchTerm = string.Empty;
             OnFilterChanged();
-        }
-
-        private void CancelDeactivate()
-        {
-            _showDeactivateDialog = false;
-            _selectedTeamId = Guid.Empty;
         }
 
         private void DeleteTeam(Guid id, string name)
@@ -363,12 +379,6 @@ namespace HRKošarka.UI.Components.Pages.Team
                 _showDeleteDialog = false;
                 _selectedTeamId = Guid.Empty;
             }
-        }
-
-        private void CancelDelete()
-        {
-            _showDeleteDialog = false;
-            _selectedTeamId = Guid.Empty;
         }
 
         public void Dispose()

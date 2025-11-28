@@ -45,6 +45,17 @@
                                     Deactivate
                                 </MudButton>
                             }
+                            else
+                            {
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Success"
+                                           StartIcon="@Icons.Material.Filled.PlayArrow"
+                                           OnClick="ActivateTeam"
+                                           Disabled="@_isProcessing"
+                                           Class="action-btn details-action-btn">
+                                    Activate
+                                </MudButton>
+                            }
                         </Authorized>
                     </AuthorizeView>
                     <AuthorizeView Roles="Administrator">
@@ -158,6 +169,25 @@
                      ConfirmVariant="Variant.Filled"
                      IsProcessing="_isProcessing"
                      OnConfirm="ConfirmDeactivate"
+                     Options="_dialogOptions" />
+
+
+<ConfirmActionDialog Visible="_showActivateDialog"
+                     VisibleChanged="v => _showActivateDialog = v"
+                     Title="Confirm Activation"
+                     TitleIcon="@Icons.Material.Filled.PlayCircle"
+                     TitleIconColor="Color.Success"
+                     Message="@(ActivateMessage)"
+                     SecondaryMessage="This action will make the team active again."
+                     SecondaryMessageColor="Color.Success"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="ACTIVATE"
+                     ConfirmIcon="@Icons.Material.Filled.PlayArrow"
+                     ConfirmColor="Color.Success"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmActivate"
                      Options="_dialogOptions" />
 
 <ConfirmActionDialog Visible="_showDeleteDialog"

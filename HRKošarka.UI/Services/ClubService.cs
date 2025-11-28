@@ -128,6 +128,25 @@ namespace HRKošarka.UI.Services
             }
         }
 
+        public async Task<CommandResponse<bool>> ActivateClub(Guid id)
+        {
+            try
+            {
+                await AddBearerToken();
+                await _client.ActivateClubAsync(id);
+
+                return CommandResponse<bool>.Success(true, "Club activated successfully");
+            }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
+        }
+
         public async Task<CommandResponse<bool>> DeleteClub(Guid id)
         {
             try

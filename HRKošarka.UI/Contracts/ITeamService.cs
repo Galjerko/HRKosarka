@@ -11,6 +11,7 @@ namespace HRKošarka.UI.Contracts
         Task<CommandResponse<Guid>> CreateTeam(CreateTeamCommand team);
         Task<CommandResponse<bool>> UpdateTeam(Guid id, UpdateTeamCommand team);
         Task<CommandResponse<bool>> DeactivateTeam(Guid id);
+        Task<CommandResponse<bool>> ActivateTeam(Guid id);
         Task<CommandResponse<bool>> DeleteTeam(Guid id);
     }
 }

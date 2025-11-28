@@ -16,6 +16,7 @@ namespace HRKošarka.UI.Components.Pages.Club
         private bool _isLoading = true;
         private bool _isProcessing = false;
         private bool _showDeactivateDialog = false;
+        private bool _showActivateDialog = false;
         private bool _showDeleteDialog = false;
         private string DeactivateMessage =>
             _club is null
@@ -26,6 +27,11 @@ namespace HRKošarka.UI.Components.Pages.Club
             _club is null
                 ? string.Empty
                 : $"Are you sure you want to permanently delete <strong>{_club.Name}</strong>?";
+
+        private string ActivateMessage =>
+            _club is null
+                ? string.Empty
+                : $"Are you sure you want to activate <strong>{_club.Name}</strong>?";
 
         private readonly DialogOptions _dialogOptions = new()
         {
@@ -162,6 +168,53 @@ namespace HRKošarka.UI.Components.Pages.Club
             {
                 Snackbar.Add("An unexpected error occurred while deleting the club.", Severity.Error);
                 Console.WriteLine($"Error deleting club: {ex.Message}");
+            }
+            finally
+            {
+                _isProcessing = false;
+            }
+        }
+
+        private void ActivateClub()
+        {
+            _showActivateDialog = true;
+        }
+
+        private async Task ConfirmActivate()
+        {
+            if (_club == null) return;
+
+            _isProcessing = true;
+
+            try
+            {
+                var response = await ClubService.ActivateClub(_club.Id);
+
+                if (response.IsSuccess)
+                {
+                    Snackbar.Add("Club activated successfully!", Severity.Success);
+                    _showActivateDialog = false;
+                    await LoadClubDetails();
+                }
+                else
+                {
+                    if (response.Errors?.Any() == true)
+                    {
+                        foreach (var error in response.Errors)
+                        {
+                            Snackbar.Add(error, Severity.Error);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add(response.Message ?? "Failed to activate club", Severity.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add("An unexpected error occurred while activating the club.", Severity.Error);
+                Console.WriteLine($"Error activating club: {ex.Message}");
             }
             finally
             {

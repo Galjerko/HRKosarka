@@ -1,4 +1,5 @@
 ﻿using HRKošarka.API.Models;
+using HRKošarka.Application.Features.Team.Commands.ActivateTeam;
 using HRKošarka.Application.Features.Team.Commands.CreateTeam;
 using HRKošarka.Application.Features.Team.Commands.DeactivateTeam;
 using HRKošarka.Application.Features.Team.Commands.DeleteTeam;
@@ -82,6 +83,20 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult> Deactivate(Guid id)
         {
             await _mediator.Send(new DeactivateTeamCommand(id));
+            return NoContent();
+        }
+
+        [HttpPatch("{id}/Activate", Name = "activateTeam")]
+        [Authorize(Roles = "Administrator, ClubManager")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult> Activate(Guid id)
+        {
+            await _mediator.Send(new ActivateTeamCommand(id));
             return NoContent();
         }
 
