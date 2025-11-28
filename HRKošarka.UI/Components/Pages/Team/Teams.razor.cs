@@ -25,6 +25,11 @@ namespace HRKošarka.UI.Components.Pages.Team
         private bool _canDeactivate = false;
         private bool _canDelete = false;
         private Guid? _filterAgeCategory = null;
+        private string? _selectedTeamName;
+        private bool _showRenameDialog = false;
+        private string _newTeamName = string.Empty;
+        private bool _isRenaming = false;
+
         public Guid? FilterAgeCategory
         {
             get => _filterAgeCategory;
@@ -73,7 +78,7 @@ namespace HRKošarka.UI.Components.Pages.Team
         private readonly int[] _pageSizeOptions = { 10, 25, 50, 100 };
         private readonly DialogOptions _dialogOptions = new()
         {
-            CloseButton = true,
+            CloseButton = false,
             MaxWidth = MaxWidth.Small,
             FullWidth = true,
         };
@@ -205,17 +210,66 @@ namespace HRKošarka.UI.Components.Pages.Team
             }
         }
 
-        private void EditTeam(Guid id)
+        private void EditTeam(Guid id, string name)
         {
+            _selectedTeamId = id;
+            _selectedTeamName = name;
+            _newTeamName = name;
+            _showRenameDialog = true;
+        }
+
+        private async Task ConfirmRename()
+        {
+            if (_selectedTeamId == Guid.Empty)
+            {
+                return;
+            }
+
+            var trimmed = _newTeamName?.Trim();
+            if (string.IsNullOrWhiteSpace(trimmed) || trimmed == _selectedTeamName)
+            {
+                _showRenameDialog = false;
+                return;
+            }
+
+            _isRenaming = true;
+
             try
             {
-                Navigation.NavigateTo($"/teams/edit/{id}");
+                var updateTeamCommand = new UpdateTeamCommand
+                {
+                    Id = _selectedTeamId,
+                    Name = trimmed!
+                };
+
+                var result = await TeamService.UpdateTeam(_selectedTeamId, updateTeamCommand);
+
+                if (result.IsSuccess)
+                {
+                    Snackbar.Add("Team renamed successfully.", Severity.Success);
+                    _showRenameDialog = false;
+                    await _table.ReloadServerData();
+                }
+                else
+                {
+                    if (result.Errors?.Any() == true)
+                        foreach (var error in result.Errors)
+                            Snackbar.Add(error, Severity.Error);
+                    else
+                        Snackbar.Add(result.Message ?? "Failed to rename team.", Severity.Error);
+                }
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Navigation error: {ex.Message}", Severity.Error);
+                Snackbar.Add("Unexpected error while renaming team.", Severity.Error);
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                _isRenaming = false;
             }
         }
+
 
         private void ViewTeam(Guid id)
         {
@@ -229,9 +283,10 @@ namespace HRKošarka.UI.Components.Pages.Team
             }
         }
 
-        private void DeactivateTeam(Guid id)
+        private void DeactivateTeam(Guid id, string name)
         {
             _selectedTeamId = id;
+            _selectedTeamName = name;
             _showDeactivateDialog = true;
         }
 
@@ -276,9 +331,10 @@ namespace HRKošarka.UI.Components.Pages.Team
             _selectedTeamId = Guid.Empty;
         }
 
-        private void DeleteTeam(Guid id)
+        private void DeleteTeam(Guid id, string name)
         {
             _selectedTeamId = id;
+            _selectedTeamName = name;
             _showDeleteDialog = true;
         }
 

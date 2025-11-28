@@ -1297,3 +1297,81 @@ html, body {
         min-width: 100%;
     }
 }
+
+.form-actions {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 1rem !important;
+}
+
+.confirm-action-dialog .mud-dialog {
+    min-width: 400px;
+}
+
+.confirm-dialog-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.confirm-dialog-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.confirm-dialog-title-icon {
+    font-size: 1.5rem !important;
+}
+
+.confirm-dialog-title-text {
+    font-weight: 600 !important;
+    font-size: 1.25rem !important;
+    margin: 0 !important;
+}
+
+.confirm-dialog-message {
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+}
+
+.confirm-dialog-secondary {
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    margin-top: 0.5rem !important;
+}
+
+.confirm-dialog-actions {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    padding: 1rem 0 0.5rem 0 !important;
+}
+
+.confirm-dialog-btn {
+    min-width: 120px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+@media (max-width: 600px) {
+    .confirm-action-dialog .mud-dialog {
+        min-width: 90vw;
+    }
+
+    .confirm-dialog-actions {
+        flex-direction: column;
+    }
+
+    .confirm-dialog-btn {
+        width: 100% !important;
+    }
+}

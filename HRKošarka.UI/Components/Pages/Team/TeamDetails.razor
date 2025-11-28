@@ -30,7 +30,7 @@
                             <MudButton Variant="Variant.Outlined"
                                        Color="Color.Primary"
                                        StartIcon="@Icons.Material.Filled.Edit"
-                                       OnClick="@(() => NavigationManager.NavigateTo($"/teams/edit/{Id}"))"
+                                       OnClick="@(() => { _newTeamName = _team?.Name ?? string.Empty; _showRenameDialog = true; })"
                                        Class="action-btn details-action-btn">
                                 Edit
                             </MudButton>
@@ -142,30 +142,96 @@
     }
 </MudContainer>
 
-<MudDialog @bind-Visible="_showDeactivateDialog" Options="_dialogOptions">
+<ConfirmActionDialog Visible="_showDeactivateDialog"
+                     VisibleChanged="v => _showDeactivateDialog = v"
+                     Title="Confirm Deactivation"
+                     TitleIcon="@Icons.Material.Filled.PauseCircle"
+                     TitleIconColor="Color.Warning"
+                     Message="@(DeactivateMessage)"
+                     SecondaryMessage="This action can be reversed later."
+                     SecondaryMessageColor="Color.Warning"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DEACTIVATE"
+                     ConfirmIcon="@Icons.Material.Filled.Pause"
+                     ConfirmColor="Color.Warning"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmDeactivate"
+                     Options="_dialogOptions" />
+
+<ConfirmActionDialog Visible="_showDeleteDialog"
+                     VisibleChanged="v => _showDeleteDialog = v"
+                     Title="Confirm Deletion"
+                     TitleIcon="@Icons.Material.Filled.Warning"
+                     TitleIconColor="Color.Error"
+                     Message="@(DeleteMessage)"
+                     SecondaryMessage="This action cannot be undone!"
+                     SecondaryMessageColor="Color.Error"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DELETE"
+                     ConfirmIcon="@Icons.Material.Filled.Delete"
+                     ConfirmColor="Color.Error"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmDelete"
+                     Options="_dialogOptions" />
+
+<MudDialog @bind-Visible="_showRenameDialog"
+           Options="_dialogOptions"
+           Class="confirm-action-dialog">
     <DialogContent>
-        <MudText Typo="Typo.h6" Class="mb-4">Confirm Deactivation</MudText>
-        <MudText>Are you sure you want to deactivate <strong>@_team?.Name</strong>?</MudText>
-        <MudText Class="mt-2" Color="Color.Warning">This action can be reversed later.</MudText>
+        <div class="confirm-dialog-content">
+            <div class="confirm-dialog-title-row">
+                <MudIcon Icon="@Icons.Material.Filled.Edit"
+                         Color="Color.Primary"
+                         Size="Size.Medium"
+                         Class="confirm-dialog-title-icon" />
+                <MudText Typo="Typo.h6" Class="confirm-dialog-title-text">
+                    Rename Team
+                </MudText>
+            </div>
+
+            <MudText Typo="Typo.body2" Class="confirm-dialog-message">
+                Current name: <strong>@_team?.Name</strong>
+            </MudText>
+
+            <MudTextField @bind-Value="_newTeamName"
+                          Label="New team name"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="Name is required"
+                          MaxLength="150"
+                          Counter="150"
+                          Class="w-100" />
+        </div>
     </DialogContent>
+
     <DialogActions>
-        <MudButton OnClick="@(() => _showDeactivateDialog = false)">Cancel</MudButton>
-        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="ConfirmDeactivate" Disabled="@_isProcessing">
-            @_isProcessing ? <MudProgressCircular Size="Size.Small" Indeterminate="true" /> : <MudText>Deactivate</MudText>
-        </MudButton>
+        <div class="confirm-dialog-actions">
+            <MudButton OnClick="@(() => _showRenameDialog = false)"
+                       Color="Color.Default"
+                       Variant="Variant.Outlined"
+                       Size="Size.Medium"
+                       Class="confirm-dialog-btn">
+                CANCEL
+            </MudButton>
+
+            <MudButton OnClick="ConfirmRename"
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       Size="Size.Medium"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       Disabled="_isRenaming || string.IsNullOrWhiteSpace(_newTeamName)"
+                       Class="confirm-dialog-btn">
+                @if (_isRenaming)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                <MudText>SAVE</MudText>
+            </MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 
-<MudDialog @bind-Visible="_showDeleteDialog" Options="_dialogOptions">
-    <DialogContent>
-        <MudText Typo="Typo.h6" Class="mb-4">Confirm Deletion</MudText>
-        <MudText>Are you sure you want to permanently delete <strong>@_team?.Name</strong>?</MudText>
-        <MudText Class="mt-2" Color="Color.Error">This action cannot be undone!</MudText>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="@(() => _showDeleteDialog = false)">Cancel</MudButton>
-        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete" Disabled="@_isProcessing">
-            @_isProcessing ? <MudProgressCircular Size="Size.Small" Indeterminate="true" /> : <MudText>Delete</MudText>
-        </MudButton>
-    </DialogActions>
-</MudDialog>

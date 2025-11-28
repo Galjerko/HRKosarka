@@ -17,6 +17,20 @@ namespace HRKošarka.UI.Components.Pages.Team
         private bool _isProcessing = false;
         private bool _showDeactivateDialog = false;
         private bool _showDeleteDialog = false;
+        private bool _showRenameDialog = false;
+        private string _newTeamName = string.Empty;
+        private bool _isRenaming = false;
+
+        private string DeactivateMessage =>
+            _team is null
+                ? string.Empty
+                : $"Are you sure you want to deactivate <strong>{_team.Name}</strong>?";
+
+        private string DeleteMessage =>
+            _team is null
+                ? string.Empty
+                : $"Are you sure you want to permanently delete <strong>{_team.Name}</strong>?";
+
 
         private readonly DialogOptions _dialogOptions = new()
         {
@@ -39,6 +53,7 @@ namespace HRKošarka.UI.Components.Pages.Team
                 if (response.IsSuccess && response.Data != null)
                 {
                     _team = response.Data;
+                    _newTeamName = _team?.Name ?? string.Empty;
                 }
                 else
                 {
@@ -63,6 +78,54 @@ namespace HRKošarka.UI.Components.Pages.Team
                 _isLoading = false;
             }
         }
+
+        private async Task ConfirmRename()
+        {
+            if (_team == null) return;
+            if (string.IsNullOrWhiteSpace(_newTeamName) || _newTeamName == _team.Name)
+            {
+                _showRenameDialog = false;
+                return;
+            }
+
+            _isRenaming = true;
+
+            try
+            {
+                var updateTeamCommand = new UpdateTeamCommand
+                {
+                    Id = _team.Id,
+                    Name = _newTeamName.Trim()
+                };
+
+                var result = await TeamService.UpdateTeam(_team.Id, updateTeamCommand);
+
+                if (result.IsSuccess)
+                {
+                    Snackbar.Add("Team renamed successfully.", Severity.Success);
+                    await LoadTeamDetails();
+                    _showRenameDialog = false;
+                }
+                else
+                {
+                    if (result.Errors?.Any() == true)
+                        foreach (var error in result.Errors)
+                            Snackbar.Add(error, Severity.Error);
+                    else
+                        Snackbar.Add(result.Message ?? "Failed to rename team.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add("Unexpected error while renaming team.", Severity.Error);
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                _isRenaming = false;
+            }
+        }
+
 
         private void DeactivateTeam()
         {

@@ -238,6 +238,20 @@
                         </div>
                     </TitleContent>
                     <ChildContent>
+
+                        <AuthorizeView Roles="Administrator,ClubManager">
+                            <Authorized>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Add"
+                                           OnClick="@(() => NavigationManager.NavigateTo($"/clubs/{_club.Id}/teams/create"))"
+                                           Class="action-btn details-action-btn mb-4"
+                                           Disabled="!_club.IsActive">
+                                    Add Team
+                                </MudButton>
+                            </Authorized>
+                        </AuthorizeView>
+
                         @if (_club.Teams.Any())
                         {
 
@@ -330,8 +344,9 @@
                                     <Authorized>
                                         <MudButton Variant="Variant.Outlined"
                                                    Color="Color.Primary"
+                                                   Disabled="!_club.IsActive"
                                                    StartIcon="@Icons.Material.Filled.Add"
-                                                   OnClick="@(() => NavigationManager.NavigateTo($"/teams/create?clubId={Id}"))">
+                                                   OnClick="@(() => NavigationManager.NavigateTo($"/clubs/{Id}/teams/create"))">
                                             Create First Team
                                         </MudButton>
                                     </Authorized>
@@ -357,44 +372,40 @@
     }
 </MudContainer>
 
-<MudDialog @bind-Visible="_showDeactivateDialog" Options="_dialogOptions">
-    <DialogContent>
-        <MudText Typo="Typo.h6" Class="mb-4">Confirm Deactivation</MudText>
-        <MudText>Are you sure you want to deactivate <strong>@_club?.Name</strong>?</MudText>
-        <MudText Class="mt-2" Color="Color.Warning">This action can be reversed later.</MudText>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="@(() => _showDeactivateDialog = false)">Cancel</MudButton>
-        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="ConfirmDeactivate" Disabled="@_isProcessing">
-            @if (_isProcessing)
-            {
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-            }
-            else
-            {
-                <MudText>Deactivate</MudText>
-            }
-        </MudButton>
-    </DialogActions>
-</MudDialog>
+<ConfirmActionDialog Visible="_showDeactivateDialog"
+                     VisibleChanged="v => _showDeactivateDialog = v"
+                     Title="Confirm Deactivation"
+                     TitleIcon="@Icons.Material.Filled.PauseCircle"
+                     TitleIconColor="Color.Warning"
+                     Message="@(DeactivateMessage)"
+                     SecondaryMessage="This action can be reversed later."
+                     SecondaryMessageColor="Color.Warning"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DEACTIVATE"
+                     ConfirmIcon="@Icons.Material.Filled.Pause"
+                     ConfirmColor="Color.Warning"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmDeactivate"
+                     Options="_dialogOptions" />
 
-<MudDialog @bind-Visible="_showDeleteDialog" Options="_dialogOptions">
-    <DialogContent>
-        <MudText Typo="Typo.h6" Class="mb-4">Confirm Deletion</MudText>
-        <MudText>Are you sure you want to permanently delete <strong>@_club?.Name</strong>?</MudText>
-        <MudText Class="mt-2" Color="Color.Error">This action cannot be undone!</MudText>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="@(() => _showDeleteDialog = false)">Cancel</MudButton>
-        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete" Disabled="@_isProcessing">
-            @if (_isProcessing)
-            {
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-            }
-            else
-            {
-                <MudText>Delete</MudText>
-            }
-        </MudButton>
-    </DialogActions>
-</MudDialog>
+<ConfirmActionDialog Visible="_showDeleteDialog"
+                     VisibleChanged="v => _showDeleteDialog = v"
+                     Title="Confirm Deletion"
+                     TitleIcon="@Icons.Material.Filled.Warning"
+                     TitleIconColor="Color.Error"
+                     Message="@(DeleteMessage)"
+                     SecondaryMessage="This action cannot be undone!"
+                     SecondaryMessageColor="Color.Error"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DELETE"
+                     ConfirmIcon="@Icons.Material.Filled.Delete"
+                     ConfirmColor="Color.Error"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmDelete"
+                     Options="_dialogOptions" />
+
+

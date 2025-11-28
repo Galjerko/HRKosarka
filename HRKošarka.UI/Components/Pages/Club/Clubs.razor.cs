@@ -27,11 +27,12 @@ namespace HRKošarka.UI.Components.Pages.Club
         private bool _showDeleteDialog = false;
         private bool _showDeactivateDialog = false;
         private Guid _selectedClubId = Guid.Empty;
+        private string? _selectedClubName;
 
         private readonly int[] _pageSizeOptions = { 10, 25, 50, 100 };
         private readonly DialogOptions _dialogOptions = new()
         {
-            CloseButton = true,
+            CloseButton = false,
             MaxWidth = MaxWidth.Small,
             FullWidth = true,
 
@@ -170,12 +171,13 @@ namespace HRKošarka.UI.Components.Pages.Club
             }
         }
 
-        private void DeactivateClub(Guid id)
+        private void DeactivateClub(Guid id, string name)
         {
             _selectedClubId = id;
+            _selectedClubName = name;
             _showDeactivateDialog = true;
         }
-
+    
         private async Task ConfirmDeactivate()
         {
             try
@@ -209,9 +211,10 @@ namespace HRKošarka.UI.Components.Pages.Club
             _selectedClubId = Guid.Empty;
         }
 
-        private void DeleteClub(Guid id)
+        private void DeleteClub(Guid id, string name)
         {
             _selectedClubId = id;
+            _selectedClubName = name;
             _showDeleteDialog = true;
         }
 

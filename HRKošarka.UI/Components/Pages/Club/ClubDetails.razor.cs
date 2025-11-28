@@ -17,6 +17,15 @@ namespace HRKošarka.UI.Components.Pages.Club
         private bool _isProcessing = false;
         private bool _showDeactivateDialog = false;
         private bool _showDeleteDialog = false;
+        private string DeactivateMessage =>
+            _club is null
+                ? string.Empty
+                : $"Are you sure you want to deactivate <strong>{_club.Name}</strong>?";
+
+        private string DeleteMessage =>
+            _club is null
+                ? string.Empty
+                : $"Are you sure you want to permanently delete <strong>{_club.Name}</strong>?";
 
         private readonly DialogOptions _dialogOptions = new()
         {

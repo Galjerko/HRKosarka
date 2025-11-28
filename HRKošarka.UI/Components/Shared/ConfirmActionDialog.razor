@@ -1,0 +1,59 @@
+﻿@using MudBlazor
+
+<MudDialog @bind-Visible="Visible" Options="Options" Class="confirm-action-dialog">
+    <DialogContent>
+        <div class="confirm-dialog-content">
+            <div class="confirm-dialog-title-row">
+                @if (!string.IsNullOrWhiteSpace(TitleIcon))
+                {
+                    <MudIcon Icon="@TitleIcon"
+                             Color="@TitleIconColor"
+                             Size="Size.Medium"
+                             Class="confirm-dialog-title-icon" />
+                }
+                @if (!string.IsNullOrWhiteSpace(Title))
+                {
+                    <MudText Typo="Typo.h6" Class="confirm-dialog-title-text">@Title</MudText>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Message))
+            {
+                <MudText Class="confirm-dialog-message">@((MarkupString)Message)</MudText>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(SecondaryMessage))
+            {
+                <MudText Class="confirm-dialog-secondary" Color="@SecondaryMessageColor">
+                    @SecondaryMessage
+                </MudText>
+            }
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <div class="confirm-dialog-actions">
+            <MudButton OnClick="OnCancelClicked"
+                       Color="@CancelColor"
+                       Variant="@CancelVariant"
+                       Size="Size.Medium"
+                       Class="confirm-dialog-btn">
+                @CancelText
+            </MudButton>
+
+            <MudButton OnClick="OnConfirmClicked"
+                       Color="@ConfirmColor"
+                       Variant="@ConfirmVariant"
+                       Size="Size.Medium"
+                       StartIcon="@ConfirmIcon"
+                       Disabled="IsProcessing"
+                       Class="confirm-dialog-btn">
+                @if (IsProcessing)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                <MudText>@ConfirmText</MudText>
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>

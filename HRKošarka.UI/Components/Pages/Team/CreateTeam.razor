@@ -1,0 +1,114 @@
+﻿@page "/clubs/{clubId:guid}/teams/create"
+@using HRKošarka.UI.Services.Base
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Administrator,ClubManager")]
+
+<PageTitle>Create Team - Basketball Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="form-page-container">
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.h6">Loading...</MudText>
+        </div>
+    }
+    else if (_club == null)
+    {
+        <MudPaper Class="form-card">
+            <div class="error-state">
+                <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Large" Color="Color.Error" />
+                <MudText Typo="Typo.h5" Color="Color.Error">Club Not Found</MudText>
+                <MudText Typo="Typo.body1">Unable to load club information. Cannot create a team.</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           OnClick="@(() => NavigationManager.NavigateTo("/clubs"))">
+                    Back to Clubs
+                </MudButton>
+            </div>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="form-card">
+            <div class="form-header">
+                <MudAvatar Size="Size.Large" Class="form-icon-avatar">
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" />
+                </MudAvatar>
+                <MudText Typo="Typo.h4" Class="form-title">Create Team for @_club.Name</MudText>
+                <MudText Typo="Typo.h6" Class="form-subtitle">Fill in the details below to add a new team to this club.</MudText>
+            </div>
+            <MudForm @ref="_form" @bind-IsValid="_isFormValid">
+                <MudGrid Spacing="4">
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="section-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Class="section-icon" />
+                            Basic Information
+                        </MudText>
+                        <MudDivider Class="section-divider" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_model.Name"
+                                      Label="Team Name"
+                                      Variant="Variant.Text"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Groups"
+                                      Required="true"
+                                      RequiredError="Team name is required"
+                                      Counter="150"
+                                      MaxLength="150"
+                                      Validation="@(new Func<string, IEnumerable<string>>(ValidateTeamName))" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudSelect T="Gender" Label="Gender" @bind-Value="_model.Gender" Required="true">
+                            <MudSelectItem Value="Gender._0">Male</MudSelectItem>
+                            <MudSelectItem Value="Gender._1">Female</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudSelect T="Guid" Label="Age Category" @bind-Value="_model.AgeCategoryId" Required="true" Dense="true">
+                            @if (_ageCategories != null)
+                            {
+                                @foreach (var ac in _ageCategories)
+                                {
+                                    <MudSelectItem Value="@ac.Id">@ac.Code</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" Class="form-actions">
+                        <MudButton OnClick="HandleSubmit"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.Save"
+                                   Disabled="@(_isLoading || !_isFormValid)"
+                                   Class="action-button">
+                            @if (_isLoading)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Creating Team...</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Create Team</MudText>
+                            }
+                        </MudButton>
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Secondary"
+                                   Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.Cancel"
+                                   OnClick="@(() => NavigationManager.NavigateTo($"/clubs/{_club.Id}"))"
+                                   Disabled="@_isLoading"
+                                   Class="action-button ml-4">
+                            Cancel
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+        </MudPaper>
+    }
+</MudContainer>

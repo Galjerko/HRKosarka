@@ -92,7 +92,7 @@
                         <MudIconButton Icon="@Icons.Material.Filled.Block"
                                        Color="Color.Warning"
                                        Size="Size.Small"
-                                       OnClick="@(() => DeactivateClub(context.Id))"
+                                       OnClick="@(() => DeactivateClub(context.Id, context.Name))"
                                        Title="Deactivate Club" />
                     }
 
@@ -101,7 +101,7 @@
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Color="Color.Error"
                                        Size="Size.Small"
-                                       OnClick="@(() => DeleteClub(context.Id))"
+                                       OnClick="@(() => DeleteClub(context.Id, context.Name))"
                                        Title="Delete Club" />
                     }
                 </MudButtonGroup>
@@ -136,35 +136,39 @@
     </MudTable>
 </MudPaper>
 
-<MudDialog @bind-Visible="_showDeleteDialog" Options="_dialogOptions">
-    <TitleContent>
-        <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-3" Color="Color.Error" />
-            Confirm Deletion
-        </MudText>
-    </TitleContent>
-    <DialogContent>
-        <MudText>Are you sure you want to delete this club? This action cannot be undone.</MudText>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="CancelDelete">Cancel</MudButton>
-        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete">Delete</MudButton>
-    </DialogActions>
-</MudDialog>
+<ConfirmActionDialog Visible="_showDeactivateDialog"
+                     VisibleChanged="v => _showDeactivateDialog = v"
+                     Title="Confirm Deactivation"
+                     TitleIcon="@Icons.Material.Filled.PauseCircle"
+                     TitleIconColor="Color.Warning"
+                     Message=@($"Are you sure you want to deactivate club <strong>{_selectedClubName}</strong>?")
+                     SecondaryMessage="This action can be reversed later."
+                     SecondaryMessageColor="Color.Warning"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DEACTIVATE"
+                     ConfirmIcon="@Icons.Material.Filled.Pause"
+                     ConfirmColor="Color.Warning"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="false"
+                     OnConfirm="ConfirmDeactivate"
+                     Options="_dialogOptions" />
 
-<MudDialog @bind-Visible="_showDeactivateDialog" Options="_dialogOptions">
-    <TitleContent>
-        <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-3" Color="Color.Warning" />
-            Confirm Deactivation
-        </MudText>
-    </TitleContent>
-    <DialogContent>
-        <MudText>Are you sure you want to deactivate this club?</MudText>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="CancelDeactivate">Cancel</MudButton>
-        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="ConfirmDeactivate">Deactivate</MudButton>
-    </DialogActions>
-</MudDialog>
+<ConfirmActionDialog Visible="_showDeleteDialog"
+                     VisibleChanged="v => _showDeleteDialog = v"
+                     Title="Confirm Deletion"
+                     TitleIcon="@Icons.Material.Filled.Warning"
+                     TitleIconColor="Color.Error"
+                     Message=@($"Are you sure you want to delete club <strong>{_selectedClubName}</strong>?")
+                     SecondaryMessage="This action cannot be undone."
+                     SecondaryMessageColor="Color.Error"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DELETE"
+                     ConfirmIcon="@Icons.Material.Filled.Delete"
+                     ConfirmColor="Color.Error"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="false"
+                     OnConfirm="ConfirmDelete"
+                     Options="_dialogOptions" />
 
