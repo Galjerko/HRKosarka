@@ -7,5 +7,7 @@ namespace HRKošarka.Application.Contracts.Identity
         Task<User> GetUser(string userId);
         Task<List<User>> GetUsers();
         Task<List<User>> GetTeamRepresentatives();
+
+        Task<List<User>> GetClubManagers();
     }
 }

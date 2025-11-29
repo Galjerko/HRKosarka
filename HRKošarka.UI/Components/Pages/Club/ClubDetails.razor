@@ -1,5 +1,7 @@
 ﻿@page "/clubs/{id:guid}"
 @using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
 <PageTitle>Club Details - Basketball Management</PageTitle>
 
@@ -24,51 +26,55 @@
                                   ModifiedBy="@_club.ModifiedBy"
                                   DeletedBy="@_club.DeletedBy" />
 
-                    <AuthorizeView Roles="Administrator,ClubManager">
-                        <Authorized>
+                    @if (CurrentPermissions.CanEdit)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   OnClick="@(() => NavigationManager.NavigateTo($"/clubs/edit/{Id}"))"
+                                   Class="action-btn details-action-btn">
+                            Edit
+                        </MudButton>
+                    }
+
+                    @if (CurrentPermissions.CanDeactivate && _club.IsActive)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Warning"
+                                   StartIcon="@Icons.Material.Filled.Pause"
+                                   OnClick="DeactivateClub"
+                                   Disabled="@_isProcessing"
+                                   Class="action-btn details-action-btn">
+                            Deactivate
+                        </MudButton>
+                    }
+                    else
+                    {
+                        @if (CurrentPermissions.CanDeactivate && !_club.IsActive)
+                        {
                             <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Primary"
-                                       StartIcon="@Icons.Material.Filled.Edit"
-                                       OnClick="@(() => NavigationManager.NavigateTo($"/clubs/edit/{Id}"))"
-                                       Class="action-btn details-action-btn">
-                                Edit
-                            </MudButton>
-                            @if (_club.IsActive)
-                            {
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="Color.Warning"
-                                           StartIcon="@Icons.Material.Filled.Pause"
-                                           OnClick="DeactivateClub"
-                                           Disabled="@_isProcessing"
-                                           Class="action-btn details-action-btn">
-                                    Deactivate
-                                </MudButton>
-                            }
-                            else
-                            {
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="Color.Success"
-                                           StartIcon="@Icons.Material.Filled.PlayArrow"
-                                           OnClick="ActivateClub"
-                                           Disabled="@_isProcessing"
-                                           Class="action-btn details-action-btn">
-                                    Activate
-                                </MudButton>
-                            }
-                        </Authorized>
-                    </AuthorizeView>
-                    <AuthorizeView Roles="Administrator">
-                        <Authorized>
-                            <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Error"
-                                       StartIcon="@Icons.Material.Filled.Delete"
-                                       OnClick="DeleteClub"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.PlayArrow"
+                                       OnClick="ActivateClub"
                                        Disabled="@_isProcessing"
                                        Class="action-btn details-action-btn">
-                                Delete
+                                Activate
                             </MudButton>
-                        </Authorized>
-                    </AuthorizeView>
+                        }
+                    }
+
+                    @if (CurrentPermissions.CanDelete)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Error"
+                                   StartIcon="@Icons.Material.Filled.Delete"
+                                   OnClick="DeleteClub"
+                                   Disabled="@_isProcessing"
+                                   Class="action-btn details-action-btn">
+                            Delete
+                        </MudButton>
+                    }
+
                     <MudButton Variant="Variant.Text"
                                Color="Color.Secondary"
                                StartIcon="@Icons.Material.Filled.ArrowBack"
@@ -250,18 +256,17 @@
                     </TitleContent>
                     <ChildContent>
 
-                        <AuthorizeView Roles="Administrator,ClubManager">
-                            <Authorized>
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Filled.Add"
-                                           OnClick="@(() => NavigationManager.NavigateTo($"/clubs/{_club.Id}/teams/create"))"
-                                           Class="action-btn details-action-btn mb-4"
-                                           Disabled="!_club.IsActive">
-                                    Add Team
-                                </MudButton>
-                            </Authorized>
-                        </AuthorizeView>
+                        @if (CurrentPermissions.CanEdit)
+                        {
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="@(() => NavigationManager.NavigateTo($"/clubs/{_club.Id}/teams/create"))"
+                                       Class="action-btn details-action-btn mb-4"
+                                       Disabled="!_club.IsActive">
+                                Add Team
+                            </MudButton>
+                        }
 
                         @if (_club.Teams.Any())
                         {
@@ -351,17 +356,16 @@
                             <div class="no-teams-state">
                                 <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Tertiary" />
                                 <MudText Typo="Typo.body1" Color="Color.Tertiary">No teams found for this club.</MudText>
-                                <AuthorizeView Roles="Administrator,ClubManager">
-                                    <Authorized>
-                                        <MudButton Variant="Variant.Outlined"
-                                                   Color="Color.Primary"
-                                                   Disabled="!_club.IsActive"
-                                                   StartIcon="@Icons.Material.Filled.Add"
-                                                   OnClick="@(() => NavigationManager.NavigateTo($"/clubs/{Id}/teams/create"))">
-                                            Create First Team
-                                        </MudButton>
-                                    </Authorized>
-                                </AuthorizeView>
+                                @if (CurrentPermissions.CanEdit)
+                                {
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Primary"
+                                               Disabled="!_club.IsActive"
+                                               StartIcon="@Icons.Material.Filled.Add"
+                                               OnClick="@(() => NavigationManager.NavigateTo($"/clubs/{Id}/teams/create"))">
+                                        Create First Team
+                                    </MudButton>
+                                }
                             </div>
                         }
                     </ChildContent>
@@ -401,7 +405,6 @@
                      OnConfirm="ConfirmDeactivate"
                      Options="_dialogOptions" />
 
-
 <ConfirmActionDialog Visible="_showActivateDialog"
                      VisibleChanged="v => _showActivateDialog = v"
                      Title="Confirm Activation"
@@ -420,7 +423,6 @@
                      OnConfirm="ConfirmActivate"
                      Options="_dialogOptions" />
 
-
 <ConfirmActionDialog Visible="_showDeleteDialog"
                      VisibleChanged="v => _showDeleteDialog = v"
                      Title="Confirm Deletion"
@@ -438,5 +440,3 @@
                      IsProcessing="_isProcessing"
                      OnConfirm="ConfirmDelete"
                      Options="_dialogOptions" />
-
-

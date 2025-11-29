@@ -1,5 +1,8 @@
 ﻿@page "/clubs"
 @using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@using HRKošarka.UI.Models.UserManagement
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
 <MudPaper Class="pa-4">
     <MudText Typo="Typo.h5" Class="mb-4">Clubs Management</MudText>
@@ -16,7 +19,7 @@
     <MudTable @ref="_table"
               ServerData="LoadServerData"
               SortLabel="Sort by"
-              Sortable="true"            
+              Sortable="true"
               Loading="_loading"
               Hover="true"
               Striped="true"
@@ -27,7 +30,7 @@
         <ToolBarContent>
             <MudText Typo="Typo.h6">Clubs</MudText>
             <MudSpacer />
-            @if (_canCreate)
+            @if (CanCreate)
             {
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Primary"
@@ -52,8 +55,11 @@
             <MudTh Style="text-align: center">Actions</MudTh>
         </HeaderContent>
 
-
         <RowTemplate>
+            @{
+                var clubPermissions = GetClubPermissions(context.Id).Result;
+            }
+
             <MudTd DataLabel="Name">
                 <MudText Typo="Typo.body2">@context.Name</MudText>
             </MudTd>
@@ -78,7 +84,7 @@
                                    OnClick="@(() => ViewClub(context.Id))"
                                    Title="View Details" />
 
-                    @if (_canEdit && context.IsActive)
+                    @if (clubPermissions.CanEdit && context.IsActive)
                     {
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Secondary"
@@ -87,7 +93,7 @@
                                        Title="Edit Club" />
                     }
 
-                    @if (_canDeactivate && context.IsActive)
+                    @if (clubPermissions.CanDeactivate && context.IsActive)
                     {
                         <MudIconButton Icon="@Icons.Material.Filled.Block"
                                        Color="Color.Warning"
@@ -97,7 +103,7 @@
                     }
                     else
                     {
-                        @if (_canDeactivate && !context.IsActive)
+                        @if (clubPermissions.CanDeactivate && !context.IsActive)
                         {
                             <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
                                            Color="Color.Success"
@@ -107,7 +113,7 @@
                         }
                     }
 
-                    @if (_canDelete)
+                    @if (clubPermissions.CanDelete)
                     {
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Color="Color.Error"
@@ -118,8 +124,6 @@
                 </MudButtonGroup>
             </MudTd>
         </RowTemplate>
-
-
 
         <NoRecordsContent>
             <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
@@ -142,8 +146,6 @@
         <PagerContent>
             <MudTablePager Class="styled-dropdown" HidePageNumber="false" PageSizeOptions="@_pageSizeOptions" />
         </PagerContent>
-
-
     </MudTable>
 </MudPaper>
 
@@ -164,7 +166,6 @@
                      IsProcessing="false"
                      OnConfirm="ConfirmDeactivate"
                      Options="_dialogOptions" />
-
 
 <ConfirmActionDialog Visible="_showActivateDialog"
                      VisibleChanged="v => _showActivateDialog = v"
@@ -201,4 +202,3 @@
                      IsProcessing="false"
                      OnConfirm="ConfirmDelete"
                      Options="_dialogOptions" />
-

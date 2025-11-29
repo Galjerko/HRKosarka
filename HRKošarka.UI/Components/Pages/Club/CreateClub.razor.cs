@@ -1,18 +1,15 @@
-﻿using HRKošarka.UI.Services.Base;
+﻿using HRKošarka.UI.Components.Base;
 using HRKošarka.UI.Contracts;
+using HRKošarka.UI.Services.Base;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using System.Text.RegularExpressions;
 
 namespace HRKošarka.UI.Components.Pages.Club
 {
-    public partial class CreateClub
+    public partial class CreateClub : PermissionBaseComponent
     {
         [Inject] private IClubService ClubService { get; set; } = default!;
-        [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-        [Inject] private ISnackbar Snackbar { get; set; } = default!;
-        [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
 
         private CreateClubCommand _model = new();
         private bool _isLoading = false;
@@ -22,14 +19,10 @@ namespace HRKošarka.UI.Components.Pages.Club
 
         protected override async Task OnInitializedAsync()
         {
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            if (!authState.User.Identity?.IsAuthenticated ?? false)
-            {
-                NavigationManager.NavigateTo("/login");
-                return;
-            }
+            await base.OnInitializedAsync();
 
-            if (!authState.User.IsInRole("Administrator"))
+            // Only Admins can create clubs
+            if (!CurrentUser.IsInRole("Administrator"))
             {
                 Snackbar.Add("You need Administrator privileges to create clubs.", Severity.Warning);
                 NavigationManager.NavigateTo("/clubs");
@@ -194,32 +187,6 @@ namespace HRKošarka.UI.Components.Pages.Club
             }
         }
 
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool IsValidPhoneNumber(string phone)
-        {
-            var patterns = new[]
-            {
-                @"^\+385\d{8,9}$",
-                @"^0\d{8,9}$",
-                @"^\d{8,9}$"
-            };
-
-            return patterns.Any(pattern => Regex.IsMatch(phone, pattern));
-        }
-
-
         private IEnumerable<string> ValidateVenueName(string venueName)
         {
             if (!string.IsNullOrEmpty(venueName))
@@ -246,6 +213,30 @@ namespace HRKošarka.UI.Components.Pages.Club
             }
         }
 
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool IsValidPhoneNumber(string phone)
+        {
+            var patterns = new[]
+            {
+                @"^\+385\d{8,9}$",
+                @"^0\d{8,9}$",
+                @"^\d{8,9}$"
+            };
+
+            return patterns.Any(pattern => Regex.IsMatch(phone, pattern));
+        }
 
         private bool IsValidUrl(string url)
         {

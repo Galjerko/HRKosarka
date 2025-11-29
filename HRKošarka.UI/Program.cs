@@ -1,13 +1,13 @@
 using Blazored.LocalStorage;
 using Blazored.Toast.Services;
-using HRKošarka.UI.Contracts;
 using HRKošarka.UI.Components;
+using HRKošarka.UI.Contracts;
 using HRKošarka.UI.Providers;
 using HRKošarka.UI.Services;
 using HRKošarka.UI.Services.Base;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Reflection;
 using MudBlazor.Services;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +18,6 @@ builder.Services.AddRazorComponents()
         options.DetailedErrors = true;
     });
 
-
 builder.Services.AddMudServices();
 builder.Services.AddHttpClient<IClient, Client>(client =>
 {
@@ -27,27 +26,30 @@ builder.Services.AddHttpClient<IClient, Client>(client =>
 });
 
 builder.Services.AddBlazoredLocalStorage();
+
+// NO server-side auth - only Blazor client-side auth
 builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 
 builder.Services.AddScoped<IAgeCategoryService, AgeCategoryService>();
 builder.Services.AddScoped<IClubService, ClubService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IUserPermissionCacheService, UserPermissionCacheService>();
+builder.Services.AddScoped<IPermissionService, UserPermissionCacheService>();
 builder.Services.AddScoped<IToastService, ToastService>();
-builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());    
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
 

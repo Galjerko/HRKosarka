@@ -1,6 +1,6 @@
-﻿using HRKošarka.Identity.DbContext;
-using HRKošarka.Application.Contracts.Identity;
+﻿using HRKošarka.Application.Contracts.Identity;
 using HRKošarka.Application.Models.Identity;
+using HRKošarka.Identity.DbContext;
 using HRKošarka.Identity.Models;
 using HRKošarka.Identity.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -36,6 +36,10 @@ namespace HRKošarka.Identity
 
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IUserService, UserService>();
+
+            services.AddScoped<IClubManagerService, ClubManagerService>();
+            services.AddScoped<IClubAuthorizationService, ClubAuthorizationService>();
+
 
             services.AddAuthentication(options =>
             {

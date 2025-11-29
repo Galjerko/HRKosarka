@@ -12,5 +12,7 @@ namespace HRKošarka.Identity.Models
         public string? CreatedBy { get; set; }
         public string? ModifiedBy { get; set; }
         public string? DeletedBy { get; set; }
+
+        public Guid? ManagedClubId { get; set; }
     }
 }

@@ -1,250 +1,256 @@
 ﻿@page "/clubs/edit/{id:guid}"
 @using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
-@attribute [Authorize(Roles = "Administrator,ClubManager")]
-@inherits Microsoft.AspNetCore.Components.ComponentBase
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
 <PageTitle>Edit Club - Basketball Management</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="form-page-container">
-    @if (_isLoading)
-    {
-        <div class="loading-state">
-            <MudProgressCircular Size="Size.Large" Indeterminate="true" />
-            <MudText Typo="Typo.h6">Loading club details...</MudText>
-        </div>
-    }
-    else if (_club == null)
-    {
-        <MudPaper Class="form-card">
-            <div class="error-state">
-                <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Large" Color="Color.Error" />
-                <MudText Typo="Typo.h5" Color="Color.Error">Club Not Found</MudText>
-                <MudText Typo="Typo.body1">The club you're trying to edit doesn't exist or has been removed.</MudText>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack"
-                           OnClick="@(() => NavigationManager.NavigateTo("/clubs"))">
-                    Back to Clubs
-                </MudButton>
-            </div>
-        </MudPaper>
-    }
-    else
-    {
-        <MudPaper Class="form-card club-form-card">
-            <div class="form-header">
-                <MudAvatar Size="Size.Large" Class="form-icon-avatar">
-                    <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Large" />
-                </MudAvatar>
-
-                <MudText Typo="Typo.h4" Class="form-title">Edit Basketball Club</MudText>
-                <MudText Typo="Typo.h6" Class="form-subtitle">Update club information</MudText>
-            </div>
-
-            <MudForm @ref="_form" @bind-IsValid="@_isFormValid">
-                <MudGrid Spacing="4">
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.h6" Class="section-title">
-                            <MudIcon Icon="@Icons.Material.Filled.Info" Class="section-icon" />
-                            Basic Information
-                        </MudText>
-                        <MudDivider Class="section-divider" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="6">
-                        <MudTextField @bind-Value="_model.Name"
-                                      Label="Club Name"
-                                      Variant="Variant.Text"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Groups"
-                                      Required="true"
-                                      RequiredError="Club name is required"
-                                      Counter="150"
-                                      MaxLength="150"
-                                      Validation="@(new Func<string, IEnumerable<string>>(ValidateClubName))" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="6">
-                        <MudTextField @bind-Value="_model.City"
-                                      Label="City"
-                                      Variant="Variant.Text"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.LocationCity"
-                                      Counter="100"
-                                      MaxLength="100" />
-                    </MudItem>
-
-                    <MudItem xs="12">
-                        <MudTextField @bind-Value="_model.Description"
-                                      Label="Description"
-                                      Variant="Variant.Text"
-                                      Lines="3"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Description"
-                                      Counter="1000"
-                                      MaxLength="1000" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="6">
-                        <MudNumericField @bind-Value="_foundedYear"
-                                         Label="Founded Year"
-                                         Variant="Variant.Text"
-                                         Adornment="Adornment.Start"
-                                         AdornmentIcon="@Icons.Material.Filled.CalendarToday"
-                                         Min="1800"
-                                         Max="@DateTime.Now.Year"
-                                         Step="1"
-                                         Required="true"
-                                         RequiredError="Founded year is required"
-                                         Validation="@(new Func<int?, IEnumerable<string>>(ValidateFoundedYearNumeric))" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="6">
-                        <MudTextField @bind-Value="_model.LogoUrl"
-                                      Label="Logo URL (Optional)"
-                                      Variant="Variant.Text"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Image"
-                                      Counter="500"
-                                      MaxLength="500"
-                                      Validation="@(new Func<string, IEnumerable<string>>(ValidateUrl))" />
-                    </MudItem>
-
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.h6" Class="section-title">
-                            <MudIcon Icon="@Icons.Material.Filled.ContactMail" Class="section-icon" />
-                            Contact Information
-                        </MudText>
-                        <MudDivider Class="section-divider" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="6">
-                        <MudTextField @bind-Value="_model.Email"
-                                      Label="Email Address"
-                                      Variant="Variant.Text"
-                                      InputType="InputType.Email"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Email"
-                                      Counter="255"
-                                      MaxLength="255"
-                                      Validation="@(new Func<string, IEnumerable<string>>(ValidateEmail))" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="6">
-                        <MudTextField @bind-Value="_model.PhoneNumber"
-                                      Label="Phone Number"
-                                      Variant="Variant.Text"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Phone"
-                                      Counter="20"
-                                      MaxLength="20"
-                                      Validation="@(new Func<string, IEnumerable<string>>(ValidatePhoneNumber))" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="6">
-                        <MudTextField @bind-Value="_model.Website"
-                                      Label="Website"
-                                      Variant="Variant.Text"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Language"
-                                      Counter="255"
-                                      MaxLength="255"
-                                      Validation="@(new Func<string, IEnumerable<string>>(ValidateWebsite))" />
-                    </MudItem>
-
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.h6" Class="section-title">
-                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="section-icon" />
-                            Address Information
-                        </MudText>
-                        <MudDivider Class="section-divider" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="8">
-                        <MudTextField @bind-Value="_model.Address"
-                                      Label="Street Address"
-                                      Variant="Variant.Text"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Home"
-                                      Counter="200"
-                                      MaxLength="200" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="4">
-                        <MudTextField @bind-Value="_model.PostalCode"
-                                      Label="Postal Code"
-                                      Variant="Variant.Text"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.MarkunreadMailbox"
-                                      Counter="20"
-                                      MaxLength="20"
-                                      Validation="@(new Func<string, IEnumerable<string>>(ValidatePostalCode))" />
-                    </MudItem>
-
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.h6" Class="section-title">
-                            <MudIcon Icon="@Icons.Material.Filled.Stadium" Class="section-icon" />
-                            Venue Information
-                        </MudText>
-                        <MudDivider Class="section-divider" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="8">
-                        <MudTextField @bind-Value="_model.VenueName"
-                                      Label="Venue Name"
-                                      Variant="Variant.Text"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Stadium"
-                                      Counter="200"
-                                      MaxLength="200"
-                                      Validation="@(new Func<string, IEnumerable<string>>(ValidateVenueName))" />
-                    </MudItem>
-
-                    <MudItem xs="12" md="4">
-                        <MudNumericField @bind-Value="_model.VenueCapacity"
-                                         Label="Venue Capacity"
-                                         Variant="Variant.Text"
-                                         Adornment="Adornment.Start"
-                                         AdornmentIcon="@Icons.Material.Filled.Groups"
-                                         Min="1"
-                                         Max="200000"
-                                         Step="1"
-                                         HideSpinButtons="false"
-                                         Validation="@(new Func<int?, IEnumerable<string>>(ValidateVenueCapacityNumeric))" />
-                    </MudItem>
-
-
-                    <MudItem xs="12" Class="form-actions">
-                        <MudButton OnClick="HandleSubmit"
-                                   Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   Size="Size.Large"
-                                   StartIcon="@Icons.Material.Filled.Save"
-                                   Disabled="@(_isProcessing || !_isFormValid)"
-                                   Class="action-button">
-                            @if (_isProcessing)
-                            {
-                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                                <MudText Class="ms-2">Updating Club...</MudText>
-                            }
-                            else
-                            {
-                                <MudText>Update Club</MudText>
-                            }
+<AuthorizeView Roles="Administrator,ClubManager">
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="form-page-container">
+            @if (_isLoading)
+            {
+                <div class="loading-state">
+                    <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+                    <MudText Typo="Typo.h6">Loading club details...</MudText>
+                </div>
+            }
+            else if (_club == null)
+            {
+                <MudPaper Class="form-card">
+                    <div class="error-state">
+                        <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Large" Color="Color.Error" />
+                        <MudText Typo="Typo.h5" Color="Color.Error">Club Not Found</MudText>
+                        <MudText Typo="Typo.body1">The club you're trying to edit doesn't exist or has been removed.</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack"
+                                   OnClick="@(() => NavigationManager.NavigateTo("/clubs"))">
+                            Back to Clubs
                         </MudButton>
+                    </div>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Class="form-card club-form-card">
+                    <div class="form-header">
+                        <MudAvatar Size="Size.Large" Class="form-icon-avatar">
+                            <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Large" />
+                        </MudAvatar>
 
-                        <MudButton Variant="Variant.Text"
-                                   Color="Color.Secondary"
-                                   Size="Size.Large"
-                                   StartIcon="@Icons.Material.Filled.Cancel"
-                                   OnClick="@(() => NavigationManager.NavigateTo($"/clubs/{Id}"))"
-                                   Disabled="@_isProcessing"
-                                   Class="action-button ml-4">
-                            Cancel
-                        </MudButton>
-                    </MudItem>
-                </MudGrid>
-            </MudForm>
-        </MudPaper>
-    }
-</MudContainer>
+                        <MudText Typo="Typo.h4" Class="form-title">Edit Basketball Club</MudText>
+                        <MudText Typo="Typo.h6" Class="form-subtitle">Update club information</MudText>
+                    </div>
+
+                    <MudForm @ref="_form" @bind-IsValid="@_isFormValid">
+                        <MudGrid Spacing="4">
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Class="section-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Class="section-icon" />
+                                    Basic Information
+                                </MudText>
+                                <MudDivider Class="section-divider" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.Name"
+                                              Label="Club Name"
+                                              Variant="Variant.Text"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Groups"
+                                              Required="true"
+                                              RequiredError="Club name is required"
+                                              Counter="150"
+                                              MaxLength="150"
+                                              Validation="@(new Func<string, IEnumerable<string>>(ValidateClubName))" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.City"
+                                              Label="City"
+                                              Variant="Variant.Text"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.LocationCity"
+                                              Counter="100"
+                                              MaxLength="100" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_model.Description"
+                                              Label="Description"
+                                              Variant="Variant.Text"
+                                              Lines="3"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Description"
+                                              Counter="1000"
+                                              MaxLength="1000" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudNumericField @bind-Value="_foundedYear"
+                                                 Label="Founded Year"
+                                                 Variant="Variant.Text"
+                                                 Adornment="Adornment.Start"
+                                                 AdornmentIcon="@Icons.Material.Filled.CalendarToday"
+                                                 Min="1800"
+                                                 Max="@DateTime.Now.Year"
+                                                 Step="1"
+                                                 Required="true"
+                                                 RequiredError="Founded year is required"
+                                                 Validation="@(new Func<int?, IEnumerable<string>>(ValidateFoundedYearNumeric))" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.LogoUrl"
+                                              Label="Logo URL (Optional)"
+                                              Variant="Variant.Text"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Image"
+                                              Counter="500"
+                                              MaxLength="500"
+                                              Validation="@(new Func<string, IEnumerable<string>>(ValidateUrl))" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Class="section-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.ContactMail" Class="section-icon" />
+                                    Contact Information
+                                </MudText>
+                                <MudDivider Class="section-divider" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.Email"
+                                              Label="Email Address"
+                                              Variant="Variant.Text"
+                                              InputType="InputType.Email"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Email"
+                                              Counter="255"
+                                              MaxLength="255"
+                                              Validation="@(new Func<string, IEnumerable<string>>(ValidateEmail))" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.PhoneNumber"
+                                              Label="Phone Number"
+                                              Variant="Variant.Text"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Phone"
+                                              Counter="20"
+                                              MaxLength="20"
+                                              Validation="@(new Func<string, IEnumerable<string>>(ValidatePhoneNumber))" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.Website"
+                                              Label="Website"
+                                              Variant="Variant.Text"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Language"
+                                              Counter="255"
+                                              MaxLength="255"
+                                              Validation="@(new Func<string, IEnumerable<string>>(ValidateWebsite))" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Class="section-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="section-icon" />
+                                    Address Information
+                                </MudText>
+                                <MudDivider Class="section-divider" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="8">
+                                <MudTextField @bind-Value="_model.Address"
+                                              Label="Street Address"
+                                              Variant="Variant.Text"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Home"
+                                              Counter="200"
+                                              MaxLength="200" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="4">
+                                <MudTextField @bind-Value="_model.PostalCode"
+                                              Label="Postal Code"
+                                              Variant="Variant.Text"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.MarkunreadMailbox"
+                                              Counter="20"
+                                              MaxLength="20"
+                                              Validation="@(new Func<string, IEnumerable<string>>(ValidatePostalCode))" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Class="section-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.Stadium" Class="section-icon" />
+                                    Venue Information
+                                </MudText>
+                                <MudDivider Class="section-divider" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="8">
+                                <MudTextField @bind-Value="_model.VenueName"
+                                              Label="Venue Name"
+                                              Variant="Variant.Text"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Stadium"
+                                              Counter="200"
+                                              MaxLength="200"
+                                              Validation="@(new Func<string, IEnumerable<string>>(ValidateVenueName))" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="4">
+                                <MudNumericField @bind-Value="_model.VenueCapacity"
+                                                 Label="Venue Capacity"
+                                                 Variant="Variant.Text"
+                                                 Adornment="Adornment.Start"
+                                                 AdornmentIcon="@Icons.Material.Filled.Groups"
+                                                 Min="1"
+                                                 Max="200000"
+                                                 Step="1"
+                                                 HideSpinButtons="false"
+                                                 Validation="@(new Func<int?, IEnumerable<string>>(ValidateVenueCapacityNumeric))" />
+                            </MudItem>
+
+                            <MudItem xs="12" Class="form-actions">
+                                <MudButton OnClick="HandleSubmit"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           Size="Size.Large"
+                                           StartIcon="@Icons.Material.Filled.Save"
+                                           Disabled="@(_isProcessing || !_isFormValid)"
+                                           Class="action-button">
+                                    @if (_isProcessing)
+                                    {
+                                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                        <MudText Class="ms-2">Updating Club...</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText>Update Club</MudText>
+                                    }
+                                </MudButton>
+
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Secondary"
+                                           Size="Size.Large"
+                                           StartIcon="@Icons.Material.Filled.Cancel"
+                                           OnClick="@(() => NavigationManager.NavigateTo($"/clubs/{Id}"))"
+                                           Disabled="@_isProcessing"
+                                           Class="action-button ml-4">
+                                    Cancel
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudForm>
+                </MudPaper>
+            }
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>

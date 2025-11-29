@@ -1,19 +1,16 @@
-﻿using HRKošarka.UI.Services.Base;
+﻿using HRKošarka.UI.Components.Base;
 using HRKošarka.UI.Contracts;
+using HRKošarka.UI.Services.Base;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using System.Text.RegularExpressions;
 
 namespace HRKošarka.UI.Components.Pages.Club
 {
-    public partial class EditClub
+    public partial class EditClub : PermissionBaseComponent
     {
         [Parameter] public Guid Id { get; set; }
         [Inject] private IClubService ClubService { get; set; } = default!;
-        [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-        [Inject] private ISnackbar Snackbar { get; set; } = default!;
-        [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
 
         private UpdateClubCommand _model = new();
         private ClubDetailsDTO? _club;
@@ -25,19 +22,10 @@ namespace HRKošarka.UI.Components.Pages.Club
 
         protected override async Task OnInitializedAsync()
         {
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            if (!authState.User.Identity?.IsAuthenticated ?? false)
-            {
-                NavigationManager.NavigateTo("/login");
-                return;
-            }
+            await base.OnInitializedAsync();
 
-            if (!authState.User.IsInRole("Administrator") && !authState.User.IsInRole("ClubManager"))
-            {
-                Snackbar.Add("You need Administrator or ClubManager privileges to edit clubs.", Severity.Warning);
-                NavigationManager.NavigateTo("/clubs");
-                return;
-            }
+            // Check permission for THIS specific club
+            await SetClubPermissions(Id);
 
             await LoadClubData();
         }
@@ -77,7 +65,7 @@ namespace HRKošarka.UI.Components.Pages.Club
                         PostalCode = _club.PostalCode ?? string.Empty,
                         VenueName = _club.VenueName ?? string.Empty,
                         VenueCapacity = _club.VenueCapacity,
-                        FoundedYear = new DateTimeOffset(new DateTime(_club.FoundedYear, 1, 1)) 
+                        FoundedYear = new DateTimeOffset(new DateTime(_club.FoundedYear, 1, 1))
                     };
                 }
                 else
@@ -110,8 +98,6 @@ namespace HRKošarka.UI.Components.Pages.Club
             }
         }
 
-
-
         private async Task HandleSubmit()
         {
             await _form.Validate();
@@ -119,6 +105,13 @@ namespace HRKošarka.UI.Components.Pages.Club
             if (!_form.IsValid)
             {
                 Snackbar.Add("Please fix the validation errors before submitting.", Severity.Warning);
+                return;
+            }
+
+            // Check permission before submitting
+            if (!HasPermission(CurrentPermissions.CanEdit))
+            {
+                Snackbar.Add("You don't have permission to edit this club", Severity.Warning);
                 return;
             }
 
@@ -292,8 +285,6 @@ namespace HRKošarka.UI.Components.Pages.Club
                 }
             }
         }
-
-
 
         private bool IsValidEmail(string email)
         {

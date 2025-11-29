@@ -1,28 +1,21 @@
-﻿using HRKošarka.UI.Contracts;
+﻿using HRKošarka.UI.Components.Base;
+using HRKošarka.UI.Contracts;
+using HRKošarka.UI.Models.UserManagement;
 using HRKošarka.UI.Services.Base;
 using HRKošarka.UI.Services.Base.Common.Requests;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 
 namespace HRKošarka.UI.Components.Pages.Club
 {
-    public partial class Clubs : ComponentBase, IDisposable
+    public partial class Clubs : PermissionBaseComponent, IDisposable
     {
         [Inject] public IClubService ClubService { get; set; } = default!;
-        [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
-        [Inject] public ISnackbar Snackbar { get; set; } = default!;
-        [Inject] public NavigationManager Navigation { get; set; } = default!;
 
         private MudTable<ClubDTO> _table = default!;
         private string _searchTerm = string.Empty;
         private bool _loading = false;
         private CancellationTokenSource _cancellationTokenSource = new();
-
-        private bool _canCreate = false;
-        private bool _canEdit = false;
-        private bool _canDeactivate = false;
-        private bool _canDelete = false;
 
         private bool _showDeleteDialog = false;
         private bool _showDeactivateDialog = false;
@@ -36,29 +29,24 @@ namespace HRKošarka.UI.Components.Pages.Club
             CloseButton = false,
             MaxWidth = MaxWidth.Small,
             FullWidth = true,
-
         };
 
         protected override async Task OnInitializedAsync()
         {
-            await SetRolePermissions();
+            await base.OnInitializedAsync();
+            await SetListPermissions();
         }
 
-        private async Task SetRolePermissions()
+        private async Task<UserPermissions> GetClubPermissions(Guid clubId)
         {
             try
             {
-                var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-                var user = authState.User;
-
-                _canCreate = user.IsInRole("Administrator");
-                _canEdit = user.IsInRole("Administrator") || user.IsInRole("ClubManager");
-                _canDeactivate = _canEdit;
-                _canDelete = user.IsInRole("Administrator");
+                return await PermissionService.GetPermissionsAsync(CurrentUser, clubId);
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Error setting permissions: {ex.Message}", Severity.Error);
+                Console.WriteLine($"Error getting club permissions: {ex.Message}");
+                return new UserPermissions();
             }
         }
 
@@ -140,7 +128,7 @@ namespace HRKošarka.UI.Components.Pages.Club
         {
             try
             {
-                Navigation.NavigateTo("/clubs/create");
+                NavigationManager.NavigateTo("/clubs/create");
             }
             catch (Exception ex)
             {
@@ -152,7 +140,7 @@ namespace HRKošarka.UI.Components.Pages.Club
         {
             try
             {
-                Navigation.NavigateTo($"/clubs/edit/{id}");
+                NavigationManager.NavigateTo($"/clubs/edit/{id}");
             }
             catch (Exception ex)
             {
@@ -164,7 +152,7 @@ namespace HRKošarka.UI.Components.Pages.Club
         {
             try
             {
-                Navigation.NavigateTo($"/clubs/{id}");
+                NavigationManager.NavigateTo($"/clubs/{id}");
             }
             catch (Exception ex)
             {
@@ -178,7 +166,7 @@ namespace HRKošarka.UI.Components.Pages.Club
             _selectedClubName = name;
             _showDeactivateDialog = true;
         }
-    
+
         private async Task ConfirmDeactivate()
         {
             try

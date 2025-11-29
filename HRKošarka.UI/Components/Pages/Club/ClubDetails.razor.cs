@@ -1,16 +1,15 @@
-﻿using HRKošarka.UI.Services.Base;
+﻿using HRKošarka.UI.Components.Base;
 using HRKošarka.UI.Contracts;
+using HRKošarka.UI.Services.Base;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace HRKošarka.UI.Components.Pages.Club
 {
-    public partial class ClubDetails
+    public partial class ClubDetails : PermissionBaseComponent
     {
         [Parameter] public Guid Id { get; set; }
         [Inject] private IClubService ClubService { get; set; } = default!;
-        [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-        [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
         private ClubDetailsDTO? _club;
         private bool _isLoading = true;
@@ -18,6 +17,7 @@ namespace HRKošarka.UI.Components.Pages.Club
         private bool _showDeactivateDialog = false;
         private bool _showActivateDialog = false;
         private bool _showDeleteDialog = false;
+
         private string DeactivateMessage =>
             _club is null
                 ? string.Empty
@@ -41,6 +41,7 @@ namespace HRKošarka.UI.Components.Pages.Club
 
         protected override async Task OnInitializedAsync()
         {
+            await base.OnInitializedAsync();
             await LoadClubDetails();
         }
 
@@ -55,6 +56,9 @@ namespace HRKošarka.UI.Components.Pages.Club
                 if (response.IsSuccess && response.Data != null)
                 {
                     _club = response.Data;
+
+                    // Set club-specific permissions
+                    await SetClubPermissions(Id);
                 }
                 else
                 {

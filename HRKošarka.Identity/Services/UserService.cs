@@ -28,7 +28,7 @@ namespace HRKošarka.Identity.Services
             };
         }
 
-        public async Task<List<User>> GetUsers() 
+        public async Task<List<User>> GetUsers()
         {
             var users = await _userManager.Users.ToListAsync();
             return users.Select(u => new User
@@ -45,6 +45,19 @@ namespace HRKošarka.Identity.Services
         {
             var teamReps = await _userManager.GetUsersInRoleAsync("TeamRepresentative");
             return teamReps.Select(u => new User
+            {
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                UserName = u.UserName,
+                Id = u.Id,
+            }).ToList();
+        }
+
+        public async Task<List<User>> GetClubManagers()
+        {
+            var clubManagers = await _userManager.GetUsersInRoleAsync("ClubManager");
+            return clubManagers.Select(u => new User
             {
                 Email = u.Email,
                 FirstName = u.FirstName,
