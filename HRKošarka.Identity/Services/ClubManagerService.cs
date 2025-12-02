@@ -102,6 +102,16 @@ namespace HRKošarka.Identity.Services
             user.ManagedClubId = null;
             await _userManager.UpdateAsync(user);
 
+            // Lock account
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                return ClubManagerResult.Failure("Failed to update user while removing club manager role");
+            }
+
             return ClubManagerResult.Success();
         }
 
