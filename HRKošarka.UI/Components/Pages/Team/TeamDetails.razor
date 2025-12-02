@@ -1,6 +1,8 @@
 ﻿@page "/teams/{id:guid}"
 @using MudBlazor
 @using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
 <PageTitle>Team Details - Basketball Management</PageTitle>
 
@@ -15,7 +17,6 @@
     else if (_team != null)
     {
         <MudPaper Class="details-paper" Elevation="2">
-            <!-- Action row, same as ClubDetails -->
             <div class="details-actions-row">
                 <div class="details-actions-group">
                     <AuditHistory DateCreated="@_team.DateCreated"
@@ -25,51 +26,56 @@
                                   ModifiedBy="@_team.ModifiedBy"
                                   DeletedBy="@_team.DeletedBy" />
 
-                    <AuthorizeView Roles="Administrator,ClubManager">
-                        <Authorized>
+                    @if (CurrentPermissions.CanEdit)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   OnClick="@(() =>
+                                   {
+                                       _newTeamName = _team.Name;
+                                       _showRenameDialog = true;
+                                   })"
+                                   Class="action-btn details-action-btn">
+                            Edit
+                        </MudButton>
+
+                        @if (_team.IsActive)
+                        {
                             <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Primary"
-                                       StartIcon="@Icons.Material.Filled.Edit"
-                                       OnClick="@(() => { _newTeamName = _team?.Name ?? string.Empty; _showRenameDialog = true; })"
-                                       Class="action-btn details-action-btn">
-                                Edit
-                            </MudButton>
-                            @if (_team.IsActive)
-                            {
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="Color.Warning"
-                                           StartIcon="@Icons.Material.Filled.Pause"
-                                           OnClick="DeactivateTeam"
-                                           Disabled="@_isProcessing"
-                                           Class="action-btn details-action-btn">
-                                    Deactivate
-                                </MudButton>
-                            }
-                            else
-                            {
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="Color.Success"
-                                           StartIcon="@Icons.Material.Filled.PlayArrow"
-                                           OnClick="ActivateTeam"
-                                           Disabled="@_isProcessing"
-                                           Class="action-btn details-action-btn">
-                                    Activate
-                                </MudButton>
-                            }
-                        </Authorized>
-                    </AuthorizeView>
-                    <AuthorizeView Roles="Administrator">
-                        <Authorized>
-                            <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Error"
-                                       StartIcon="@Icons.Material.Filled.Delete"
-                                       OnClick="DeleteTeam"
+                                       Color="Color.Warning"
+                                       StartIcon="@Icons.Material.Filled.Pause"
+                                       OnClick="DeactivateTeam"
                                        Disabled="@_isProcessing"
                                        Class="action-btn details-action-btn">
-                                Delete
+                                Deactivate
                             </MudButton>
-                        </Authorized>
-                    </AuthorizeView>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.PlayArrow"
+                                       OnClick="ActivateTeam"
+                                       Disabled="@_isProcessing"
+                                       Class="action-btn details-action-btn">
+                                Activate
+                            </MudButton>
+                        }
+                    }
+
+                    @if (CurrentPermissions.CanDelete)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Error"
+                                   StartIcon="@Icons.Material.Filled.Delete"
+                                   OnClick="DeleteTeam"
+                                   Disabled="@_isProcessing"
+                                   Class="action-btn details-action-btn">
+                            Delete
+                        </MudButton>
+                    }
+
                     <MudButton Variant="Variant.Text"
                                Color="Color.Secondary"
                                StartIcon="@Icons.Material.Filled.ArrowBack"
@@ -120,7 +126,7 @@
                                 <div class="info-item">
                                     <MudText Class="info-label">Gender</MudText>
                                     <MudText Class="info-value">
-                                        @(_team.Gender == Gender._0 ? "Male" : "Female")
+                                        @(_team.Gender == HRKošarka.UI.Services.Base.Gender._0 ? "Male" : "Female")
                                     </MudText>
                                 </div>
                                 <div class="info-item">
@@ -135,7 +141,6 @@
                         </div>
                     </ChildContent>
                 </MudExpansionPanel>
-                @* ADD FURTHER PANELS HERE if you have related entities (players, matches, etc) *@
             </MudExpansionPanels>
         </MudPaper>
     }
@@ -170,7 +175,6 @@
                      IsProcessing="_isProcessing"
                      OnConfirm="ConfirmDeactivate"
                      Options="_dialogOptions" />
-
 
 <ConfirmActionDialog Visible="_showActivateDialog"
                      VisibleChanged="v => _showActivateDialog = v"
@@ -264,4 +268,3 @@
         </div>
     </DialogActions>
 </MudDialog>
-

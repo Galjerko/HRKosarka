@@ -1,5 +1,8 @@
 ﻿@page "/teams"
 @using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@using HRKošarka.UI.Models.UserManagement
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
 <MudPaper Class="pa-4">
     <MudText Typo="Typo.h5" Class="mb-4">Teams Management</MudText>
@@ -98,6 +101,9 @@
         </HeaderContent>
 
         <RowTemplate>
+            @{
+                var teamPermissions = GetTeamPermissions(context.ClubId).Result;
+            }
             <MudTd DataLabel="Name">@context.Name</MudTd>
             <MudTd DataLabel="Club">@context.ClubName</MudTd>
             <MudTd DataLabel="Gender">@((context.Gender == Gender._0) ? "Male" : "Female")</MudTd>
@@ -109,22 +115,45 @@
             </MudTd>
             <MudTd DataLabel="Actions" Style="text-align: center">
                 <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
-                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Size="Size.Small" OnClick="@(() => ViewTeam(context.Id))" Title="View Details" />
-                    @if (_canEdit && context.IsActive)
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   OnClick="@(() => ViewTeam(context.Id))"
+                                   Title="View Details" />
+
+                    @if (teamPermissions.CanEdit && context.IsActive)
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Size="Size.Small" OnClick="@(() => EditTeam(context.Id, context.Name))" Title="Edit Team" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Secondary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditTeam(context.Id, context.Name))"
+                                       Title="Edit Team" />
                     }
-                    @if (_canDeactivate && context.IsActive)
+
+                    @if (teamPermissions.CanDeactivate && context.IsActive)
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.Block" Color="Color.Warning" Size="Size.Small" OnClick="@(() => DeactivateTeam(context.Id, context.Name))" Title="Deactivate Team" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Block"
+                                       Color="Color.Warning"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeactivateTeam(context.Id, context.Name))"
+                                       Title="Deactivate Team" />
                     }
-                    else @if (_canDeactivate && !context.IsActive)
+                    else if (teamPermissions.CanDeactivate && !context.IsActive)
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Small" OnClick="@(() => ActivateTeam(context.Id, context.Name))" Title="Activate Team" />
+                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       OnClick="@(() => ActivateTeam(context.Id, context.Name))"
+                                       Title="Activate Team" />
                     }
-                    @if (_canDelete)
+
+                    @if (teamPermissions.CanDelete)
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteTeam(context.Id, context.Name))" Title="Delete Team" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteTeam(context.Id, context.Name))"
+                                       Title="Delete Team" />
                     }
                 </MudButtonGroup>
             </MudTd>
@@ -153,6 +182,7 @@
     </MudTable>
 </MudPaper>
 
+<!-- All dialogs unchanged - same as your original -->
 <ConfirmActionDialog Visible="_showDeactivateDialog"
                      VisibleChanged="v => _showDeactivateDialog = v"
                      Title="Confirm Deactivation"
@@ -263,4 +293,3 @@
         </div>
     </DialogActions>
 </MudDialog>
-

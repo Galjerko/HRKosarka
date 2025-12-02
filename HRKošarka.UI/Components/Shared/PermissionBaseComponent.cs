@@ -45,7 +45,6 @@ namespace HRKošarka.UI.Components.Base
         {
             try
             {
-                // Set role-based permissions for list view
                 CanCreate = CurrentUser.IsInRole("Administrator");
                 CanEdit = CurrentUser.IsInRole("Administrator") || CurrentUser.IsInRole("ClubManager");
                 CanDeactivate = CanEdit;
@@ -69,12 +68,6 @@ namespace HRKošarka.UI.Components.Base
                 CurrentPermissions = await PermissionService.GetPermissionsAsync(CurrentUser!, clubId);
                 UserManagedClubId = CurrentPermissions.ManagedClubId;
 
-                // Redirect if user doesn't have permission
-                if (!CurrentPermissions.CanEdit)
-                {
-                    Snackbar.Add("You don't have permission to access this resource", Severity.Warning);
-                    NavigationManager.NavigateTo("/clubs");
-                }
             }
             catch (Exception ex)
             {
@@ -83,14 +76,8 @@ namespace HRKošarka.UI.Components.Base
             }
         }
 
-        protected bool HasPermission(bool permission)
-        {
-            return permission;
-        }
-
         async ValueTask IAsyncDisposable.DisposeAsync()
         {
-            // Cleanup if needed
             await ValueTask.CompletedTask;
         }
     }

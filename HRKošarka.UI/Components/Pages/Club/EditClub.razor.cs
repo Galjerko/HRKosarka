@@ -109,7 +109,7 @@ namespace HRKošarka.UI.Components.Pages.Club
             }
 
             // Check permission before submitting
-            if (!HasPermission(CurrentPermissions.CanEdit))
+            if (!CurrentPermissions.CanEdit)
             {
                 Snackbar.Add("You don't have permission to edit this club", Severity.Warning);
                 return;

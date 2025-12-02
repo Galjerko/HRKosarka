@@ -1,16 +1,16 @@
-﻿using HRKošarka.UI.Contracts;
+﻿using HRKošarka.UI.Components.Base;
+using HRKošarka.UI.Contracts;
 using HRKošarka.UI.Services.Base;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace HRKošarka.UI.Components.Pages.Team
 {
-    public partial class TeamDetails
+    public partial class TeamDetails : PermissionBaseComponent
     {
         [Parameter] public Guid Id { get; set; }
+
         [Inject] private ITeamService TeamService { get; set; } = default!;
-        [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-        [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
         private TeamDetailsDTO? _team;
         private bool _isLoading = true;
@@ -45,12 +45,14 @@ namespace HRKošarka.UI.Components.Pages.Team
 
         protected override async Task OnInitializedAsync()
         {
+            await base.OnInitializedAsync();
             await LoadTeamDetails();
         }
 
         private async Task LoadTeamDetails()
         {
             _isLoading = true;
+
             try
             {
                 var response = await TeamService.GetTeamDetails(Id);
@@ -58,14 +60,21 @@ namespace HRKošarka.UI.Components.Pages.Team
                 if (response.IsSuccess && response.Data != null)
                 {
                     _team = response.Data;
-                    _newTeamName = _team?.Name ?? string.Empty;
+                    _newTeamName = _team.Name;
+
+                    // team belongs to a club -> permissions are per club
+                    await SetClubPermissions(_team.ClubId);
                 }
                 else
                 {
+                    _team = null;
+
                     if (response.Errors?.Any() == true)
                     {
                         foreach (var error in response.Errors)
+                        {
                             Snackbar.Add(error, Severity.Error);
+                        }
                     }
                     else
                     {
@@ -86,7 +95,11 @@ namespace HRKošarka.UI.Components.Pages.Team
 
         private async Task ConfirmRename()
         {
-            if (_team == null) return;
+            if (_team == null)
+            {
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(_newTeamName) || _newTeamName == _team.Name)
             {
                 _showRenameDialog = false;
@@ -108,16 +121,22 @@ namespace HRKošarka.UI.Components.Pages.Team
                 if (result.IsSuccess)
                 {
                     Snackbar.Add("Team renamed successfully.", Severity.Success);
-                    await LoadTeamDetails();
                     _showRenameDialog = false;
+                    await LoadTeamDetails();
                 }
                 else
                 {
                     if (result.Errors?.Any() == true)
+                    {
                         foreach (var error in result.Errors)
+                        {
                             Snackbar.Add(error, Severity.Error);
+                        }
+                    }
                     else
+                    {
                         Snackbar.Add(result.Message ?? "Failed to rename team.", Severity.Error);
+                    }
                 }
             }
             catch (Exception ex)
@@ -131,7 +150,6 @@ namespace HRKošarka.UI.Components.Pages.Team
             }
         }
 
-
         private void DeactivateTeam()
         {
             _showDeactivateDialog = true;
@@ -139,7 +157,11 @@ namespace HRKošarka.UI.Components.Pages.Team
 
         private async Task ConfirmDeactivate()
         {
-            if (_team == null) return;
+            if (_team == null)
+            {
+                return;
+            }
+
             _isProcessing = true;
 
             try
@@ -157,7 +179,9 @@ namespace HRKošarka.UI.Components.Pages.Team
                     if (response.Errors?.Any() == true)
                     {
                         foreach (var error in response.Errors)
+                        {
                             Snackbar.Add(error, Severity.Error);
+                        }
                     }
                     else
                     {
@@ -183,7 +207,11 @@ namespace HRKošarka.UI.Components.Pages.Team
 
         private async Task ConfirmDelete()
         {
-            if (_team == null) return;
+            if (_team == null)
+            {
+                return;
+            }
+
             _isProcessing = true;
 
             try
@@ -200,7 +228,9 @@ namespace HRKošarka.UI.Components.Pages.Team
                     if (response.Errors?.Any() == true)
                     {
                         foreach (var error in response.Errors)
+                        {
                             Snackbar.Add(error, Severity.Error);
+                        }
                     }
                     else
                     {
@@ -226,7 +256,10 @@ namespace HRKošarka.UI.Components.Pages.Team
 
         private async Task ConfirmActivate()
         {
-            if (_team == null) return;
+            if (_team == null)
+            {
+                return;
+            }
 
             _isProcessing = true;
 

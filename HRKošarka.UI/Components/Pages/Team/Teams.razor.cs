@@ -1,35 +1,75 @@
-﻿using HRKošarka.UI.Contracts;
+﻿using HRKošarka.UI.Components.Base;
+using HRKošarka.UI.Contracts;
+using HRKošarka.UI.Models.UserManagement;
 using HRKošarka.UI.Services.Base;
 using HRKošarka.UI.Services.Base.Common.Requests;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 
 namespace HRKošarka.UI.Components.Pages.Team
 {
-    public partial class Teams : ComponentBase, IDisposable
+    public partial class Teams : PermissionBaseComponent, IDisposable
     {
         [Inject] public ITeamService TeamService { get; set; } = default!;
         [Inject] public IAgeCategoryService AgeCategoryService { get; set; } = default!;
-        [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
-        [Inject] public ISnackbar Snackbar { get; set; } = default!;
-        [Inject] public NavigationManager Navigation { get; set; } = default!;
 
         private MudTable<TeamDTO> _table = default!;
         private string _searchTerm = string.Empty;
         private bool _loading = false;
         private CancellationTokenSource _cancellationTokenSource = new();
 
-        private bool _canCreate = false;
-        private bool _canEdit = false;
-        private bool _canDeactivate = false;
-        private bool _canDelete = false;
         private Guid? _filterAgeCategory = null;
-        private string? _selectedTeamName;
-        private bool _showRenameDialog = false;
+        private Gender? _filterGender = null;
+        private bool? _filterActive = null;
+
+        private bool _showDeleteDialog = false;
+        private bool _showDeactivateDialog = false;
         private bool _showActivateDialog = false;
+        private bool _showRenameDialog = false;
+        private Guid _selectedTeamId = Guid.Empty;
+        private string? _selectedTeamName;
         private string _newTeamName = string.Empty;
         private bool _isRenaming = false;
+
+        private readonly int[] _pageSizeOptions = { 10, 25, 50, 100 };
+        private readonly DialogOptions _dialogOptions = new()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+        };
+
+        private List<AgeCategoryDTO> _ageCategories = new();
+
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+            // REMOVED SetListPermissions() - using per-club permissions instead
+            await LoadAgeCategories();
+        }
+
+        private async Task LoadAgeCategories()
+        {
+            var result = await AgeCategoryService.GetAllAgeCategories();
+            if (result.IsSuccess && result.Data != null)
+                _ageCategories = result.Data;
+        }
+
+        private async Task<UserPermissions> GetTeamPermissions(Guid clubId)
+        {
+            try
+            {
+                if (CurrentUser == null)
+                    await LoadUserContext();
+
+                return await PermissionService.GetPermissionsAsync(CurrentUser!, clubId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting team permissions: {ex.Message}");
+                return new UserPermissions();
+            }
+        }
 
         public Guid? FilterAgeCategory
         {
@@ -44,7 +84,6 @@ namespace HRKošarka.UI.Components.Pages.Team
             }
         }
 
-        private Gender? _filterGender = null;
         public Gender? FilterGender
         {
             get => _filterGender;
@@ -58,7 +97,6 @@ namespace HRKošarka.UI.Components.Pages.Team
             }
         }
 
-        private bool? _filterActive = null;
         public bool? FilterActive
         {
             get => _filterActive;
@@ -70,32 +108,6 @@ namespace HRKošarka.UI.Components.Pages.Team
                     _ = OnFilterChanged();
                 }
             }
-        }
-
-        private bool _showDeleteDialog = false;
-        private bool _showDeactivateDialog = false;
-        private Guid _selectedTeamId = Guid.Empty;
-
-        private readonly int[] _pageSizeOptions = { 10, 25, 50, 100 };
-        private readonly DialogOptions _dialogOptions = new()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.Small,
-            FullWidth = true,
-        };
-
-        private List<AgeCategoryDTO> _ageCategories = new();
-        protected override async Task OnInitializedAsync()
-        {
-            await SetRolePermissions();
-            await LoadAgeCategories();
-        }
-
-        private async Task LoadAgeCategories()
-        {
-            var result = await AgeCategoryService.GetAllAgeCategories();
-            if (result.IsSuccess && result.Data != null)
-                _ageCategories = result.Data;
         }
 
         private async Task OnSearchChanged()
@@ -110,23 +122,13 @@ namespace HRKošarka.UI.Components.Pages.Team
                 await _table.ReloadServerData();
         }
 
-        private async Task SetRolePermissions()
+        private void ResetFilters()
         {
-            try
-            {
-                var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-                var user = authState.User;
-
-                _canCreate = user.IsInRole("Administrator") || user.IsInRole("ClubManager");
-                _canEdit = user.IsInRole("Administrator") || user.IsInRole("ClubManager");
-                _canDeactivate = _canEdit;
-                _canDelete = user.IsInRole("Administrator");
-
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Error setting permissions: {ex.Message}", Severity.Error);
-            }
+            FilterAgeCategory = null;
+            FilterGender = null;
+            FilterActive = null;
+            _searchTerm = string.Empty;
+            OnFilterChanged();
         }
 
         private async Task<TableData<TeamDTO>> LoadServerData(TableState state, CancellationToken token)
@@ -198,6 +200,16 @@ namespace HRKošarka.UI.Components.Pages.Team
             }
         }
 
+        private void ViewTeam(Guid id)
+        {
+            NavigationManager.NavigateTo($"/teams/{id}");
+        }
+
+        private void CreateTeam()
+        {
+            NavigationManager.NavigateTo("/teams/create");
+        }
+
         private void EditTeam(Guid id, string name)
         {
             _selectedTeamId = id;
@@ -208,10 +220,7 @@ namespace HRKošarka.UI.Components.Pages.Team
 
         private async Task ConfirmRename()
         {
-            if (_selectedTeamId == Guid.Empty)
-            {
-                return;
-            }
+            if (_selectedTeamId == Guid.Empty) return;
 
             var trimmed = _newTeamName?.Trim();
             if (string.IsNullOrWhiteSpace(trimmed) || trimmed == _selectedTeamName)
@@ -255,19 +264,6 @@ namespace HRKošarka.UI.Components.Pages.Team
             finally
             {
                 _isRenaming = false;
-            }
-        }
-
-
-        private void ViewTeam(Guid id)
-        {
-            try
-            {
-                Navigation.NavigateTo($"/teams/{id}");
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Navigation error: {ex.Message}", Severity.Error);
             }
         }
 
@@ -337,14 +333,6 @@ namespace HRKošarka.UI.Components.Pages.Team
                 _showActivateDialog = false;
                 _selectedTeamId = Guid.Empty;
             }
-        }
-        private void ResetFilters()
-        {
-            FilterAgeCategory = null;
-            FilterGender = null;
-            FilterActive = null;
-            _searchTerm = string.Empty;
-            OnFilterChanged();
         }
 
         private void DeleteTeam(Guid id, string name)
