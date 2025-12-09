@@ -32,9 +32,12 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 
+//TODO: add static helpers for service registrations
 builder.Services.AddScoped<IAgeCategoryService, AgeCategoryService>();
 builder.Services.AddScoped<IClubService, ClubService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserPermissionCacheService, UserPermissionCacheService>();
 builder.Services.AddScoped<IPermissionService, UserPermissionCacheService>();

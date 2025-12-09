@@ -46,6 +46,13 @@
                     <MudForm @ref="_form" @bind-IsValid="@_isFormValid">
                         <MudGrid Spacing="4">
                             <MudItem xs="12">
+                                <ImageUpload Label="Club Logo"
+                                             InitialImageName="_club?.ImageName"
+                                             InitialImageContentType="_club?.ImageContentType"
+                                             InitialImageBytes="_club?.ImageBytes"
+                                             OnImageChanged="OnImageChanged" />
+                            </MudItem>
+                            <MudItem xs="12">
                                 <MudText Typo="Typo.h6" Class="section-title">
                                     <MudIcon Icon="@Icons.Material.Filled.Info" Class="section-icon" />
                                     Basic Information
@@ -100,18 +107,6 @@
                                                  RequiredError="Founded year is required"
                                                  Validation="@(new Func<int?, IEnumerable<string>>(ValidateFoundedYearNumeric))" />
                             </MudItem>
-
-                            <MudItem xs="12" md="6">
-                                <MudTextField @bind-Value="_model.LogoUrl"
-                                              Label="Logo URL (Optional)"
-                                              Variant="Variant.Text"
-                                              Adornment="Adornment.Start"
-                                              AdornmentIcon="@Icons.Material.Filled.Image"
-                                              Counter="500"
-                                              MaxLength="500"
-                                              Validation="@(new Func<string, IEnumerable<string>>(ValidateUrl))" />
-                            </MudItem>
-
                             <MudItem xs="12">
                                 <MudText Typo="Typo.h6" Class="section-title">
                                     <MudIcon Icon="@Icons.Material.Filled.ContactMail" Class="section-icon" />

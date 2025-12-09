@@ -36,8 +36,13 @@ namespace HRKošarka.Domain
 
         public bool IsActive => DeactivateDate == null;
 
-        [MaxLength(500)]
-        public string? LogoUrl { get; set; }
+        [MaxLength(255)]
+        public string? ImageName { get; set; }
+
+        [MaxLength(100)]
+        public string? ImageContentType { get; set; }
+
+        public byte[]? ImageBytes { get; set; }
 
         [MaxLength(200)]
         public string? VenueName { get; set; }

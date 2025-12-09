@@ -1,0 +1,56 @@
+﻿@using MudBlazor
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="image-upload-container">
+    <MudText Typo="Typo.subtitle2" Class="upload-label">
+        <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Small" />
+        @Label
+    </MudText>
+
+    @if (!string.IsNullOrEmpty(ImagePreviewUrl))
+    {
+        <div class="image-center">
+            <img src="@ImagePreviewUrl" alt="Logo" class="logo-preview" />
+        </div>
+
+        <div class="buttons-row">
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnFilesChanged" Accept=".jpg,.jpeg,.png">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Edit">
+                        CHANGE
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Error"
+                       Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.Delete"
+                       OnClick="OnDeleteImage">
+                DELETE
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <div class="upload-placeholder">
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnFilesChanged" Accept=".jpg,.jpeg,.png">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudUpload">
+                        SELECT IMAGE
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2">@Error</MudAlert>
+    }
+</div>

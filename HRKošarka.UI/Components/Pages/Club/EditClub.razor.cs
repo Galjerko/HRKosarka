@@ -24,7 +24,6 @@ namespace HRKošarka.UI.Components.Pages.Club
         {
             await base.OnInitializedAsync();
 
-            // Check permission for THIS specific club
             await SetClubPermissions(Id);
 
             await LoadClubData();
@@ -57,7 +56,6 @@ namespace HRKošarka.UI.Components.Pages.Club
                         Name = _club.Name ?? string.Empty,
                         City = _club.City ?? string.Empty,
                         Description = _club.Description ?? string.Empty,
-                        LogoUrl = _club.LogoUrl ?? string.Empty,
                         Email = _club.Email ?? string.Empty,
                         PhoneNumber = _club.PhoneNumber ?? string.Empty,
                         Website = _club.Website ?? string.Empty,
@@ -155,6 +153,13 @@ namespace HRKošarka.UI.Components.Pages.Club
             {
                 _isProcessing = false;
             }
+        }
+
+        private async Task OnImageChanged((string? name, string? contentType, byte[]? bytes) image)
+        {
+            _model.ImageName = image.name;
+            _model.ImageContentType = image.contentType;
+            _model.ImageBytes = image.bytes;
         }
 
         private IEnumerable<string> ValidateClubName(string name)

@@ -32,6 +32,14 @@ namespace HRKošarka.Domain
 
         public bool IsActive => DeactivateDate == null;
 
+        [MaxLength(255)]
+        public string? ImageName { get; set; }
+
+        [MaxLength(100)]
+        public string? ImageContentType { get; set; }
+
+        public byte[]? ImageBytes { get; set; }
+
         public virtual ICollection<PlayerTeamHistory> TeamHistory { get; set; } = new List<PlayerTeamHistory>();
         public virtual ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
         public virtual ICollection<PlayerSeasonStats> SeasonStats { get; set; } = new List<PlayerSeasonStats>();

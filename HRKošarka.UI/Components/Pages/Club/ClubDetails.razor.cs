@@ -86,6 +86,17 @@ namespace HRKošarka.UI.Components.Pages.Club
             }
         }
 
+        private string? GetLogoUrl()
+        {
+            if (_club?.ImageBytes != null && _club.ImageBytes.Length > 0 &&
+                !string.IsNullOrEmpty(_club.ImageContentType))
+            {
+                var base64 = Convert.ToBase64String(_club.ImageBytes);
+                return $"data:{_club.ImageContentType};base64,{base64}";
+            }
+            return null;
+        }
+
         private void DeactivateClub()
         {
             _showDeactivateDialog = true;

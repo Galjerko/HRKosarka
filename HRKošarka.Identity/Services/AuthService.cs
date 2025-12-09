@@ -20,7 +20,7 @@ namespace HRKošarka.Identity.Services
         {
             _userManager = userManager;
             _jwtSettings = jwtSettings.Value;
-            _signInManager = signInManager; 
+            _signInManager = signInManager;
         }
         public async Task<AuthResponse> Login(AuthRequest request)
         {
@@ -63,7 +63,7 @@ namespace HRKošarka.Identity.Services
         private async Task<JwtSecurityToken> GenerateToken(ApplicationUser user)
         {
             var userClaims = await _userManager.GetClaimsAsync(user);
-            var roles = await _userManager.GetRolesAsync(user); 
+            var roles = await _userManager.GetRolesAsync(user);
 
             var roleClaims = roles.Select(role => new Claim(ClaimTypes.Role, role)).ToList();
             var claims = new List<Claim>
@@ -72,7 +72,7 @@ namespace HRKošarka.Identity.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("uid", user.Id)
-            }.Union(userClaims).Union(roleClaims);  
+            }.Union(userClaims).Union(roleClaims);
 
             var symmetricSecurityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtSettings.Key));
 
@@ -102,7 +102,7 @@ namespace HRKošarka.Identity.Services
 
             var result = await _userManager.CreateAsync(user, request.Password);
 
-            if(result.Succeeded)
+            if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, "RegularUser");
                 return new RegistrationResponse()

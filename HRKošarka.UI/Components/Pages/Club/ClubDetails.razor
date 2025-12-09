@@ -86,16 +86,25 @@
             </div>
 
             <div class="details-info-row">
-                <MudAvatar Size="Size.Large" Class="details-logo">
-                    @if (!string.IsNullOrEmpty(_club.LogoUrl))
+                @{
+                    var logoUrl = GetLogoUrl();
+                }
+
+                <div class="logo-wrapper">
+                    @if (!string.IsNullOrEmpty(logoUrl))
                     {
-                        <MudImage Src="@_club.LogoUrl" Alt="@_club.Name" Style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />
+                        <MudImage Src="@logoUrl"
+                                  Alt="@_club.Name"
+                                  Class="logo-image" />
                     }
                     else
                     {
-                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" />
+                        <MudAvatar Class="logo-fallback">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" />
+                        </MudAvatar>
                     }
-                </MudAvatar>
+                </div>
+
                 <MudText Typo="Typo.h3" Class="details-name">@_club.Name</MudText>
                 <MudChip T="string"
                          Color="@(_club.IsActive ? Color.Success : Color.Error)"
@@ -104,6 +113,7 @@
                     @(_club.IsActive ? "Active" : "Inactive")
                 </MudChip>
             </div>
+
 
             <MudDivider Class="my-4" />
 
@@ -134,7 +144,7 @@
                             <div class="info-row">
                                 <div class="info-item">
                                     <MudText Class="info-label">Status</MudText>
-                                    <MudText Class="info-value" Color="@(_club.IsActive ? Color.Success : Color.Error)">
+                                    <MudText Class="info-value" Color="@(_club.IsActive? Color.Success: Color.Error)">
                                         @(_club.IsActive ? "Active" : $"Deactivated on {_club.DeactivateDate?.ToString("dd/MM/yyyy")}")
                                     </MudText>
                                 </div>

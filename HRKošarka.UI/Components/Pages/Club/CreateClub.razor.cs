@@ -84,6 +84,13 @@ namespace HRKošarka.UI.Components.Pages.Club
             }
         }
 
+        private void OnImageChanged((string? name, string? contentType, byte[]? bytes) image)
+        {
+            _model.ImageName = image.name;
+            _model.ImageContentType = image.contentType;
+            _model.ImageBytes = image.bytes;
+        }
+
         private IEnumerable<string> ValidateClubName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))

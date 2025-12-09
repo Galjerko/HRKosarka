@@ -13,7 +13,9 @@
         public int FoundedYear { get; set; }
         public DateTime? DeactivateDate { get; set; }
         public bool IsActive => DeactivateDate == null;
-        public string? LogoUrl { get; set; }
+        public byte[]? ImageBytes { get; set; }
+        public string? ImageContentType { get; set; }
+        public string? ImageName { get; set; }
         public string? VenueName { get; set; }
         public int? VenueCapacity { get; set; }
 

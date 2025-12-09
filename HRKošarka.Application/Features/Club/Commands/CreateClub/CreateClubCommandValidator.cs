@@ -45,9 +45,6 @@ namespace HRKošarka.Application.Features.Club.Commands.CreateClub
                 .MaximumLength(20).WithMessage("Postal code must not exceed 20 characters.")
                 .When(c => !string.IsNullOrEmpty(c.PostalCode));
 
-            RuleFor(c => c.LogoUrl)
-                .MaximumLength(500).WithMessage("Logo URL must not exceed 500 characters.")
-                .When(c => !string.IsNullOrEmpty(c.LogoUrl));
 
             RuleFor(c => c.VenueName)
                 .MaximumLength(200).WithMessage("Venue name must not exceed 200 characters.")
@@ -60,6 +57,10 @@ namespace HRKošarka.Application.Features.Club.Commands.CreateClub
             RuleFor(c => c)
                 .MustAsync(ClubNameUnique)
                 .WithMessage("Club with that name already exists");
+
+            RuleFor(c => c.ImageName)
+                 .MaximumLength(255).WithMessage("Image name must not exceed 255 characters.")
+                 .When(c => !string.IsNullOrEmpty(c.ImageName));
         }
 
         private async Task<bool> ClubNameUnique(CreateClubCommand command, CancellationToken token)

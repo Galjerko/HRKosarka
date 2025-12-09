@@ -1,6 +1,5 @@
 ﻿using HRKošarka.Domain.Common;
 using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
 
 namespace HRKošarka.Domain
 {
@@ -31,6 +30,14 @@ namespace HRKošarka.Domain
         public int NumberOfRounds { get; set; } = 1; // For double round-robin = 2
 
         public bool IsActive { get; set; } = true;
+
+        [MaxLength(255)]
+        public string? ImageName { get; set; }
+
+        [MaxLength(100)]
+        public string? ImageContentType { get; set; }
+
+        public byte[]? ImageBytes { get; set; }
 
         public virtual Season Season { get; set; } = null!;
         public virtual AgeCategory AgeCategory { get; set; } = null!;
