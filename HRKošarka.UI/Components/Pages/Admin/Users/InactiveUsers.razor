@@ -1,0 +1,83 @@
+﻿@page "/admin/users/inactive"
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<AuthorizeView Roles="Administrator">
+    <Authorized>
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h5" Class="mb-4">Inactive users</MudText>
+
+            <MudTextField @bind-Value="_searchTerm"
+                          Placeholder="Search by email or name..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4"
+                          Immediate="true"
+                          DebounceInterval="300"
+                          OnDebounceIntervalElapsed="OnSearchChanged" />
+
+            <MudTable @ref="_table"
+                      ServerData="LoadServerData"
+                      Loading="_loading"
+                      Hover="true"
+                      Striped="true"
+                      Dense="true"
+                      FixedHeader="true"
+                      Height="600px">
+
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Locked out users</MudText>
+                </ToolBarContent>
+
+                <HeaderContent>
+                    <MudTh>Full name</MudTh>
+                    <MudTh>Email</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+
+                <RowTemplate Context="user">
+                    <MudTd DataLabel="Full name">@user.FullName</MudTd>
+                    <MudTd DataLabel="Email">@user.Email</MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudIconButton Color="Color.Success"
+                                       Variant="Variant.Outlined"
+                                       Size="Size.Small"
+                                       Icon="@Icons.Material.Filled.LockOpen"
+                                       title="Unlock user"
+                                       OnClick="@(() => UnlockUserAsync(user))" />
+                    </MudTd>
+                </RowTemplate>
+
+
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                        @if (!string.IsNullOrWhiteSpace(_searchTerm))
+                        {
+                            <span>No inactive users found matching "@_searchTerm"</span>
+                        }
+                        else
+                        {
+                            <span>No inactive users</span>
+                        }
+                    </MudText>
+                </NoRecordsContent>
+
+                <LoadingContent>
+                    <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                        Loading users...
+                    </MudText>
+                </LoadingContent>
+
+                <PagerContent>
+                    <MudTablePager Class="styled-dropdown"
+                                   HidePageNumber="false"
+                                   PageSizeOptions="@_pageSizeOptions" />
+                </PagerContent>
+            </MudTable>
+        </MudPaper>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>

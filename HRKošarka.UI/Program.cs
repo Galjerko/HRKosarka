@@ -5,9 +5,12 @@ using HRKošarka.UI.Contracts;
 using HRKošarka.UI.Providers;
 using HRKošarka.UI.Services;
 using HRKošarka.UI.Services.Base;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.IdentityModel.Tokens;
 using MudBlazor.Services;
 using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,16 +30,45 @@ builder.Services.AddHttpClient<IClient, Client>(client =>
 
 builder.Services.AddBlazoredLocalStorage();
 
-// NO server-side auth - only Blazor client-side auth
+var jwtSection = builder.Configuration.GetSection("JwtSettings");
+var keyBytes = Encoding.UTF8.GetBytes(jwtSection["Key"]!);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = true;
+    options.SaveToken = true;
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = jwtSection["Issuer"],
+
+        ValidateAudience = true,
+        ValidAudience = jwtSection["Audience"],
+
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromMinutes(1)
+    };
+});
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 
-//TODO: add static helpers for service registrations
 builder.Services.AddScoped<IAgeCategoryService, AgeCategoryService>();
 builder.Services.AddScoped<IClubService, ClubService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
-builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserPermissionCacheService, UserPermissionCacheService>();
@@ -54,9 +86,14 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+   .AddInteractiveServerRenderMode();
 
 app.Run();

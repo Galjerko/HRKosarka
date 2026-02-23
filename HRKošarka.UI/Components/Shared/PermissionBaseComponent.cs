@@ -13,6 +13,7 @@ namespace HRKošarka.UI.Components.Base
         [Inject] protected AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
         [Inject] protected ISnackbar Snackbar { get; set; } = default!;
         [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
+        [Inject] protected IDialogService DialogService { get; set; } = default!;
 
         protected UserPermissions CurrentPermissions { get; set; } = new();
         protected ClaimsPrincipal? CurrentUser { get; set; }

@@ -24,6 +24,17 @@ namespace HRKošarka.Identity.Services
                 return ClubManagerResult.Failure("User not found");
             }
 
+            var roles = await _userManager.GetRolesAsync(user);
+
+            const string regularRole = "RegularUser";
+            const string clubManagerRole = "ClubManager";
+
+            if (!roles.Contains(regularRole) || roles.Count != 1)
+            {
+                return ClubManagerResult.Failure("Only Regular users can be upgraded to ClubManager.");
+            }
+
+
             // Check if club already has a manager (excluding current user)
             var existingClubManagers = await _userManager.Users
                 .Where(u => u.ManagedClubId == clubId)
@@ -41,15 +52,19 @@ namespace HRKošarka.Identity.Services
                 return ClubManagerResult.Failure($"User is already assigned to another club (ClubId: {user.ManagedClubId})");
             }
 
-            // Check if this user already has ClubManager role. If not, add it.
-            if (!await _userManager.IsInRoleAsync(user, "ClubManager"))
+            var removeRegular = await _userManager.RemoveFromRoleAsync(user, regularRole);
+            if (!removeRegular.Succeeded)
             {
-                var roleResult = await _userManager.AddToRoleAsync(user, "ClubManager");
-                if (!roleResult.Succeeded)
-                {
-                    return ClubManagerResult.Failure("Failed to assign ClubManager role");
-                }
+                return ClubManagerResult.Failure("Failed to remove Regular role from user.");
             }
+
+
+            var addClubManager = await _userManager.AddToRoleAsync(user, clubManagerRole);
+            if (!addClubManager.Succeeded)
+            {
+                return ClubManagerResult.Failure("Failed to assign ClubManager role.");
+            }
+
 
             // Get all claims for this user and find old ClubId claim (if exists)
             var existingClaims = await _userManager.GetClaimsAsync(user);

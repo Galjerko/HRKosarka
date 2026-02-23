@@ -1,4 +1,5 @@
 ﻿using HRKošarka.Application.Contracts.Persistence;
+using HRKošarka.Application.Features.Club.Queries.GetClubsWIthoutManager;
 using HRKošarka.Domain;
 using HRKošarka.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,31 @@ namespace HRKošarka.Persistence.Repositories
                 .Include(c => c.Teams.Where(t => t.DateDeleted == null))
                     .ThenInclude(t => t.AgeCategory)
                 .FirstOrDefaultAsync(c => c.Id == clubId);
+        }
+
+        public async Task<List<ClubWithoutManagerDTO>> GetClubsWithoutManagerAsync(
+                List<Guid> managedClubIds,
+                string? searchTerm,
+                CancellationToken cancellationToken = default)
+        {
+            var query = _context.Clubs
+                .AsNoTracking()
+                .Where(c => c.DeactivateDate == null && !managedClubIds.Contains(c.Id));
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+                query = query.Where(c => c.Name.ToLower().Contains(term));
+            }
+
+            return await query
+                .OrderBy(c => c.Name)
+                .Select(c => new ClubWithoutManagerDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name
+                })
+                .ToListAsync(cancellationToken);
         }
     }
 }

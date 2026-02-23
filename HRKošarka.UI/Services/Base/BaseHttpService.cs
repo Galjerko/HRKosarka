@@ -166,6 +166,38 @@ namespace HRKošarka.UI.Services.Base
         }
         #endregion
 
+        #region Exception Conversion - SimpleResponse
+        protected SimpleResponse ConvertApiExceptionsToSimple(ApiException<ProblemDetails> ex)
+        {
+            var message = ex.Result?.Title ?? GetUserFriendlyMessage(ex.StatusCode);
+            var errors = new List<string>();
+
+            if (!string.IsNullOrEmpty(ex.Result?.Detail))
+            {
+                errors.Add(ex.Result.Detail);
+            }
+
+            return new SimpleResponse
+            {
+                IsSuccess = false,
+                Message = message,
+                Errors = errors
+            };
+        }
+
+        protected SimpleResponse ConvertApiExceptionsToSimple(ApiException ex)
+        {
+            var message = GetUserFriendlyMessage(ex.StatusCode);
+
+            return new SimpleResponse
+            {
+                IsSuccess = false,
+                Message = message,
+                Errors = new List<string> { message }
+            };
+        }
+        #endregion
+
         #region Helper Methods
         private string GetUserFriendlyMessage(int statusCode)
         {

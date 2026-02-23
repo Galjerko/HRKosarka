@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
 
 namespace HRKošarka.Identity
@@ -31,11 +32,14 @@ namespace HRKošarka.Identity
                 options.Password.RequireUppercase = false;
             });
 
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<HRIdentityDbContext>().AddDefaultTokenProviders();
 
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddScoped<IUserReadService, UserReadService>();
 
             services.AddScoped<IClubManagerService, ClubManagerService>();
             services.AddScoped<IClubAuthorizationService, ClubAuthorizationService>();

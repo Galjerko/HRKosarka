@@ -1,0 +1,107 @@
+﻿@page "/admin/users"
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@using HRKošarka.UI.Models.UserManagement
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<AuthorizeView Roles="Administrator">
+    <Authorized>
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h5" Class="mb-4">User management</MudText>
+
+            <MudTextField @bind-Value="_searchTerm"
+                          Placeholder="Search by email or name..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4"
+                          Immediate="true"
+                          DebounceInterval="300"
+                          OnDebounceIntervalElapsed="OnSearchChanged" />
+
+            <MudTable @ref="_table"
+                      ServerData="LoadServerData"
+                      Loading="_loading"
+                      Hover="true"
+                      Striped="true"
+                      Dense="true"
+                      FixedHeader="true"
+                      Height="600px">
+
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Active users</MudText>
+                </ToolBarContent>
+
+                <HeaderContent>
+                    <MudTh>Full name</MudTh>
+                    <MudTh>Email</MudTh>
+                    <MudTh>Club</MudTh>
+                    <MudTh>Role</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+
+                <RowTemplate Context="user">
+                    <MudTd DataLabel="Full name">@user.FullName</MudTd>
+                    <MudTd DataLabel="Email">@user.Email</MudTd>
+                    <MudTd DataLabel="Club">@user.ManagedClubName</MudTd>
+                    <MudTd DataLabel="Role">@user.Role</MudTd>
+                    <MudTd DataLabel="Actions">
+                        @if (user.Role == "Regular user")
+                        {
+                            <MudIconButton Color="Color.Primary"
+                                           Variant="Variant.Outlined"
+                                           Size="Size.Small"
+                                           Icon="@Icons.Material.Filled.GroupAdd"
+                                           Class="me-1"
+                                           title="Assign to club"
+                                           OnClick="@(() => OpenAssignClubDialog(user))" />
+
+                            <MudIconButton Color="Color.Error"
+                                           Variant="Variant.Outlined"
+                                           Size="Size.Small"
+                                           Icon="@Icons.Material.Filled.LockPerson"
+                                           title="Lock out"
+                                           OnClick="@(() => LockOutUserAsync(user))" />
+                        }
+                        else if (user.Role == "Club manager")
+                        {
+                            <MudIconButton Color="Color.Warning"
+                                           Variant="Variant.Outlined"
+                                           Size="Size.Small"
+                                           Icon="@Icons.Material.Filled.PersonRemove"
+                                           title="Remove club manager role"
+                                           OnClick="@(() => RemoveClubManagerAsync(user))" />
+                        }
+                    </MudTd>
+                </RowTemplate>
+
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                        @if (!string.IsNullOrWhiteSpace(_searchTerm))
+                        {
+                            <span>No users found matching "@_searchTerm"</span>
+                        }
+                        else
+                        {
+                            <span>No users available</span>
+                        }
+                    </MudText>
+                </NoRecordsContent>
+
+                <LoadingContent>
+                    <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                        Loading users...
+                    </MudText>
+                </LoadingContent>
+
+                <PagerContent>
+                    <MudTablePager Class="styled-dropdown"
+                                   HidePageNumber="false"
+                                   PageSizeOptions="@_pageSizeOptions" />
+                </PagerContent>
+            </MudTable>
+        </MudPaper>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>

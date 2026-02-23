@@ -1,13 +1,16 @@
-﻿using HRKošarka.Application.Models.Identity;
+﻿using HRKošarka.Application.Features.User.Queries.GetInactiveUsers;
+using HRKošarka.Application.Features.User.Queries.GetNonAdminUsers;
+using HRKošarka.Application.Models.Responses;
 
 namespace HRKošarka.Application.Contracts.Identity
 {
     public interface IUserService
     {
-        Task<User> GetUser(string userId);
-        Task<List<User>> GetUsers();
-        Task<List<User>> GetTeamRepresentatives();
+        Task<PaginatedResponse<NonAdminUserDTO>> GetNonAdminUsersPagedAsync(GetNonAdminUsersQuery request);
 
-        Task<List<User>> GetClubManagers();
+        Task<PaginatedResponse<InactiveUserDTO>> GeInactiveUsersPagedAsync(GetInactiveUsersQuery request);
+
+        Task<SimpleResponse> LockUser(string userId);
+        Task<SimpleResponse> UnlockUser(string userId);
     }
 }

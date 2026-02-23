@@ -1,0 +1,55 @@
+﻿@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Models.UserManagement
+@using MudBlazor
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">
+            Assign club manager for @User.FullName (@User.Email)
+        </MudText>
+
+        <MudTextField @bind-Value="_searchTerm"
+                      Placeholder="Search clubs..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      DebounceInterval="300"
+                      OnDebounceIntervalElapsed="OnSearchChanged"
+                      Class="mt-3 mb-2" />
+
+        <MudSelect T="Guid?"
+                   @ref="_clubSelect"
+                   Label="Club without manager"
+                   @bind-Value="_selectedClubId"
+                   Dense="true"
+                   Required="true"
+                   Disabled="_loading">
+
+            @if (_loading)
+            {
+                <MudSelectItem T="Guid?" Value="@(null)">Loading...</MudSelectItem>
+            }
+            else if (!_clubs.Any())
+            {
+                <MudSelectItem T="Guid?" Value="@(null)">No clubs available</MudSelectItem>
+            }
+            else
+            {
+                @foreach (var club in _clubs)
+                {
+                    <MudSelectItem T="Guid?" Value="@(club.Id)">@club.Name</MudSelectItem>
+                }
+            }
+        </MudSelect>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Disabled="_saving || _selectedClubId is null"
+                   OnClick="Save">
+            Assign
+        </MudButton>
+    </DialogActions>
+</MudDialog>

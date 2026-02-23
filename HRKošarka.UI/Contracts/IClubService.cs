@@ -13,5 +13,7 @@ namespace HRKošarka.UI.Contracts
         Task<CommandResponse<bool>> DeactivateClub(Guid id);
         Task<CommandResponse<bool>> ActivateClub(Guid id);
         Task<CommandResponse<bool>> DeleteClub(Guid id);
+
+        Task<QueryResponse<List<ClubWithoutManagerDTO>>> GetClubsWithoutManagerAsync(string? searchTerm);
     }
 }

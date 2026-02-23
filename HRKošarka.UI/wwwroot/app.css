@@ -263,8 +263,6 @@ html, body {
 .mud-table-pagination {
     background: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
-    border-top: 1px solid var(--border-primary) !important;
-    padding: 16px !important;
 }
 
     .mud-table-pagination .mud-typography {

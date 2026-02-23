@@ -6,6 +6,8 @@ using HRKošarka.Application.Features.Club.Commands.DeleteClub;
 using HRKošarka.Application.Features.Club.Commands.UpdateClub;
 using HRKošarka.Application.Features.Club.Queries.GetAllClubs;
 using HRKošarka.Application.Features.Club.Queries.GetClubDetails;
+using HRKošarka.Application.Features.Club.Queries.GetClubsWithoutManager;
+using HRKošarka.Application.Features.Club.Queries.GetClubsWIthoutManager;
 using HRKošarka.Application.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -115,6 +117,25 @@ namespace HRKošarka.API.Controllers
         {
             await _mediator.Send(new DeleteClubCommand(id));
             return NoContent();
+        }
+
+        [HttpGet("without-manager", Name = "GetClubsWithoutManager")]
+        [Authorize(Roles = "Administrator")]
+        [ProducesResponseType(typeof(QueryResponse<List<ClubWithoutManagerDTO>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(QueryResponse<List<ClubWithoutManagerDTO>>), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<ClubWithoutManagerDTO>>>> GetClubsWithoutManager(
+                [FromQuery] string? searchTerm)
+        {
+            var query = new GetClubsWithoutManagerQuery
+            {
+                SearchTerm = searchTerm
+            };
+
+            var response = await _mediator.Send(query);
+            return Ok(response);
         }
     }
 }

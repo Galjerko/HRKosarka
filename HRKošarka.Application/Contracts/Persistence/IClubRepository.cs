@@ -1,4 +1,5 @@
-﻿using HRKošarka.Domain;
+﻿using HRKošarka.Application.Features.Club.Queries.GetClubsWIthoutManager;
+using HRKošarka.Domain;
 
 namespace HRKošarka.Application.Contracts.Persistence
 {
@@ -6,5 +7,10 @@ namespace HRKošarka.Application.Contracts.Persistence
     {
         Task<bool> IsClubNameUnique(string name, Guid? excludeId = null);
         Task<Club?> GetClubWithTeamsAsync(Guid clubId);
+
+        Task<List<ClubWithoutManagerDTO>> GetClubsWithoutManagerAsync(
+                List<Guid> managedClubIds,
+                string? searchTerm,
+                CancellationToken cancellationToken = default);
     }
 }

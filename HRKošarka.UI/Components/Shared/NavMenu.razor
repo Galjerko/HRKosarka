@@ -5,29 +5,55 @@
     <MudNavLink Href="/"
                 Match="NavLinkMatch.All"
                 Icon="@Icons.Material.Filled.Dashboard"
-                Class="nav-item nav-item-primary">
+                Class="nav-item">
         <MudText Typo="Typo.body2">Dashboard</MudText>
     </MudNavLink>
 
     <MudNavLink Href="/clubs"
                 Icon="@Icons.Material.Filled.Groups"
-                Class="nav-item nav-item-secondary">
+                Class="nav-item">
         <MudText Typo="Typo.body2">Clubs</MudText>
     </MudNavLink>
 
     <MudNavLink Href="/teams"
                 Icon="@Icons.Material.Filled.PeopleAlt"
-                Class="nav-item nav-item-secondary">
+                Class="nav-item">
         <MudText Typo="Typo.body2">Teams</MudText>
     </MudNavLink>
 
     <MudDivider Class="nav-divider" />
 
     <AuthorizeView Roles="Administrator">
-        <MudNavLink Href="/admin"
-                    Icon="@Icons.Material.Filled.AdminPanelSettings"
-                    Class="nav-item nav-item-admin">
-            <MudText Typo="Typo.body2">Administration</MudText>
-        </MudNavLink>
+        <Authorized>
+            <MudNavGroup Icon="@Icons.Material.Filled.AdminPanelSettings"
+                         Title="Administration"
+                         Class="nav-item">
+
+                <MudNavGroup Icon="@Icons.Material.Filled.Group"
+                             Title="User management"
+                             Class="nav-item">
+
+                    <MudNavLink Href="/admin/users"
+                                Icon="@Icons.Material.Filled.ListAlt">
+                        <MudText Typo="Typo.body2">Active users</MudText>
+                    </MudNavLink>
+
+                    <MudNavLink Href="/admin/users/inactive"
+                                Icon="@Icons.Material.Filled.LockPerson">
+                        <MudText Typo="Typo.body2">Inactive users</MudText>
+                    </MudNavLink>
+
+                </MudNavGroup>
+
+                <MudNavLink Href="/admin/settings"
+                            Icon="@Icons.Material.Filled.Settings">
+                    <MudText Typo="Typo.body2">System settings</MudText>
+                </MudNavLink>
+
+            </MudNavGroup>
+        </Authorized>
     </AuthorizeView>
+
+
+
 </MudNavMenu>

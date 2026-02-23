@@ -165,5 +165,31 @@ namespace HRKošarka.UI.Services
                 return ConvertApiExceptions<bool>(ex);
             }
         }
+
+        public async Task<QueryResponse<List<ClubWithoutManagerDTO>>> GetClubsWithoutManagerAsync(string? searchTerm)
+        {
+            try
+            {
+                await AddBearerToken();
+
+                var response = await _client.GetClubsWithoutManagerAsync(searchTerm ?? string.Empty);
+
+                return new QueryResponse<List<ClubWithoutManagerDTO>>
+                {
+                    Data = response.Data?.ToList() ?? new List<ClubWithoutManagerDTO>(),
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException<ProblemDetails> ex)
+            {
+                return ConvertApiExceptionsToQuery<List<ClubWithoutManagerDTO>>(ex);
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<List<ClubWithoutManagerDTO>>(ex);
+            }
+        }
     }
 }
