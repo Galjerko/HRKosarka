@@ -12,7 +12,7 @@ namespace HRKošarka.Persistence.Repositories
         {
         }
 
-        public async Task<bool> IsClubNameUnique(string name, Guid? excludeId = null)
+        public async Task<bool> IsClubNameUnique(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
         {
             var query = _context.Clubs.Where(x => x.Name == name);
 
@@ -21,15 +21,15 @@ namespace HRKošarka.Persistence.Repositories
                 query = query.Where(x => x.Id != excludeId.Value);
             }
 
-            return await query.AnyAsync() == false;
+            return await query.AnyAsync(cancellationToken) == false;
         }
 
-        public async Task<Club?> GetClubWithTeamsAsync(Guid clubId)
+        public async Task<Club?> GetClubWithTeamsAsync(Guid clubId, CancellationToken cancellationToken = default)
         {
             return await _context.Clubs
                 .Include(c => c.Teams.Where(t => t.DateDeleted == null))
                     .ThenInclude(t => t.AgeCategory)
-                .FirstOrDefaultAsync(c => c.Id == clubId);
+                .FirstOrDefaultAsync(c => c.Id == clubId, cancellationToken);
         }
 
         public async Task<List<ClubWithoutManagerDTO>> GetClubsWithoutManagerAsync(

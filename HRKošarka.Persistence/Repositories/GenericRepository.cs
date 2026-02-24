@@ -17,14 +17,14 @@ namespace HRKošarka.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<IReadOnlyList<T>> GetAsync()
+        public async Task<IReadOnlyList<T>> GetAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Set<T>()
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<PaginatedResponse<T>> GetPagedAsync(PaginationRequest request)
+        public async Task<PaginatedResponse<T>> GetPagedAsync(PaginationRequest request, CancellationToken cancellationToken = default)
         {
             var query = _context.Set<T>().AsQueryable();
 
@@ -35,13 +35,13 @@ namespace HRKošarka.Persistence.Repositories
 
             query = ApplyGenericSorting(query, request);
 
-            var totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return PaginatedResponse<T>.Success(
                 items,
@@ -150,35 +150,35 @@ namespace HRKošarka.Persistence.Repositories
             return _context.Set<T>().AsQueryable();
         }
 
-        public async Task<T?> GetByIdAsync(Guid id)
+        public async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Set<T>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
-        public async Task<T> CreateAsync(T entity)
+        public async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
         {
-            await _context.AddAsync(entity);
-            await _context.SaveChangesAsync();
+            await _context.AddAsync(entity, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
             return entity;
         }
 
-        public async Task<T> UpdateAsync(T entity)
+        public async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default)
         {
             _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
             return entity;
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var entity = await _context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+            var entity = await _context.Set<T>().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
             if (entity != null)
             {
                 entity.DateDeleted = DateTime.UtcNow;
                 _context.Entry(entity).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
         }
 

@@ -21,6 +21,13 @@
         <MudText Typo="Typo.body2">Teams</MudText>
     </MudNavLink>
 
+    <MudNavLink Href="/seasons"
+                Icon="@Icons.Material.Filled.CalendarMonth"
+                Class="nav-item">
+        <MudText Typo="Typo.body2">Seasons</MudText>
+    </MudNavLink>
+
+
     <MudDivider Class="nav-divider" />
 
     <AuthorizeView Roles="Administrator">
@@ -32,18 +39,20 @@
                 <MudNavGroup Icon="@Icons.Material.Filled.Group"
                              Title="User management"
                              Class="nav-item">
-
                     <MudNavLink Href="/admin/users"
                                 Icon="@Icons.Material.Filled.ListAlt">
                         <MudText Typo="Typo.body2">Active users</MudText>
                     </MudNavLink>
-
                     <MudNavLink Href="/admin/users/inactive"
                                 Icon="@Icons.Material.Filled.LockPerson">
                         <MudText Typo="Typo.body2">Inactive users</MudText>
                     </MudNavLink>
-
                 </MudNavGroup>
+
+                <MudNavLink Href="/seasons"
+                            Icon="@Icons.Material.Filled.CalendarMonth">
+                    <MudText Typo="Typo.body2">Seasons (manage)</MudText>
+                </MudNavLink>
 
                 <MudNavLink Href="/admin/settings"
                             Icon="@Icons.Material.Filled.Settings">
@@ -53,7 +62,5 @@
             </MudNavGroup>
         </Authorized>
     </AuthorizeView>
-
-
 
 </MudNavMenu>

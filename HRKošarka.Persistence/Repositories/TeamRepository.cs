@@ -13,7 +13,7 @@ namespace HRKošarka.Persistence.Repositories
         {
         }
 
-        public async Task<bool> IsTeamNameUniqueInClub(string name, Guid clubId, Guid ageCategoryId, Guid? excludeId = null)
+        public async Task<bool> IsTeamNameUniqueInClub(string name, Guid clubId, Guid ageCategoryId, Guid? excludeId = null, CancellationToken cancellationToken = default)
         {
             var query = _context.Teams.Where(x => x.Name == name && x.ClubId == clubId && x.AgeCategoryId == ageCategoryId);
 
@@ -22,10 +22,10 @@ namespace HRKošarka.Persistence.Repositories
                 query = query.Where(x => x.Id != excludeId.Value);
             }
 
-            return await query.AnyAsync() == false;
+            return await query.AnyAsync(cancellationToken) == false;
         }
 
-        public async Task<PaginatedResponse<Team>> GetPagedWithIncludesAsync(GetTeamsQuery request)
+        public async Task<PaginatedResponse<Team>> GetPagedWithIncludesAsync(GetTeamsQuery request, CancellationToken cancellationToken = default)
         {
             var query = _context.Teams
                 .Include(t => t.Club)
@@ -76,24 +76,24 @@ namespace HRKošarka.Persistence.Repositories
                     query = query.OrderBy(t => t.Name); break;
             }
 
-            var totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return PaginatedResponse<Team>.Success(items, request.Page, request.PageSize, totalCount,
                 $"Retrieved {items.Count} teams from page {request.Page}");
         }
 
-        public async Task<Team?> GetByIdWithIncludesAsync(Guid teamId)
+        public async Task<Team?> GetByIdWithIncludesAsync(Guid teamId, CancellationToken cancellationToken = default)
         {
             return await _context.Teams
                 .Include(t => t.Club)
                 .Include(t => t.AgeCategory)
-                .FirstOrDefaultAsync(t => t.Id == teamId);
+                .FirstOrDefaultAsync(t => t.Id == teamId, cancellationToken);
         }
     }
 }

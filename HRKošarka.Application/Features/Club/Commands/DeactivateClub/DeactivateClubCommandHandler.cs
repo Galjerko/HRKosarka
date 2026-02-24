@@ -8,15 +8,17 @@ namespace HRKošarka.Application.Features.Club.Commands.DeactivateClub
     public class DeactivateClubCommandHandler : IRequestHandler<DeactivateClubCommand, Unit>
     {
         private readonly IClubRepository _clubRepository;
-        private IAppLogger<DeactivateClubCommandHandler> _logger;
+        private readonly IAppLogger<DeactivateClubCommandHandler> _logger;
+
         public DeactivateClubCommandHandler(IClubRepository clubRepository, IAppLogger<DeactivateClubCommandHandler> logger)
         {
             _clubRepository = clubRepository;
             _logger = logger;
         }
+
         public async Task<Unit> Handle(DeactivateClubCommand request, CancellationToken cancellationToken)
         {
-            var clubToDeactivate = await _clubRepository.GetByIdAsync(request.Id);
+            var clubToDeactivate = await _clubRepository.GetByIdAsync(request.Id, cancellationToken);
 
             if (clubToDeactivate == null)
             {
@@ -31,7 +33,7 @@ namespace HRKošarka.Application.Features.Club.Commands.DeactivateClub
             }
 
             clubToDeactivate.DeactivateDate = DateTime.Now;
-            await _clubRepository.UpdateAsync(clubToDeactivate);
+            await _clubRepository.UpdateAsync(clubToDeactivate, cancellationToken);
 
             _logger.LogInformation("Club {ClubName} deactivated at {DeactivateDate}", clubToDeactivate.Name, clubToDeactivate.DeactivateDate);
 

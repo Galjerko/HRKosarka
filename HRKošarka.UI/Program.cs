@@ -73,6 +73,7 @@ builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserPermissionCacheService, UserPermissionCacheService>();
 builder.Services.AddScoped<IPermissionService, UserPermissionCacheService>();
+builder.Services.AddScoped<ISeasonService, SeasonService>();
 builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 

@@ -1,0 +1,107 @@
+@page "/seasons"
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Seasons</MudText>
+
+    <MudTable @ref="_table"
+              ServerData="LoadServerData"
+              Loading="_loading"
+              Hover="true"
+              Striped="true"
+              Dense="true"
+              FixedHeader="true"
+              Height="600px">
+
+        <ToolBarContent>
+            <MudTextField @bind-Value="_searchTerm"
+                          Placeholder="Search by name..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          DebounceInterval="300"
+                          OnDebounceIntervalElapsed="OnSearchChanged"
+                          Style="max-width:400px;" />
+            <MudSpacer />
+            @if (CanCreate)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="@(() => NavigationManager.NavigateTo("/admin/seasons/create"))">
+                    New season
+                </MudButton>
+            }
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Start date</MudTh>
+            <MudTh>End date</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="text-align: center">Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="season">
+            <MudTd DataLabel="Name">@season.Name</MudTd>
+            <MudTd DataLabel="Start date">@season.StartDate.ToString("dd.MM.yyyy")</MudTd>
+            <MudTd DataLabel="End date">@season.EndDate.ToString("dd.MM.yyyy")</MudTd>
+            <MudTd DataLabel="Status">
+                @if (season.IsCompleted)
+                {
+                    <MudChip T="string" Color="Color.Default" Size="Size.Small">Completed</MudChip>
+                }
+                else if (season.IsActive)
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small">Active</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Warning" Size="Size.Small">Inactive</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="Actions" Style="text-align: center">
+                <AuthorizeView Roles="Administrator" Context="authCtx">
+                    <Authorized>
+                        <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Secondary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => NavigationManager.NavigateTo($"/admin/seasons/{season.Id}/edit"))"
+                                           Title="Edit Season" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteSeasonAsync(season))"
+                                           Title="Delete Season" />
+                        </MudButtonGroup>
+                    </Authorized>
+                </AuthorizeView>
+            </MudTd>
+        </RowTemplate>
+
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                @if (!string.IsNullOrWhiteSpace(_searchTerm))
+                {
+                    <span>No seasons found matching "@_searchTerm"</span>
+                }
+                else
+                {
+                    <span>No seasons available</span>
+                }
+            </MudText>
+        </NoRecordsContent>
+
+        <LoadingContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">Loading seasons...</MudText>
+        </LoadingContent>
+
+        <PagerContent>
+            <MudTablePager PageSizeOptions="@_pageSizeOptions" />
+        </PagerContent>
+
+    </MudTable>
+</MudPaper>

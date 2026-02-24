@@ -18,7 +18,7 @@ namespace HRKošarka.Application.Features.Club.Commands.DeleteClub
         {
             _logger.LogInformation("Attempting to delete club with ID: {Id}", request.Id);
 
-            var clubToDelete = await _clubRepository.GetByIdAsync(request.Id);
+            var clubToDelete = await _clubRepository.GetByIdAsync(request.Id, cancellationToken);
 
             if (clubToDelete == null)
             {
@@ -32,7 +32,7 @@ namespace HRKošarka.Application.Features.Club.Commands.DeleteClub
                 throw new BadRequestException("Club is already deleted");
             }
 
-            await _clubRepository.DeleteAsync(clubToDelete.Id);
+            await _clubRepository.DeleteAsync(clubToDelete.Id, cancellationToken);
 
             _logger.LogInformation("Successfully deleted club with ID: {Id}", request.Id);
 

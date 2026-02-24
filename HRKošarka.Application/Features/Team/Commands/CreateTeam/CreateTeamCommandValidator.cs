@@ -31,7 +31,7 @@ namespace HRKošarka.Application.Features.Team.Commands.CreateTeam
 
         private async Task<bool> TeamNameUniqueInClubAndAgeCategory(CreateTeamCommand command, CancellationToken token)
         {
-            return await _teamRepository.IsTeamNameUniqueInClub(command.Name, command.ClubId, command.AgeCategoryId);
+            return await _teamRepository.IsTeamNameUniqueInClub(command.Name, command.ClubId, command.AgeCategoryId, null, token);
         }
     }
 }

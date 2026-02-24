@@ -20,7 +20,7 @@ namespace HRKošarka.Application.Features.Team.Commands.CreateTeam
         public async Task<CommandResponse<Guid>> Handle(CreateTeamCommand request, CancellationToken cancellationToken)
         {
             var validator = new CreateTeamCommandValidator(_teamRepository);
-            var validationResult = await validator.ValidateAsync(request);
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
             {
@@ -28,7 +28,7 @@ namespace HRKošarka.Application.Features.Team.Commands.CreateTeam
             }
 
             var teamToCreate = _mapper.Map<Domain.Team>(request);
-            await _teamRepository.CreateAsync(teamToCreate);
+            await _teamRepository.CreateAsync(teamToCreate, cancellationToken);
 
             return CommandResponse<Guid>.Success(
                 teamToCreate.Id,

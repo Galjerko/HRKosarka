@@ -27,26 +27,27 @@ namespace HRKošarka.Application.Features.Team.Commands.UpdateTeam
 
         private async Task<bool> TeamMustExist(Guid id, CancellationToken token)
         {
-            var team = await _teamRepository.GetByIdAsync(id);
+            var team = await _teamRepository.GetByIdAsync(id, token);
             return team != null;
         }
 
         private async Task<bool> TeamIsNotDeactivatedOrDeleted(Guid id, CancellationToken token)
         {
-            var team = await _teamRepository.GetByIdAsync(id);
+            var team = await _teamRepository.GetByIdAsync(id, token);
             return team != null && team.IsActive && !team.DateDeleted.HasValue;
         }
 
         private async Task<bool> TeamNameUniqueInSameContext(UpdateTeamCommand command, CancellationToken token)
         {
-            var existingTeam = await _teamRepository.GetByIdAsync(command.Id);
+            var existingTeam = await _teamRepository.GetByIdAsync(command.Id, token);
             if (existingTeam == null) return false;
 
             return await _teamRepository.IsTeamNameUniqueInClub(
                 command.Name,
                 existingTeam.ClubId,
                 existingTeam.AgeCategoryId,
-                command.Id);
+                command.Id,
+                token);
         }
     }
 }

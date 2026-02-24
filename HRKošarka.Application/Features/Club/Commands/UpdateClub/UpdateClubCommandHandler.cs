@@ -22,7 +22,7 @@ namespace HRKošarka.Application.Features.Club.Commands.UpdateClub
         public async Task<Unit> Handle(UpdateClubCommand request, CancellationToken cancellationToken)
         {
             var validator = new UpdateClubCommandValidator(_clubRepository);
-            var validationResult = await validator.ValidateAsync(request);
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
             {
@@ -31,7 +31,7 @@ namespace HRKošarka.Application.Features.Club.Commands.UpdateClub
             }
 
             var clubToUpdate = _mapper.Map<Domain.Club>(request);
-            await _clubRepository.UpdateAsync(clubToUpdate);
+            await _clubRepository.UpdateAsync(clubToUpdate, cancellationToken);
 
             _logger.LogInformation("Club {ClubName} (ID: {ClubId}) successfully updated", clubToUpdate.Name, clubToUpdate.Id);
 

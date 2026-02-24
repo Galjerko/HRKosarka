@@ -1,0 +1,48 @@
+@page "/admin/seasons/create"
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<AuthorizeView Roles="Administrator">
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="form-page-container">
+            <MudPaper Class="pa-6">
+                <MudText Typo="Typo.h5" Class="mb-4">Create season</MudText>
+                @if (_isLoading)
+                {
+                    <MudProgressLinear Indeterminate="true" />
+                }
+                else
+                {
+                    <MudForm @ref="_form" @bind-IsValid="_isFormValid">
+                        <MudTextField @bind-Value="_command.Name"
+                                      Label="Season name"
+                                      Placeholder="e.g. 2024/25"
+                                      HelperText="Max 10 characters"
+                                      Required="true"
+                                      MaxLength="10"
+                                      Class="mb-3" />
+                        <MudDatePicker @bind-Date="_startDate" Label="Start date" Required="true" Class="mb-3" />
+                        <MudDatePicker @bind-Date="_endDate" Label="End date" Required="true" Class="mb-4" />
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                       OnClick="HandleSubmit" Disabled="_isProcessing">
+                                @if (_isProcessing)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
+                                }
+                                Create
+                            </MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Secondary"
+                                       OnClick="@(() => NavigationManager.NavigateTo("/seasons"))"
+                                       Disabled="_isProcessing">
+                                Cancel
+                            </MudButton>
+                        </MudStack>
+                    </MudForm>
+                }
+            </MudPaper>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized><RedirectToLogin /></NotAuthorized>
+</AuthorizeView>

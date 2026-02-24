@@ -65,7 +65,7 @@ namespace HRKošarka.Application.Features.Club.Commands.CreateClub
 
         private async Task<bool> ClubNameUnique(CreateClubCommand command, CancellationToken token)
         {
-            return await _clubRepository.IsClubNameUnique(command.Name);
+            return await _clubRepository.IsClubNameUnique(command.Name, null, token);
         }
 
     }

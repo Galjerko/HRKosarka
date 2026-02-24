@@ -1,5 +1,4 @@
-﻿
-using HRKošarka.Application.Contracts.Logging;
+﻿using HRKošarka.Application.Contracts.Logging;
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Features.Club.Commands.DeactivateClub;
@@ -20,7 +19,7 @@ namespace HRKošarka.Application.Features.Club.Commands.ActivateClub
 
         public async Task<Unit> Handle(ActivateClubCommand request, CancellationToken cancellationToken)
         {
-            var clubToActivate = await _clubRepository.GetByIdAsync(request.Id);
+            var clubToActivate = await _clubRepository.GetByIdAsync(request.Id, cancellationToken);
 
             if (clubToActivate == null)
             {
@@ -36,7 +35,7 @@ namespace HRKošarka.Application.Features.Club.Commands.ActivateClub
 
 
             clubToActivate.DeactivateDate = null;
-            await _clubRepository.UpdateAsync(clubToActivate);
+            await _clubRepository.UpdateAsync(clubToActivate, cancellationToken);
 
             _logger.LogInformation("Club {ClubName} activated at {ActivateDate}", clubToActivate.Name, DateTime.Now);
 

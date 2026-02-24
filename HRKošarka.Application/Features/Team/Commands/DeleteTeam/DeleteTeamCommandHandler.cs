@@ -20,7 +20,7 @@ namespace HRKošarka.Application.Features.Team.Commands.DeleteTeam
         {
             _logger.LogInformation("Attempting to delete team with ID: {Id}", request.Id);
 
-            var teamToDelete = await _teamRepository.GetByIdAsync(request.Id);
+            var teamToDelete = await _teamRepository.GetByIdAsync(request.Id, cancellationToken);
 
             if (teamToDelete == null)
             {
@@ -34,7 +34,7 @@ namespace HRKošarka.Application.Features.Team.Commands.DeleteTeam
                 throw new BadRequestException("Team is already deleted");
             }
 
-            await _teamRepository.DeleteAsync(teamToDelete.Id);
+            await _teamRepository.DeleteAsync(teamToDelete.Id, cancellationToken);
 
             _logger.LogInformation("Successfully deleted team with ID: {Id}", request.Id);
 

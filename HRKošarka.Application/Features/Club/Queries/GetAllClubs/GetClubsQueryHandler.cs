@@ -26,7 +26,7 @@ namespace HRKošarka.Application.Features.Club.Queries.GetAllClubs
                 _logger.LogInformation("Retrieving clubs - Page: {Page}, PageSize: {PageSize}",
                     request.Page, request.PageSize);
 
-                var paginatedResult = await _clubRepository.GetPagedAsync(request);
+                var paginatedResult = await _clubRepository.GetPagedAsync(request, cancellationToken);
 
                 var mappedData = _mapper.Map<List<ClubDTO>>(paginatedResult.Data);
 

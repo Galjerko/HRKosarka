@@ -19,7 +19,7 @@ namespace HRKošarka.Application.Features.Team.Queries.GetTeamDetails
 
         public async Task<QueryResponse<TeamDetailsDTO>> Handle(GetTeamDetailsQuery request, CancellationToken cancellationToken)
         {
-            var team = await _teamRepository.GetByIdWithIncludesAsync(request.Id);
+            var team = await _teamRepository.GetByIdWithIncludesAsync(request.Id, cancellationToken);
 
             if (team == null)
             {

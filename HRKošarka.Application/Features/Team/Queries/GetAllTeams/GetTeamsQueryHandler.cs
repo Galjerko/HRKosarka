@@ -26,7 +26,7 @@ namespace HRKošarka.Application.Features.Team.Queries.GetAllTeams
                 _logger.LogInformation("Retrieving teams - Page: {Page}, PageSize: {PageSize}",
                     request.Page, request.PageSize);
 
-                var paginatedResult = await _teamRepository.GetPagedWithIncludesAsync(request);
+                var paginatedResult = await _teamRepository.GetPagedWithIncludesAsync(request, cancellationToken);
 
                 var mappedData = _mapper.Map<List<TeamDTO>>(paginatedResult.Data);
 

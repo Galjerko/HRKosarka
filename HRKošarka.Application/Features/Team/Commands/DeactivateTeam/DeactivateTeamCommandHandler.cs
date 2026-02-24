@@ -18,7 +18,7 @@ namespace HRKošarka.Application.Features.Team.Commands.DeactivateTeam
 
         public async Task<Unit> Handle(DeactivateTeamCommand request, CancellationToken cancellationToken)
         {
-            var teamToDeactivate = await _teamRepository.GetByIdAsync(request.Id);
+            var teamToDeactivate = await _teamRepository.GetByIdAsync(request.Id, cancellationToken);
 
             if (teamToDeactivate == null)
             {
@@ -33,7 +33,7 @@ namespace HRKošarka.Application.Features.Team.Commands.DeactivateTeam
             }
 
             teamToDeactivate.DeactivateDate = DateTime.Now;
-            await _teamRepository.UpdateAsync(teamToDeactivate);
+            await _teamRepository.UpdateAsync(teamToDeactivate, cancellationToken);
 
             _logger.LogInformation("Team {TeamName} deactivated at {DeactivateDate}", teamToDeactivate.Name, teamToDeactivate.DeactivateDate);
 
