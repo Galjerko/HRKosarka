@@ -45,11 +45,13 @@ namespace HRKošarka.UI.Components.Pages.Admin.Seasons
                 var response = await SeasonService.GetSeasons(request);
 
                 if (response.IsSuccess && response.Data != null)
+                {
                     return new TableData<SeasonDTO>
                     {
                         Items = response.Data,
                         TotalItems = response.Pagination?.TotalCount ?? 0
                     };
+                }
 
                 Snackbar.Add(response.Message ?? "Failed to load seasons.", Severity.Error);
                 return new TableData<SeasonDTO> { Items = new List<SeasonDTO>(), TotalItems = 0 };
@@ -68,7 +70,10 @@ namespace HRKošarka.UI.Components.Pages.Admin.Seasons
 
         private async Task OnSearchChanged()
         {
-            if (_table != null) await _table.ReloadServerData();
+            if (_table != null)
+            {
+                await _table.ReloadServerData();
+            }
         }
 
         private async Task DeleteSeasonAsync(SeasonDTO season)
@@ -77,7 +82,10 @@ namespace HRKošarka.UI.Components.Pages.Admin.Seasons
                 "Delete season",
                 $"Delete season \"{season.Name}\"? This cannot be undone.",
                 yesText: "Delete", cancelText: "Cancel");
-            if (confirm != true) return;
+            if (confirm != true)
+            {
+                return;
+            }
 
             var result = await SeasonService.DeleteSeason(season.Id);
             if (!result.IsSuccess)

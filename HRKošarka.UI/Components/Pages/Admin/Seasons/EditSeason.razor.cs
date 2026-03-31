@@ -38,8 +38,8 @@ namespace HRKošarka.UI.Components.Pages.Admin.Seasons
                     _command.Id = season.Id;
                     _command.Name = season.Name;
                     _command.IsActive = season.IsActive;
-                    _startDate = season.StartDate.DateTime;
-                    _endDate = season.EndDate.DateTime;
+                    _startDate = season.StartDate;
+                    _endDate = season.EndDate;
                 }
                 else
                 {

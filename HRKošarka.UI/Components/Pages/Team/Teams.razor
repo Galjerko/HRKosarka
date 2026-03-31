@@ -15,7 +15,7 @@
             <MudButton Variant="Variant.Text"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Refresh"
-                       OnClick="ResetFilters"
+                       OnClick="@(async () => await ResetFilters())"
                        Class="filter-reset-btn">Reset</MudButton>
         </div>
         <div class="team-filters-container">

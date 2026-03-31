@@ -1416,3 +1416,29 @@ html, body {
         height: 52px;
     }
 }
+
+.mud-picker-content {
+    background-color: var(--mud-palette-surface) !important;
+    color: var(--mud-palette-text-primary) !important;
+}
+
+.mud-picker-calendar-header {
+    background-color: var(--mud-palette-surface) !important;
+}
+
+.mud-day:hover {
+    background-color: var(--mud-palette-action-hover) !important;
+}
+
+.mud-button-month,
+.mud-button-year {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+.mud-picker {
+    background-color: var(--mud-palette-surface) !important;
+}
+
+.mud-overlay {
+    background-color: transparent !important;
+}

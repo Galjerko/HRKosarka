@@ -75,6 +75,8 @@ builder.Services.AddScoped<IUserPermissionCacheService, UserPermissionCacheServi
 builder.Services.AddScoped<IPermissionService, UserPermissionCacheService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
 builder.Services.AddScoped<IToastService, ToastService>();
+builder.Services.AddScoped<ILeagueService, LeagueService>();
+
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 var app = builder.Build();

@@ -1,4 +1,5 @@
-﻿namespace HRKošarka.UI.Services.Base
+﻿
+namespace HRKošarka.UI.Services.Base
 {
     public partial interface IClient
     {

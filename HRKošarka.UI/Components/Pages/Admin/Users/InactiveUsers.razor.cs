@@ -90,7 +90,9 @@ namespace HRKošarka.UI.Components.Pages.Admin.Users
         private async Task OnSearchChanged()
         {
             if (_table != null)
+            {
                 await _table.ReloadServerData();
+            }
         }
 
         private async Task UnlockUserAsync(InactiveUserDTO user)
@@ -102,7 +104,9 @@ namespace HRKošarka.UI.Components.Pages.Admin.Users
                 cancelText: "Cancel");
 
             if (confirm != true)
+            {
                 return;
+            }
 
             try
             {

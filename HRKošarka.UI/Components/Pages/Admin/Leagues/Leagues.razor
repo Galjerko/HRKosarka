@@ -1,0 +1,242 @@
+﻿@page "/leagues"
+@using HRKošarka.UI.Services.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<PageTitle>Leagues - Basketball Management</PageTitle>
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">League Management</MudText>
+
+    <MudPaper Elevation="2" Class="pa-4 mb-4 team-filter-card" Square="false">
+        <div class="team-filters-header">
+            <MudIcon Icon="@Icons.Material.Filled.FilterAlt" Color="Color.Secondary" Class="mr-2" />
+            <MudText Typo="Typo.h6" Class="team-filters-title">Filter Leagues</MudText>
+            <MudSpacer />
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       OnClick="@(async () => await ResetFilters())"
+                       Class="filter-reset-btn">
+                Reset
+            </MudButton>
+        </div>
+        <div class="team-filters-container">
+            <MudTextField @bind-Value="_searchTerm"
+                          Placeholder="Search leagues..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          DebounceInterval="300"
+                          OnDebounceIntervalElapsed="OnSearchChanged"
+                          Variant="Variant.Outlined"
+                          Class="team-filter-field" />
+
+            <MudSelect T="Gender?" @bind-Value="FilterGender"
+                       Label="Gender"
+                       Variant="Variant.Outlined"
+                       Dense="true"
+                       Clearable="true"
+                       Class="team-filter-field">
+                <MudSelectItem T="Gender?" Value="@null">All Genders</MudSelectItem>
+                <MudSelectItem T="Gender?" Value="Gender._0">
+                    <MudIcon Icon="@Icons.Material.Filled.Man" Class="mr-1" Color="Color.Primary" Size="Size.Small" />
+                    Male
+                </MudSelectItem>
+                <MudSelectItem T="Gender?" Value="Gender._1">
+                    <MudIcon Icon="@Icons.Material.Filled.Woman" Class="mr-1" Color="Color.Secondary" Size="Size.Small" />
+                    Female
+                </MudSelectItem>
+            </MudSelect>
+
+            <MudSelect T="CompetitionType?" @bind-Value="FilterCompetitionType"
+                       Label="Competition Type"
+                       Variant="Variant.Outlined"
+                       Dense="true"
+                       Clearable="true"
+                       Class="team-filter-field">
+                <MudSelectItem T="CompetitionType?" Value="@null">All Types</MudSelectItem>
+                <MudSelectItem T="CompetitionType?" Value="CompetitionType._0">
+                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Class="mr-1" Size="Size.Small" />
+                    League
+                </MudSelectItem>
+                <MudSelectItem T="CompetitionType?" Value="CompetitionType._1">
+                    <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Class="mr-1" Size="Size.Small" />
+                    Cup
+                </MudSelectItem>
+            </MudSelect>
+
+            <MudSelect T="bool?" @bind-Value="FilterActive"
+                       Label="Status"
+                       Variant="Variant.Outlined"
+                       Dense="true"
+                       Clearable="true"
+                       Class="team-filter-field">
+                <MudSelectItem T="bool?" Value="@null">All Status</MudSelectItem>
+                <MudSelectItem T="bool?" Value="true">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Class="mr-1" Size="Size.Small" />
+                    Active
+                </MudSelectItem>
+                <MudSelectItem T="bool?" Value="false">
+                    <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Class="mr-1" Size="Size.Small" />
+                    Inactive
+                </MudSelectItem>
+            </MudSelect>
+        </div>
+    </MudPaper>
+
+    <MudTable @ref="_table"
+              ServerData="LoadServerData"
+              SortLabel="Sort by"
+              Sortable="true"
+              Loading="_loading"
+              Hover="true"
+              Striped="true"
+              Dense="true"
+              FixedHeader="true"
+              Height="600px">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Leagues</MudText>
+            <MudSpacer />
+            <AuthorizeView Roles="Administrator" Context="authCtx">
+                <Authorized>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="@(() => NavigationManager.NavigateTo("/admin/leagues/create"))">
+                        Add League
+                    </MudButton>
+                </Authorized>
+            </AuthorizeView>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh><MudTableSortLabel T="LeagueDTO" SortLabel="Name">Name</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="LeagueDTO" SortLabel="SeasonName">Season</MudTableSortLabel></MudTh>
+            <MudTh>Age Category</MudTh>
+            <MudTh>Gender</MudTh>
+            <MudTh>Competition Type</MudTh>
+            <MudTh><MudTableSortLabel T="LeagueDTO" SortLabel="StartDate">Start Date</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="LeagueDTO" SortLabel="EndDate">End Date</MudTableSortLabel></MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="text-align:center">Actions</MudTh>
+        </HeaderContent>
+
+        <RowTemplate Context="league">
+            <MudTd DataLabel="Name">@league.Name</MudTd>
+            <MudTd DataLabel="Season">@league.SeasonName</MudTd>
+            <MudTd DataLabel="Age Category">@league.AgeCategoryCode</MudTd>
+            <MudTd DataLabel="Gender">@league.Gender.ToDisplayString()</MudTd>
+            <MudTd DataLabel="Competition Type">@league.CompetitionType.ToDisplayString()</MudTd>
+            <MudTd DataLabel="Start Date">@league.StartDate.ToString("dd.MM.yyyy.")</MudTd>
+            <MudTd DataLabel="End Date">@league.EndDate.ToString("dd.MM.yyyy.")</MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip T="string"
+                         Color="@(league.IsActive ? Color.Success : Color.Error)"
+                         Size="Size.Small">
+                    @(league.IsActive ? "Active" : "Inactive")
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Actions" Style="text-align:center">
+                <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Info"
+                                   Size="Size.Small"
+                                   OnClick="@(() => NavigationManager.NavigateTo($"/leagues/{league.Id}"))"
+                                   Title="View League" />
+                    <AuthorizeView Roles="Administrator" Context="authCtx">
+                        <Authorized>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Secondary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => NavigationManager.NavigateTo($"/admin/leagues/{league.Id}/edit"))"
+                                           Title="Edit League" />
+                            @if (league.IsActive)
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Block"
+                                               Color="Color.Warning"
+                                               Size="Size.Small"
+                                               OnClick="@(() => OpenDeactivateDialog(league.Id, league.Name))"
+                                               Title="Deactivate League" />
+                            }
+                            else
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               OnClick="@(() => OpenActivateDialog(league.Id, league.Name))"
+                                               Title="Activate League" />
+                            }
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => OpenDeleteDialog(league.Id, league.Name))"
+                                           Title="Delete League" />
+                        </Authorized>
+                    </AuthorizeView>
+                </MudButtonGroup>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                @if (!string.IsNullOrWhiteSpace(_searchTerm))
+                {
+                    <span>No leagues found matching <strong>@_searchTerm</strong></span>
+                }
+                else
+                {
+                    <span>No leagues available</span>
+                }
+            </MudText>
+        </NoRecordsContent>
+
+        <LoadingContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">Loading leagues...</MudText>
+        </LoadingContent>
+
+        <PagerContent>
+            <MudTablePager HidePageNumber="false" PageSizeOptions="@_pageSizeOptions" />
+        </PagerContent>
+
+    </MudTable>
+</MudPaper>
+
+<ConfirmActionDialog @bind-Visible="_showDeactivateDialog"
+                     Title="Confirm Deactivation"
+                     TitleIcon="@Icons.Material.Filled.PauseCircle"
+                     TitleIconColor="Color.Warning"
+                     Message="@($"Are you sure you want to deactivate <strong>{_selectedLeagueName}</strong>?")"
+                     SecondaryMessage="This action can be reversed later."
+                     SecondaryMessageColor="Color.Warning"
+                     CancelText="CANCEL" CancelVariant="Variant.Outlined"
+                     ConfirmText="DEACTIVATE" ConfirmIcon="@Icons.Material.Filled.Pause"
+                     ConfirmColor="Color.Warning" ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing" OnConfirm="ConfirmDeactivate"
+                     Options="_dialogOptions" />
+
+<ConfirmActionDialog @bind-Visible="_showActivateDialog"
+                     Title="Confirm Activation"
+                     TitleIcon="@Icons.Material.Filled.PlayCircle"
+                     TitleIconColor="Color.Success"
+                     Message="@($"Are you sure you want to activate <strong>{_selectedLeagueName}</strong>?")"
+                     SecondaryMessage="This action will make the league active again."
+                     SecondaryMessageColor="Color.Success"
+                     CancelText="CANCEL" CancelVariant="Variant.Outlined"
+                     ConfirmText="ACTIVATE" ConfirmIcon="@Icons.Material.Filled.PlayArrow"
+                     ConfirmColor="Color.Success" ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing" OnConfirm="ConfirmActivate"
+                     Options="_dialogOptions" />
+
+<ConfirmActionDialog @bind-Visible="_showDeleteDialog"
+                     Title="Confirm Deletion"
+                     TitleIcon="@Icons.Material.Filled.Warning"
+                     TitleIconColor="Color.Error"
+                     Message="@($"Are you sure you want to permanently delete <strong>{_selectedLeagueName}</strong>?")"
+                     SecondaryMessage="This action cannot be undone!"
+                     SecondaryMessageColor="Color.Error"
+                     CancelText="CANCEL" CancelVariant="Variant.Outlined"
+                     ConfirmText="DELETE" ConfirmIcon="@Icons.Material.Filled.Delete"
+                     ConfirmColor="Color.Error" ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing" OnConfirm="ConfirmDelete"
+                     Options="_dialogOptions" />

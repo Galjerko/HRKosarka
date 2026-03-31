@@ -25,7 +25,9 @@ namespace HRKošarka.UI.Components.Shared
         protected override void OnParametersSet()
         {
             if (_initialisedFromParameters)
+            {
                 return;
+            }
 
             if (InitialImageBytes != null &&
                 InitialImageBytes.Length > 0 &&
@@ -46,7 +48,9 @@ namespace HRKošarka.UI.Components.Shared
         {
             Error = null;
             if (file is null)
+            {
                 return;
+            }
 
             var (isSuccess, errorMessage, name, contentType, bytes) =
                 await ImageUploadService.ProcessAsync(file);

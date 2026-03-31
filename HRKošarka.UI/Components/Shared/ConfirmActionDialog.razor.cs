@@ -37,8 +37,9 @@ namespace HRKošarka.UI.Components.Shared
 
         private async Task OnConfirmClicked()
         {
-            if (OnConfirm.HasDelegate)
+            if (OnConfirm.HasDelegate) {
                 await OnConfirm.InvokeAsync();
+            }
         }
     }
 }

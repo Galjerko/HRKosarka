@@ -21,6 +21,7 @@ namespace HRKošarka.Persistence
             services.AddScoped<IAgeCategoryRepository, AgeCategoryRepository>();
             services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<ITeamRepository, TeamRepository>();
+            services.AddScoped<ILeagueRepository, LeagueRepository>();
 
             return services;
         }

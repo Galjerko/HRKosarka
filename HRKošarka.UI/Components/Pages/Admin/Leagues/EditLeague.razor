@@ -1,0 +1,227 @@
+﻿@page "/admin/leagues/{Id:guid}/edit"
+@using HRKošarka.UI.Services.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<PageTitle>Edit League - Basketball Management</PageTitle>
+
+<AuthorizeView Roles="Administrator" Context="auth">
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="form-page-container">
+            @if (_isLoading)
+            {
+                <div class="loading-state">
+                    <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+                    <MudText Typo="Typo.h6">Loading league details...</MudText>
+                </div>
+            }
+            else if (_league == null)
+            {
+                <MudPaper Class="form-card">
+                    <div class="error-state">
+                        <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Large" Color="Color.Error" />
+                        <MudText Typo="Typo.h5" Color="Color.Error">League Not Found</MudText>
+                        <MudText Typo="Typo.body1">The league you're trying to edit doesn't exist or has been removed.</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                                   OnClick="@(() => NavigationManager.NavigateTo("/leagues"))">
+                            Back to Leagues
+                        </MudButton>
+                    </div>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Class="form-card club-form-card">
+                    <div class="form-header">
+                        <MudAvatar Size="Size.Large" Class="form-icon-avatar">
+                            <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Large" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h4" Class="form-title">Edit League</MudText>
+                        <MudText Typo="Typo.h6" Class="form-subtitle">Update league information</MudText>
+                    </div>
+
+                    <MudForm @ref="_form" @bind-IsValid="_isFormValid">
+                        <MudGrid Spacing="4">
+
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Class="section-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Class="section-icon" />
+                                    Basic Information
+                                </MudText>
+                                <MudDivider Class="section-divider" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_model.Name"
+                                              Label="League Name"
+                                              Variant="Variant.Text"
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.EmojiEvents"
+                                              Required="true"
+                                              RequiredError="League name is required"
+                                              Counter="200"
+                                              MaxLength="200"
+                                              Validation="@(new Func<string, IEnumerable<string>>(ValidateLeagueName))" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="Guid"
+                                           @bind-Value="_model.SeasonId"
+                                           Label="Season"
+                                           Variant="Variant.Text"
+                                           Adornment="Adornment.Start"
+                                           AdornmentIcon="@Icons.Material.Filled.DateRange"
+                                           Dense="true"
+                                           Required="true"
+                                           RequiredError="Season is required"
+                                           ToStringFunc="@(id => _seasons.FirstOrDefault(s => s.Id == id)?.Name ?? string.Empty)"
+                                           Validation="@(new Func<Guid, string?>(id => id == Guid.Empty ? "Season is required" : null))">
+                                    @foreach (var season in _seasons)
+                                    {
+                                        <MudSelectItem T="Guid" Value="@season.Id">@season.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="Guid"
+                                           @bind-Value="_model.AgeCategoryId"
+                                           Label="Age Category"
+                                           Variant="Variant.Text"
+                                           Adornment="Adornment.Start"
+                                           AdornmentIcon="@Icons.Material.Filled.Groups"
+                                           Dense="true"
+                                           Required="true"
+                                           RequiredError="Age category is required"
+                                           ToStringFunc="@(id => _ageCategories.FirstOrDefault(a => a.Id == id)?.Code ?? string.Empty)"
+                                           Validation="@(new Func<Guid, string?>(id => id == Guid.Empty ? "Age category is required" : null))">
+                                    @foreach (var ac in _ageCategories)
+                                    {
+                                        <MudSelectItem T="Guid" Value="@ac.Id">@ac.Code</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="HRKošarka.UI.Services.Base.Gender"
+                                           @bind-Value="_model.Gender"
+                                           Label="Gender"
+                                           Variant="Variant.Text"
+                                           Adornment="Adornment.Start"
+                                           AdornmentIcon="@Icons.Material.Filled.Person"
+                                           Dense="true"
+                                           Required="true"
+                                           RequiredError="Gender is required">
+                                    <MudSelectItem Value="@HRKošarka.UI.Services.Base.Gender._0">Male</MudSelectItem>
+                                    <MudSelectItem Value="@HRKošarka.UI.Services.Base.Gender._1">Female</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="HRKošarka.UI.Services.Base.CompetitionType"
+                                           @bind-Value="_model.CompetitionType"
+                                           Label="Competition Type"
+                                           Variant="Variant.Text"
+                                           Adornment="Adornment.Start"
+                                           AdornmentIcon="@Icons.Material.Filled.EmojiEvents"
+                                           Dense="true"
+                                           Required="true"
+                                           RequiredError="Competition type is required">
+                                    <MudSelectItem Value="@HRKošarka.UI.Services.Base.CompetitionType._0">League</MudSelectItem>
+                                    <MudSelectItem Value="@HRKošarka.UI.Services.Base.CompetitionType._1">Cup</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Class="section-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.Repeat" Class="section-icon" />
+                                    Round Robin Format
+                                </MudText>
+                                <MudDivider Class="section-divider" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.body2" Class="mb-2" Style="color: var(--mud-palette-text-secondary)">
+                                    Select how many times each team plays against every other team:
+                                </MudText>
+                                <MudRadioGroup T="int" @bind-Value="_model.NumberOfRounds">
+                                    <MudRadio T="int" Value="1" Color="Color.Primary">
+                                        <MudText Typo="Typo.body1"><strong>Single Round Robin</strong> — each team plays every other team once</MudText>
+                                    </MudRadio>
+                                    <MudRadio T="int" Value="2" Color="Color.Primary" Class="mt-2">
+                                        <MudText Typo="Typo.body1"><strong>Double Round Robin</strong> — each team plays every other team twice (home &amp; away)</MudText>
+                                    </MudRadio>
+                                </MudRadioGroup>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Class="section-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.DateRange" Class="section-icon" />
+                                    Schedule
+                                </MudText>
+                                <MudDivider Class="section-divider" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudDatePicker @bind-Date="_startDate"
+                                               Label="Start Date"
+                                               Variant="Variant.Text"
+                                               Adornment="Adornment.Start"
+                                               AdornmentIcon="@Icons.Material.Filled.CalendarToday"
+                                               DateFormat="dd.MM.yyyy."
+                                               Editable="true"
+                                               Required="true"
+                                               RequiredError="Start date is required" />
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudDatePicker @bind-Date="_endDate"
+                                               Label="End Date"
+                                               Variant="Variant.Text"
+                                               Adornment="Adornment.Start"
+                                               AdornmentIcon="@Icons.Material.Filled.EventAvailable"
+                                               DateFormat="dd.MM.yyyy."
+                                               Editable="true"
+                                               Required="true"
+                                               RequiredError="End date is required" />
+                            </MudItem>
+
+                            <MudItem xs="12" Class="form-actions">
+                                <MudButton OnClick="HandleSubmit"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           Size="Size.Large"
+                                           StartIcon="@Icons.Material.Filled.Save"
+                                           Disabled="_isProcessing || !_isFormValid"
+                                           Class="action-button">
+                                    @if (_isProcessing)
+                                    {
+                                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                        <MudText Class="ms-2">Updating League...</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText>Update League</MudText>
+                                    }
+                                </MudButton>
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Secondary"
+                                           Size="Size.Large"
+                                           StartIcon="@Icons.Material.Filled.Cancel"
+                                           OnClick="@(() => NavigationManager.NavigateTo($"/leagues/{Id}"))"
+                                           Disabled="_isProcessing"
+                                           Class="action-button ml-4">
+                                    Cancel
+                                </MudButton>
+                            </MudItem>
+
+                        </MudGrid>
+                    </MudForm>
+                </MudPaper>
+            }
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>

@@ -63,7 +63,7 @@ namespace HRKošarka.UI.Components.Pages.Club
                         PostalCode = _club.PostalCode ?? string.Empty,
                         VenueName = _club.VenueName ?? string.Empty,
                         VenueCapacity = _club.VenueCapacity,
-                        FoundedYear = new DateTimeOffset(new DateTime(_club.FoundedYear, 1, 1))
+                        FoundedYear = new DateTime(_club.FoundedYear, 1, 1),
                     };
                 }
                 else

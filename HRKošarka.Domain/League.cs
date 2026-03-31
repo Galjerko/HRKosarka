@@ -31,6 +31,8 @@ namespace HRKošarka.Domain
 
         public bool IsActive { get; set; } = true;
 
+        public DateTime? DeactivateDate { get; set; }
+
         [MaxLength(255)]
         public string? ImageName { get; set; }
 

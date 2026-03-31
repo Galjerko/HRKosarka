@@ -30,7 +30,9 @@ namespace HRKošarka.UI.Components.Pages
         protected async Task HandleLogin()
         {
             if (!ValidateModel())
+            {
                 return;
+            }
 
             _isLoading = true;
             Message = string.Empty;

@@ -44,7 +44,6 @@ namespace HRKošarka.UI.Components.Pages.Team
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
-            // REMOVED SetListPermissions() - using per-club permissions instead
             await LoadAgeCategories();
         }
 
@@ -52,17 +51,22 @@ namespace HRKošarka.UI.Components.Pages.Team
         {
             var result = await AgeCategoryService.GetAllAgeCategories();
             if (result.IsSuccess && result.Data != null)
+            {
                 _ageCategories = result.Data;
+            }
+
         }
 
         private async Task<UserPermissions> GetTeamPermissions(Guid clubId)
         {
             try
             {
-                if (CurrentUser == null)
-                    await LoadUserContext();
+            if (CurrentUser == null)
+            {
+                await LoadUserContext();
+            }
 
-                return await PermissionService.GetPermissionsAsync(CurrentUser!, clubId);
+            return await PermissionService.GetPermissionsAsync(CurrentUser!, clubId);
             }
             catch (Exception ex)
             {
@@ -113,23 +117,28 @@ namespace HRKošarka.UI.Components.Pages.Team
         private async Task OnSearchChanged()
         {
             if (_table != null)
+            {
                 await _table.ReloadServerData();
+            }
         }
 
         private async Task OnFilterChanged()
         {
             if (_table != null)
+            {
                 await _table.ReloadServerData();
+            }
         }
 
-        private void ResetFilters()
+        private async Task ResetFilters()
         {
-            FilterAgeCategory = null;
-            FilterGender = null;
-            FilterActive = null;
+            _filterAgeCategory = null;
+            _filterGender = null;
+            _filterActive = null;
             _searchTerm = string.Empty;
-            OnFilterChanged();
+            await OnFilterChanged();
         }
+
 
         private async Task<TableData<TeamDTO>> LoadServerData(TableState state, CancellationToken token)
         {
@@ -250,10 +259,16 @@ namespace HRKošarka.UI.Components.Pages.Team
                 else
                 {
                     if (result.Errors?.Any() == true)
+                    {
                         foreach (var error in result.Errors)
+                        {
                             Snackbar.Add(error, Severity.Error);
+                        }
+                    }
                     else
+                    {
                         Snackbar.Add(result.Message ?? "Failed to rename team.", Severity.Error);
+                    }
                 }
             }
             catch (Exception ex)

@@ -296,6 +296,9 @@ namespace HRKošarka.Persistence.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeactivateDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("DeletedBy")
                         .HasColumnType("varchar(450)");
 

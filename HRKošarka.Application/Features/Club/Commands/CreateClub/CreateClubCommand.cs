@@ -1,6 +1,5 @@
 ﻿using HRKošarka.Application.Models.Responses;
 using MediatR;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace HRKošarka.Application.Features.Club.Commands.CreateClub
 {
@@ -15,7 +14,6 @@ namespace HRKošarka.Application.Features.Club.Commands.CreateClub
         public string? Website { get; set; }
         public string? PostalCode { get; set; }
 
-        [SwaggerSchema(Format = "date")]
         public DateTime FoundedYear { get; set; }
 
         public string? ImageName { get; set; }
