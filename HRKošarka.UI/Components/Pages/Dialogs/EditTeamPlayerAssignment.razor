@@ -1,0 +1,43 @@
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-3">Edit Team Assignment</MudText>
+
+        @if (Player is not null)
+        {
+            <MudPaper Outlined="true" Class="pa-3 mb-3">
+                <MudText Typo="Typo.subtitle1">@($"{Player.PlayerFirstName} {Player.PlayerLastName}")</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Reg #: @Player.RegistrationNumber
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    DOB: @Player.DateOfBirth.ToString("dd.MM.yyyy.") | Position: @GetPositionLabel(Player.Position)
+                </MudText>
+            </MudPaper>
+
+            <MudNumericField T="int?"
+                             @bind-Value="_jerseyNumber"
+                             Label="Jersey Number"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Min="0"
+                             Max="99"
+                             HelperText="Leave empty if the player should not have a jersey number assigned yet." />
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="_saving"
+                   OnClick="Save">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Save
+        </MudButton>
+    </DialogActions>
+</MudDialog>

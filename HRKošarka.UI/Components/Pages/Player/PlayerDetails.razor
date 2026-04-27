@@ -1,0 +1,365 @@
+@page "/players/{id:guid}"
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@using HRKošarka.UI.Components.Pages.Dialogs
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<PageTitle>Player Details - Basketball Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="details-container">
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.h6">Loading player details...</MudText>
+        </div>
+    }
+    else if (_player != null)
+    {
+        <MudPaper Class="details-paper" Elevation="2">
+
+            <div class="details-actions-row">
+                <div class="details-actions-group">
+                    <AuditHistory DateCreated="@_player.DateCreated"
+                                  DateModified="@_player.DateModified"
+                                  DateDeleted="@_player.DateDeleted"
+                                  CreatedBy="@_player.CreatedBy"
+                                  ModifiedBy="@_player.ModifiedBy"
+                                  DeletedBy="@_player.DeletedBy" />
+
+                    @if (_isAdmin && _player.IsActive)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   OnClick="@(() => NavigationManager.NavigateTo($"/players/edit/{Id}"))"
+                                   Class="action-btn details-action-btn">
+                            Edit
+                        </MudButton>
+                    }
+
+                    @if (_isAdmin && _player.IsActive)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Warning"
+                                   StartIcon="@Icons.Material.Filled.Pause"
+                                   OnClick="DeactivatePlayer"
+                                   Disabled="@_isProcessing"
+                                   Class="action-btn details-action-btn">
+                            Deactivate
+                        </MudButton>
+                    }
+                    else if (_isAdmin && !_player.IsActive)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Success"
+                                   StartIcon="@Icons.Material.Filled.PlayArrow"
+                                   OnClick="ActivatePlayer"
+                                   Disabled="@_isProcessing"
+                                   Class="action-btn details-action-btn">
+                            Activate
+                        </MudButton>
+                    }
+
+                    @if (_isAdmin)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Error"
+                                   StartIcon="@Icons.Material.Filled.Delete"
+                                   OnClick="DeletePlayer"
+                                   Disabled="@_isProcessing"
+                                   Class="action-btn details-action-btn">
+                            Delete
+                        </MudButton>
+                    }
+
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.ArrowBack"
+                               OnClick="@(() => NavigationManager.NavigateTo("/players"))"
+                               Class="action-btn details-action-btn back-action-btn">
+                        Back
+                    </MudButton>
+                </div>
+            </div>
+
+            <div class="details-info-row">
+                @{
+                    var photoUrl = GetPhotoUrl();
+                }
+
+                <div class="logo-wrapper">
+                    @if (!string.IsNullOrEmpty(photoUrl))
+                    {
+                        <MudImage Src="@photoUrl"
+                                  Alt="@($"{_player.FirstName} {_player.LastName}")"
+                                  Class="logo-image" />
+                    }
+                    else
+                    {
+                        <MudAvatar Class="logo-fallback">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" />
+                        </MudAvatar>
+                    }
+                </div>
+
+                <MudText Typo="Typo.h3" Class="details-name">@_player.FirstName @_player.LastName</MudText>
+                <MudChip T="string"
+                         Color="@(_player.IsActive ? Color.Success : Color.Error)"
+                         Size="Size.Small"
+                         Class="status-chip">
+                    @(_player.IsActive ? "Active" : "Inactive")
+                </MudChip>
+            </div>
+
+            <MudDivider Class="my-4" />
+
+            <MudExpansionPanels Elevation="0" Class="expansion-panels">
+                <MudExpansionPanel IsInitiallyExpanded="true" Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">Personal Information</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <MudText Class="info-label">First Name</MudText>
+                                    <MudText Class="info-value">@_player.FirstName</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Last Name</MudText>
+                                    <MudText Class="info-value">@_player.LastName</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Registration Number</MudText>
+                                    <MudText Class="info-value">@_player.RegistrationNumber</MudText>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <MudText Class="info-label">Date of Birth</MudText>
+                                    <MudText Class="info-value">@_player.DateOfBirth.ToString("dd/MM/yyyy")</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Gender</MudText>
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Color="@(_player.Gender == Gender._0 ? Color.Info : Color.Secondary)">
+                                        @(_player.Gender == Gender._0 ? "Male" : "Female")
+                                    </MudChip>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Nationality</MudText>
+                                    <MudText Class="info-value">@(_player.Nationality ?? "-")</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Status</MudText>
+                                    <MudText Class="info-value" Color="@(_player.IsActive ? Color.Success : Color.Error)">
+                                        @(_player.IsActive ? "Active" : $"Deactivated on {_player.DeactivateDate?.ToString("dd/MM/yyyy")}")
+                                    </MudText>
+                                </div>
+                            </div>
+                        </div>
+                    </ChildContent>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.FitnessCenter" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">Physical & Sport Information</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <MudText Class="info-label">Position</MudText>
+                                    <MudText Class="info-value">@GetPositionLabel(_player.Position)</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Height</MudText>
+                                    <MudText Class="info-value">@(_player.Height.HasValue ? $"{_player.Height} cm" : "-")</MudText>
+                                </div>
+                                <div class="info-item">
+                                    <MudText Class="info-label">Weight</MudText>
+                                    <MudText Class="info-value">@(_player.Weight.HasValue ? $"{_player.Weight} kg" : "-")</MudText>
+                                </div>
+                            </div>
+                        </div>
+                    </ChildContent>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Groups" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">
+                                Current Team Assignments
+                                @if (_assignments.Any())
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2">@_assignments.Count</MudChip>
+                                }
+                            </MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        @if (_isAdmin && _player.IsActive)
+                        {
+                            <div class="mb-3">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.PersonAdd"
+                                           OnClick="OpenAssignTeamDialog"
+                                           Size="Size.Small">
+                                    Assign to Team
+                                </MudButton>
+                            </div>
+                        }
+
+                        @if (_isLoadingAssignments)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                        }
+                        else if (!_assignments.Any())
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Player is not currently assigned to any team.</MudText>
+                        }
+                        else
+                        {
+                            <MudTable Items="_assignments" Dense="true" Hover="true" Striped="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh>Team</MudTh>
+                                    <MudTh>Club</MudTh>
+                                    <MudTh>Age Category</MudTh>
+                                    <MudTh>Gender</MudTh>
+                                    <MudTh>Season</MudTh>
+                                    <MudTh>Jersey #</MudTh>
+                                    <MudTh>Join Date</MudTh>
+                                    @if (_isAdmin)
+                                    {
+                                        <MudTh></MudTh>
+                                    }
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd>
+                                        <MudLink Href="@($"/teams/{context.TeamId}")">@context.TeamName</MudLink>
+                                    </MudTd>
+                                    <MudTd>@context.ClubName</MudTd>
+                                    <MudTd>@context.AgeCategoryName</MudTd>
+                                    <MudTd>
+                                        <MudChip T="string"
+                                                 Size="Size.Small"
+                                                 Color="@(context.Gender == Gender._0 ? Color.Info : Color.Secondary)">
+                                            @(context.Gender == Gender._0 ? "Male" : "Female")
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd>@context.SeasonName</MudTd>
+                                    <MudTd>@(context.JerseyNumber.HasValue ? $"#{context.JerseyNumber}" : "-")</MudTd>
+                                    <MudTd>@context.JoinDate.ToString("dd/MM/yyyy")</MudTd>
+                                    @if (_isAdmin)
+                                    {
+                                        <MudTd>
+                                            <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
+                                                           Color="Color.Error"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => RemoveAssignment(context))"
+                                                           Disabled="_isProcessing" />
+                                        </MudTd>
+                                    }
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudPaper>
+    }
+    else
+    {
+        <div class="error-state">
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Large" Color="Color.Error" />
+            <MudText Typo="Typo.h5" Color="Color.Error">Player Not Found</MudText>
+            <MudText Typo="Typo.body1">The player you're looking for doesn't exist or has been removed.</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="@(() => NavigationManager.NavigateTo("/players"))">
+                Back to Players
+            </MudButton>
+        </div>
+    }
+</MudContainer>
+
+<ConfirmActionDialog Visible="_showDeactivateDialog"
+                     VisibleChanged="v => _showDeactivateDialog = v"
+                     Title="Confirm Deactivation"
+                     TitleIcon="@Icons.Material.Filled.PauseCircle"
+                     TitleIconColor="Color.Warning"
+                     Message="@DeactivateMessage"
+                     SecondaryMessage="This action can be reversed later."
+                     SecondaryMessageColor="Color.Warning"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DEACTIVATE"
+                     ConfirmIcon="@Icons.Material.Filled.Pause"
+                     ConfirmColor="Color.Warning"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmDeactivate"
+                     Options="_dialogOptions" />
+
+<ConfirmActionDialog Visible="_showActivateDialog"
+                     VisibleChanged="v => _showActivateDialog = v"
+                     Title="Confirm Activation"
+                     TitleIcon="@Icons.Material.Filled.PlayCircle"
+                     TitleIconColor="Color.Success"
+                     Message="@ActivateMessage"
+                     SecondaryMessage="This action will make the player active again."
+                     SecondaryMessageColor="Color.Success"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="ACTIVATE"
+                     ConfirmIcon="@Icons.Material.Filled.PlayArrow"
+                     ConfirmColor="Color.Success"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmActivate"
+                     Options="_dialogOptions" />
+
+<ConfirmActionDialog Visible="_showDeleteDialog"
+                     VisibleChanged="v => _showDeleteDialog = v"
+                     Title="Confirm Deletion"
+                     TitleIcon="@Icons.Material.Filled.Warning"
+                     TitleIconColor="Color.Error"
+                     Message="@DeleteMessage"
+                     SecondaryMessage="This action cannot be undone!"
+                     SecondaryMessageColor="Color.Error"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DELETE"
+                     ConfirmIcon="@Icons.Material.Filled.Delete"
+                     ConfirmColor="Color.Error"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmDelete"
+                     Options="_dialogOptions" />
+
+<ConfirmActionDialog Visible="_showRemoveAssignmentDialog"
+                     VisibleChanged="v => _showRemoveAssignmentDialog = v"
+                     Title="Confirm Remove from Team"
+                     TitleIcon="@Icons.Material.Filled.PersonRemove"
+                     TitleIconColor="Color.Error"
+                     Message="@($"Are you sure you want to remove <strong>{_player?.FirstName} {_player?.LastName}</strong> from <strong>{_assignmentToRemove?.TeamName}</strong>?")"
+                     SecondaryMessage="The player can be reassigned later."
+                     SecondaryMessageColor="Color.Warning"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="REMOVE"
+                     ConfirmIcon="@Icons.Material.Filled.PersonRemove"
+                     ConfirmColor="Color.Error"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmRemoveAssignment"
+                     Options="_dialogOptions" />

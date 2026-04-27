@@ -1,4 +1,4 @@
-﻿using Blazored.LocalStorage;
+using Blazored.LocalStorage;
 using HRKošarka.UI.Contracts;
 using HRKošarka.UI.Services.Base;
 using HRKošarka.UI.Services.Base.Common.Requests;
@@ -42,7 +42,6 @@ public class TeamService : BaseHttpService, ITeamService
             return ConvertApiExceptionsToPaginated<TeamDTO>(ex);
         }
     }
-
 
     public async Task<QueryResponse<TeamDetailsDTO>> GetTeamDetails(Guid id)
     {
@@ -150,6 +149,89 @@ public class TeamService : BaseHttpService, ITeamService
             await AddBearerToken();
             await _client.DeleteTeamAsync(id);
             return CommandResponse<bool>.Success(true, "Team deleted successfully");
+        }
+        catch (ApiException<CustomProblemDetails> ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+    }
+
+    public async Task<QueryResponse<List<TeamRosterPlayerDTO>>> GetTeamRoster(Guid teamId)
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.GetTeamRosterAsync(teamId);
+            return new QueryResponse<List<TeamRosterPlayerDTO>>
+            {
+                Data = response.Data?.ToList() ?? new List<TeamRosterPlayerDTO>(),
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptionsToQuery<List<TeamRosterPlayerDTO>>(ex);
+        }
+    }
+
+    public async Task<CommandResponse<Guid>> AssignPlayerToTeam(Guid teamId, AssignPlayerToTeamCommand command)
+    {
+        try
+        {
+            await AddBearerToken();
+            command.TeamId = teamId;
+            var response = await _client.AssignPlayerToTeamAsync(teamId, command);
+            return new CommandResponse<Guid>
+            {
+                Data = response.Data,
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException<CustomProblemDetails> ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
+    }
+
+    public async Task<CommandResponse<bool>> UpdatePlayerAssignmentInTeam(Guid teamId, Guid playerId, UpdatePlayerAssignmentInTeamCommand command)
+    {
+        try
+        {
+            await AddBearerToken();
+            command.TeamId = teamId;
+            command.PlayerId = playerId;
+            await _client.UpdatePlayerAssignmentInTeamAsync(teamId, playerId, command);
+            return CommandResponse<bool>.Success(true, "Player assignment updated successfully");
+        }
+        catch (ApiException<CustomProblemDetails> ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+    }
+
+    public async Task<CommandResponse<bool>> RemovePlayerFromTeam(Guid teamId, Guid playerId)
+    {
+        try
+        {
+            await AddBearerToken();
+            await _client.RemovePlayerFromTeamAsync(teamId, playerId);
+            return CommandResponse<bool>.Success(true, "Player removed from team successfully");
         }
         catch (ApiException<CustomProblemDetails> ex)
         {

@@ -1,0 +1,216 @@
+@page "/players"
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@using HRKošarka.UI.Models.UserManagement
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Players Management</MudText>
+
+    <MudTextField @bind-Value="_searchTerm"
+                  Placeholder="Search players by name or registration number..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Class="mb-4"
+                  Immediate="true"
+                  DebounceInterval="300"
+                  OnDebounceIntervalElapsed="OnSearchChanged" />
+
+    <MudTable @ref="_table"
+              ServerData="LoadServerData"
+              SortLabel="Sort by"
+              Sortable="true"
+              Loading="_loading"
+              Hover="true"
+              Striped="true"
+              Dense="true"
+              FixedHeader="true"
+              Height="600px">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Players</MudText>
+            <MudSpacer />
+            @if (CanCreate)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="CreatePlayer">
+                    Add Player
+                </MudButton>
+            }
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel T="PlayerDTO" SortLabel="FirstName">First Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel T="PlayerDTO" SortLabel="LastName">Last Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>Registration No.</MudTh>
+            <MudTh>
+                <MudTableSortLabel T="PlayerDTO" SortLabel="DateOfBirth">Date of Birth</MudTableSortLabel>
+            </MudTh>
+            <MudTh>Position</MudTh>
+            <MudTh>Gender</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="text-align: center">Actions</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="First Name">
+                <MudText Typo="Typo.body2">@context.FirstName</MudText>
+            </MudTd>
+            <MudTd DataLabel="Last Name">
+                <MudText Typo="Typo.body2">@context.LastName</MudText>
+            </MudTd>
+            <MudTd DataLabel="Registration No.">
+                <MudText Typo="Typo.body2">@context.RegistrationNumber</MudText>
+            </MudTd>
+            <MudTd DataLabel="Date of Birth">
+                <MudText Typo="Typo.body2">@context.DateOfBirth.ToString("dd/MM/yyyy")</MudText>
+            </MudTd>
+            <MudTd DataLabel="Position">
+                <MudText Typo="Typo.body2">@GetPositionLabel(context.Position)</MudText>
+            </MudTd>
+            <MudTd DataLabel="Gender">
+                <MudChip T="string"
+                         Size="Size.Small"
+                         Color="@(context.Gender == Gender._0 ? Color.Info : Color.Secondary)">
+                    @(context.Gender == Gender._0 ? "Male" : "Female")
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip T="string"
+                         Color="@(context.IsActive ? Color.Success : Color.Error)"
+                         Size="Size.Small">
+                    @(context.IsActive ? "Active" : "Inactive")
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Actions" Style="text-align: center">
+                <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   OnClick="@(() => ViewPlayer(context.Id))"
+                                   Title="View Details" />
+
+                    @if (CanEdit && context.IsActive)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Secondary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditPlayer(context.Id))"
+                                       Title="Edit Player" />
+                    }
+
+                    @if (CanDeactivate && context.IsActive)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Block"
+                                       Color="Color.Warning"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeactivatePlayer(context.Id, context.FirstName + " " + context.LastName))"
+                                       Title="Deactivate Player" />
+                    }
+                    else
+                    {
+                        @if (CanDeactivate && !context.IsActive)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
+                                           Color="Color.Success"
+                                           Size="Size.Small"
+                                           OnClick="@(() => ActivatePlayer(context.Id, context.FirstName + " " + context.LastName))"
+                                           Title="Activate Player" />
+                        }
+                    }
+
+                    @if (CanDelete)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeletePlayer(context.Id, context.FirstName + " " + context.LastName))"
+                                       Title="Delete Player" />
+                    }
+                </MudButtonGroup>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                @if (!string.IsNullOrWhiteSpace(_searchTerm))
+                {
+                    <span>No players found matching "@_searchTerm"</span>
+                }
+                else
+                {
+                    <span>No players available</span>
+                }
+            </MudText>
+        </NoRecordsContent>
+
+        <LoadingContent>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">
+                Loading players...
+            </MudText>
+        </LoadingContent>
+        <PagerContent>
+            <MudTablePager Class="styled-dropdown" HidePageNumber="false" PageSizeOptions="@_pageSizeOptions" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+<ConfirmActionDialog Visible="_showDeactivateDialog"
+                     VisibleChanged="v => _showDeactivateDialog = v"
+                     Title="Confirm Deactivation"
+                     TitleIcon="@Icons.Material.Filled.PauseCircle"
+                     TitleIconColor="Color.Warning"
+                     Message=@($"Are you sure you want to deactivate player <strong>{_selectedPlayerName}</strong>?")
+                     SecondaryMessage="This action can be reversed later."
+                     SecondaryMessageColor="Color.Warning"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DEACTIVATE"
+                     ConfirmIcon="@Icons.Material.Filled.Pause"
+                     ConfirmColor="Color.Warning"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="false"
+                     OnConfirm="ConfirmDeactivate"
+                     Options="_dialogOptions" />
+
+<ConfirmActionDialog Visible="_showActivateDialog"
+                     VisibleChanged="v => _showActivateDialog = v"
+                     Title="Confirm Activation"
+                     TitleIcon="@Icons.Material.Filled.PlayCircle"
+                     TitleIconColor="Color.Success"
+                     Message=@($"Are you sure you want to activate player <strong>{_selectedPlayerName}</strong>?")
+                     SecondaryMessage="This action will make the player active again."
+                     SecondaryMessageColor="Color.Success"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="ACTIVATE"
+                     ConfirmIcon="@Icons.Material.Filled.PlayArrow"
+                     ConfirmColor="Color.Success"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="false"
+                     OnConfirm="ConfirmActivate"
+                     Options="_dialogOptions" />
+
+<ConfirmActionDialog Visible="_showDeleteDialog"
+                     VisibleChanged="v => _showDeleteDialog = v"
+                     Title="Confirm Deletion"
+                     TitleIcon="@Icons.Material.Filled.Warning"
+                     TitleIconColor="Color.Error"
+                     Message=@($"Are you sure you want to delete player <strong>{_selectedPlayerName}</strong>?")
+                     SecondaryMessage="This action cannot be undone."
+                     SecondaryMessageColor="Color.Error"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="DELETE"
+                     ConfirmIcon="@Icons.Material.Filled.Delete"
+                     ConfirmColor="Color.Error"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="false"
+                     OnConfirm="ConfirmDelete"
+                     Options="_dialogOptions" />

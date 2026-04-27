@@ -7,14 +7,14 @@ namespace HRKošarka.Domain.Common
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public DateTime DateCreated { get; set; } = DateTime.Now;
         public DateTime? DateModified { get; set; }
         public DateTime? DateDeleted { get; set; }
 
         [Column(TypeName = "varchar(450)")]
-        public string? CreatedBy { get; set; } 
+        public string? CreatedBy { get; set; }
         [Column(TypeName = "varchar(450)")]
-        public string? ModifiedBy { get; set; } 
+        public string? ModifiedBy { get; set; }
         [Column(TypeName = "varchar(450)")]
         public string? DeletedBy { get; set; }
     }

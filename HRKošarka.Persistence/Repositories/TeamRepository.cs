@@ -1,7 +1,9 @@
 ﻿using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Features.Team.Queries.GetAllTeams;
+using HRKošarka.Application.Features.Team.Queries.GetAvailableTeamsForPlayer;
 using HRKošarka.Application.Models.Responses;
 using HRKošarka.Domain;
+using HRKošarka.Domain.Helpers;
 using HRKošarka.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -94,6 +96,73 @@ namespace HRKošarka.Persistence.Repositories
                 .Include(t => t.Club)
                 .Include(t => t.AgeCategory)
                 .FirstOrDefaultAsync(t => t.Id == teamId, cancellationToken);
+        }
+
+        public async Task<List<PlayerTeamHistory>> GetTeamRosterAsync(Guid teamId, CancellationToken cancellationToken = default)
+        {
+            return await _context.PlayerTeamHistory
+                .Include(pth => pth.Player)
+                .Include(pth => pth.Season)
+                .Where(pth => pth.TeamId == teamId && pth.IsActive)
+                .OrderBy(pth => pth.JerseyNumber ?? 999)
+                .ThenBy(pth => pth.Player.LastName)
+                .ThenBy(pth => pth.Player.FirstName)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<AvailableTeamDTO>> GetAvailableTeamsForPlayerAsync(
+            Guid playerId, string? searchTerm, CancellationToken cancellationToken = default)
+        {
+            var player = await _context.Players.FindAsync(new object[] { playerId }, cancellationToken);
+            if (player == null) return new List<AvailableTeamDTO>();
+
+            var playerDOB = player.DateOfBirth;
+            var playerGender = player.Gender;
+
+            var activeAssignments = await _context.PlayerTeamHistory
+                .Where(pth => pth.PlayerId == playerId && pth.IsActive)
+                .Select(pth => new { pth.TeamId, pth.Team.AgeCategoryId })
+                .ToListAsync(cancellationToken);
+
+            var excludedTeamIds = activeAssignments.Select(a => a.TeamId).ToList();
+            var excludedAgeCategoryIds = activeAssignments.Select(a => a.AgeCategoryId).ToList();
+
+            var query = _context.Teams
+                .Include(t => t.Club)
+                .Include(t => t.AgeCategory)
+                .Where(t => t.DeactivateDate == null)
+                .Where(t => t.Gender == playerGender)
+                .Where(t => !excludedTeamIds.Contains(t.Id))
+                .Where(t => !excludedAgeCategoryIds.Contains(t.AgeCategoryId))
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var term = searchTerm.ToLower();
+                query = query.Where(t =>
+                    t.Name.ToLower().Contains(term) ||
+                    t.Club.Name.ToLower().Contains(term) ||
+                    t.AgeCategory.Name.ToLower().Contains(term));
+            }
+
+            var teams = await query
+                .OrderBy(t => t.AgeCategory.Name)
+                .ThenBy(t => t.Name)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            return teams
+                .Where(t => AgeCategoryEligibility.IsEligible(t.AgeCategory.Code, playerDOB))
+                .Select(t => new AvailableTeamDTO
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    ClubName = t.Club.Name,
+                    AgeCategoryName = t.AgeCategory.Name,
+                    Gender = t.Gender
+                })
+                .ToList();
         }
     }
 }

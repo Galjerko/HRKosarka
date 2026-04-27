@@ -1,0 +1,141 @@
+@using HRKošarka.UI.Services.Base
+@using MudBlazor
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<style>
+    .picker-row { cursor: pointer; transition: background 0.15s; }
+    .picker-row:hover td { background: var(--mud-palette-action-hover) !important; }
+    .picker-row-selected td { background: var(--mud-palette-primary-lighten) !important; font-weight: 600; }
+    .picker-table-container { border: 1px solid var(--mud-palette-lines-inputs); border-radius: 4px; overflow-y: auto; max-height: 280px; }
+</style>
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-3">Assign Player to Team</MudText>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-1">Select Player</MudText>
+        <MudTextField Value="_searchTerm"
+                      ValueChanged="@((string v) => OnSearchChanged(v))"
+                      Placeholder="Search by name or registration number..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      DebounceInterval="300"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="mb-2" />
+
+        @if (_selectedPlayer is not null)
+        {
+            <MudChip T="string"
+                     Color="Color.Primary"
+                     Icon="@Icons.Material.Filled.Person"
+                     OnClose="@(() => _selectedPlayer = null)"
+                     Class="mb-2">
+                @_selectedPlayer.FullName (@_selectedPlayer.RegistrationNumber)
+            </MudChip>
+        }
+
+        <div class="picker-table-container mb-4">
+            @if (_loadingPlayers)
+            {
+                <div class="d-flex justify-center align-center pa-4">
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <MudText Typo="Typo.body2">Loading players...</MudText>
+                </div>
+            }
+            else if (!_players.Any())
+            {
+                <div class="d-flex justify-center align-center pa-4">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">No available players found.</MudText>
+                </div>
+            }
+            else
+            {
+                <MudTable Items="_players"
+                          Dense="true"
+                          Hover="false"
+                          Elevation="0"
+                          RowClassFunc="PlayerRowClass"
+                          OnRowClick="@((TableRowClickEventArgs<AvailablePlayerDTO> e) => { if (e.Item is not null) SelectPlayer(e.Item); })">
+                    <HeaderContent>
+                        <MudTh>Player</MudTh>
+                        <MudTh>Reg. #</MudTh>
+                        <MudTh>DOB</MudTh>
+                        <MudTh>Position</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Player">@context.FullName</MudTd>
+                        <MudTd DataLabel="Reg. #">@context.RegistrationNumber</MudTd>
+                        <MudTd DataLabel="DOB">@context.DateOfBirth.ToString("dd.MM.yyyy.")</MudTd>
+                        <MudTd DataLabel="Position">@GetPositionLabel(context.Position)</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </div>
+
+        <MudDivider Class="mb-3" />
+
+        <MudSelect T="SeasonDTO"
+                   Label="Season"
+                   Value="_selectedSeason"
+                   ValueChanged="OnSeasonChanged"
+                   ToStringFunc="@(s => s?.Name ?? string.Empty)"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Dense="true"
+                   Required="true"
+                   Disabled="_loadingSeasons"
+                   Class="mb-1">
+            @foreach (var season in _seasons)
+            {
+                <MudSelectItem T="SeasonDTO" Value="@season">@season.Name</MudSelectItem>
+            }
+        </MudSelect>
+
+        @if (_selectedSeason is not null)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3">
+                Season period: @_selectedSeason.StartDate.ToString("dd.MM.yyyy.") – @_selectedSeason.EndDate.ToString("dd.MM.yyyy.")
+            </MudText>
+        }
+
+        <MudDatePicker Date="_joinDate"
+                       DateChanged="@(value => _joinDate = value)"
+                       Label="Join Date"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       DateFormat="dd.MM.yyyy."
+                       Editable="true"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@Icons.Material.Filled.Event"
+                       Required="true"
+                       MinDate="MinJoinDate"
+                       MaxDate="MaxJoinDate"
+                       Disabled="_selectedSeason is null"
+                       HelperText="@(_selectedSeason is null ? "Select a season first" : string.Empty)"
+                       Class="mb-3" />
+
+        <MudNumericField T="int?"
+                         @bind-Value="_jerseyNumber"
+                         Label="Jersey Number (optional)"
+                         Variant="Variant.Outlined"
+                         Margin="Margin.Dense"
+                         Min="0"
+                         Max="99" />
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="!CanSave"
+                   OnClick="Save">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Assign
+        </MudButton>
+    </DialogActions>
+</MudDialog>

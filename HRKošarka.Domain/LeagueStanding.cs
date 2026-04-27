@@ -36,7 +36,7 @@ namespace HRKošarka.Domain
         public bool IsFinal { get; set; } = false;
 
         [Required]
-        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+        public DateTime LastUpdated { get; set; } = DateTime.Now;
 
         public virtual League League { get; set; } = null!;
         public virtual Team Team { get; set; } = null!;

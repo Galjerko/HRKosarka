@@ -8,11 +8,16 @@ namespace HRKošarka.Application.Features.Team.Commands.DeactivateTeam
     public class DeactivateTeamCommandHandler : IRequestHandler<DeactivateTeamCommand, Unit>
     {
         private readonly ITeamRepository _teamRepository;
-        private IAppLogger<DeactivateTeamCommandHandler> _logger;
+        private readonly IPlayerTeamHistoryRepository _historyRepository;
+        private readonly IAppLogger<DeactivateTeamCommandHandler> _logger;
 
-        public DeactivateTeamCommandHandler(ITeamRepository teamRepository, IAppLogger<DeactivateTeamCommandHandler> logger)
+        public DeactivateTeamCommandHandler(
+            ITeamRepository teamRepository,
+            IPlayerTeamHistoryRepository historyRepository,
+            IAppLogger<DeactivateTeamCommandHandler> logger)
         {
             _teamRepository = teamRepository;
+            _historyRepository = historyRepository;
             _logger = logger;
         }
 
@@ -31,6 +36,8 @@ namespace HRKošarka.Application.Features.Team.Commands.DeactivateTeam
                 _logger.LogInformation("Team with ID {Id} is already deactivated", request.Id);
                 throw new BadRequestException("Team is already deactivated");
             }
+
+            await _historyRepository.DeactivateAllForTeamAsync(request.Id, cancellationToken);
 
             teamToDeactivate.DeactivateDate = DateTime.Now;
             await _teamRepository.UpdateAsync(teamToDeactivate, cancellationToken);

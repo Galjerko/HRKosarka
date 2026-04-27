@@ -18,7 +18,7 @@ namespace HRKošarka.UI.Providers
         {
             var user = new ClaimsPrincipal(new ClaimsIdentity());
             var isTokenPresent = await _localStorage.ContainKeyAsync("token");
-            if (isTokenPresent is false )
+            if (isTokenPresent is false)
             {
                 return new AuthenticationState(user);
             }
@@ -26,7 +26,7 @@ namespace HRKošarka.UI.Providers
             var savedToken = await _localStorage.GetItemAsync<string>("token");
             var tokenContent = _jwtSecurityTokenHandler.ReadJwtToken(savedToken);
 
-            if(tokenContent.ValidTo < DateTime.UtcNow)
+            if (tokenContent.ValidTo < DateTime.Now)
             {
                 await _localStorage.RemoveItemAsync("token");
                 return new AuthenticationState(user);
@@ -45,7 +45,7 @@ namespace HRKošarka.UI.Providers
             var user = new ClaimsPrincipal(identity);
             var authState = new AuthenticationState(user);
             NotifyAuthenticationStateChanged(Task.FromResult(authState));
-        }   
+        }
 
         public async Task LoggedOut()
         {

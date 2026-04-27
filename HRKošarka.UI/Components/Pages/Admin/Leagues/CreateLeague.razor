@@ -148,25 +148,29 @@
                             </MudItem>
 
                             <MudItem xs="12" md="6">
-                                <MudDatePicker @bind-Date="_startDate"
+                                <MudDatePicker Date="_startDate"
+                                               DateChanged="@(value => _startDate = value)"
                                                Label="Start Date"
                                                Variant="Variant.Text"
-                                               Adornment="Adornment.Start"
-                                               AdornmentIcon="@Icons.Material.Filled.CalendarToday"
+                                               Margin="Margin.Dense"
                                                DateFormat="dd.MM.yyyy."
                                                Editable="true"
+                                               Adornment="Adornment.Start"
+                                               AdornmentIcon="@Icons.Material.Filled.Event"
                                                Required="true"
                                                RequiredError="Start date is required" />
                             </MudItem>
 
                             <MudItem xs="12" md="6">
-                                <MudDatePicker @bind-Date="_endDate"
+                                <MudDatePicker Date="_endDate"
+                                               DateChanged="@(value => _endDate = value)"
                                                Label="End Date"
                                                Variant="Variant.Text"
-                                               Adornment="Adornment.Start"
-                                               AdornmentIcon="@Icons.Material.Filled.EventAvailable"
+                                               Margin="Margin.Dense"
                                                DateFormat="dd.MM.yyyy."
                                                Editable="true"
+                                               Adornment="Adornment.Start"
+                                               AdornmentIcon="@Icons.Material.Filled.EventAvailable"
                                                Required="true"
                                                RequiredError="End date is required" />
                             </MudItem>

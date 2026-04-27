@@ -176,7 +176,7 @@ namespace HRKošarka.Persistence.Repositories
             var entity = await _context.Set<T>().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
             if (entity != null)
             {
-                entity.DateDeleted = DateTime.UtcNow;
+                entity.DateDeleted = DateTime.Now;
                 _context.Entry(entity).State = EntityState.Modified;
                 await _context.SaveChangesAsync(cancellationToken);
             }

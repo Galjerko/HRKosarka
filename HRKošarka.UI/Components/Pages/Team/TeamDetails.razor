@@ -1,4 +1,4 @@
-﻿@page "/teams/{id:guid}"
+@page "/teams/{id:guid}"
 @using MudBlazor
 @using HRKošarka.UI.Services.Base
 @using HRKošarka.UI.Components.Base
@@ -141,6 +141,95 @@
                         </div>
                     </ChildContent>
                 </MudExpansionPanel>
+
+                <MudExpansionPanel IsInitiallyExpanded="true" Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.People" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">Current Roster (@_roster.Count players)</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <div class="d-flex justify-space-between align-center mb-3">
+                            @if (CurrentPermissions.CanEdit)
+                            {
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.PersonAdd"
+                                           OnClick="OpenAssignPlayerDialog"
+                                           Size="Size.Small">
+                                    Assign Player
+                                </MudButton>
+                            }
+                        </div>
+
+                        @if (_isLoadingRoster)
+                        {
+                            <div class="d-flex justify-center pa-4">
+                                <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                            </div>
+                        }
+                        else if (!_roster.Any())
+                        {
+                            <MudText Typo="Typo.body2" Class="pa-4" Color="Color.Secondary">
+                                No players currently assigned to this team.
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudTable Items="_roster" Hover="true" Dense="true" Elevation="0" Breakpoint="Breakpoint.Md">
+                                <HeaderContent>
+                                    <MudTh>#</MudTh>
+                                    <MudTh>Player</MudTh>
+                                    <MudTh>Reg. Number</MudTh>
+                                    <MudTh>DOB</MudTh>
+                                    <MudTh>Position</MudTh>
+                                    <MudTh>Season</MudTh>
+                                    <MudTh>Join Date</MudTh>
+                                    @if (CurrentPermissions.CanEdit)
+                                    {
+                                        <MudTh>Actions</MudTh>
+                                    }
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="#">@(context.JerseyNumber?.ToString() ?? "-")</MudTd>
+                                    <MudTd DataLabel="Player">
+                                        <div class="d-flex flex-column">
+                                            <MudText Typo="Typo.body1">@context.PlayerFirstName @context.PlayerLastName</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @GetPositionLabel(context.Position)
+                                            </MudText>
+                                        </div>
+                                    </MudTd>
+                                    <MudTd DataLabel="Reg. Number">@context.RegistrationNumber</MudTd>
+                                    <MudTd DataLabel="DOB">@context.DateOfBirth.ToString("dd.MM.yyyy.")</MudTd>
+                                    <MudTd DataLabel="Position">@GetPositionLabel(context.Position)</MudTd>
+                                    <MudTd DataLabel="Season">@context.SeasonName</MudTd>
+                                    <MudTd DataLabel="Join Date">@context.JoinDate.ToString("dd.MM.yyyy.")</MudTd>
+                                    @if (CurrentPermissions.CanEdit)
+                                    {
+                                        <MudTd DataLabel="Actions">
+                                            <MudTooltip Text="Edit jersey number">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                               Color="Color.Primary"
+                                                               Size="Size.Small"
+                                                               Title="Edit assignment"
+                                                               OnClick="@(() => EditPlayerAssignment(context))" />
+                                            </MudTooltip>
+                                            <MudTooltip Text="Remove from team">
+                                                <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
+                                                               Color="Color.Error"
+                                                               Size="Size.Small"
+                                                               Title="Remove from team"
+                                                               OnClick="@(() => RemovePlayer(context))" />
+                                            </MudTooltip>
+                                        </MudTd>
+                                    }
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </ChildContent>
+                </MudExpansionPanel>
             </MudExpansionPanels>
         </MudPaper>
     }
@@ -210,6 +299,24 @@
                      ConfirmVariant="Variant.Filled"
                      IsProcessing="_isProcessing"
                      OnConfirm="ConfirmDelete"
+                     Options="_dialogOptions" />
+
+<ConfirmActionDialog Visible="_showRemovePlayerDialog"
+                     VisibleChanged="v => _showRemovePlayerDialog = v"
+                     Title="Confirm Player Removal"
+                     TitleIcon="@Icons.Material.Filled.PersonRemove"
+                     TitleIconColor="Color.Error"
+                     Message="@($"Are you sure you want to remove <strong>{_playerToRemove?.PlayerFirstName} {_playerToRemove?.PlayerLastName}</strong> from the team?")"
+                     SecondaryMessage="This will end their active assignment."
+                     SecondaryMessageColor="Color.Warning"
+                     CancelText="CANCEL"
+                     CancelVariant="Variant.Outlined"
+                     ConfirmText="REMOVE"
+                     ConfirmIcon="@Icons.Material.Filled.PersonRemove"
+                     ConfirmColor="Color.Error"
+                     ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing"
+                     OnConfirm="ConfirmRemovePlayer"
                      Options="_dialogOptions" />
 
 <MudDialog @bind-Visible="_showRenameDialog"

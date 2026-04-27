@@ -51,7 +51,7 @@ namespace HRKošarka.Domain
         public DateTime? ConfirmedAt { get; set; }
 
         [Required]
-        public DateTime LastSchedulingUpdate { get; set; } = DateTime.UtcNow;
+        public DateTime LastSchedulingUpdate { get; set; } = DateTime.Now;
 
         [MaxLength(1000)]
         public string? Notes { get; set; }

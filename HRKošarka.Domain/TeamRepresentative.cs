@@ -17,7 +17,7 @@ namespace HRKošarka.Domain
 
         public bool IsActive => DeactivateDate == null;
 
-        public DateTime AssignedDate { get; set; } = DateTime.UtcNow;
+        public DateTime AssignedDate { get; set; } = DateTime.Now;
 
         public virtual Team Team { get; set; } = null!;
     }

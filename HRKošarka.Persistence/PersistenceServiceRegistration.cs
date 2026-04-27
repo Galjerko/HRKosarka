@@ -22,6 +22,8 @@ namespace HRKošarka.Persistence
             services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<ITeamRepository, TeamRepository>();
             services.AddScoped<ILeagueRepository, LeagueRepository>();
+            services.AddScoped<IPlayerRepository, PlayerRepository>();
+            services.AddScoped<IPlayerTeamHistoryRepository, PlayerTeamHistoryRepository>();
 
             return services;
         }

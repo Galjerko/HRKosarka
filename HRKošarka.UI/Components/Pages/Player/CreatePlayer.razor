@@ -1,0 +1,208 @@
+@page "/players/create"
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@using Microsoft.AspNetCore.Authorization
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<PageTitle>Create Player - Basketball Management</PageTitle>
+
+<AuthorizeView Roles="Administrator">
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="form-page-container">
+            <MudPaper Class="form-card club-form-card">
+                <div class="form-header">
+                    <MudAvatar Size="Size.Large" Class="form-icon-avatar">
+                        <MudIcon Icon="@Icons.Material.Filled.SportsBasketball" Size="Size.Large" />
+                    </MudAvatar>
+                    <MudText Typo="Typo.h4" Class="form-title">Register New Player</MudText>
+                    <MudText Typo="Typo.h6" Class="form-subtitle">Add a new player to the system</MudText>
+                </div>
+
+                <MudForm @ref="_form" @bind-IsValid="@_isFormValid">
+                    <MudGrid Spacing="4">
+
+                        <MudItem xs="12">
+                            <ImageUpload Label="Player Photo" OnImageChanged="OnImageChanged" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Class="section-title">
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Class="section-icon" />
+                                Personal Information
+                            </MudText>
+                            <MudDivider Class="section-divider" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_model.FirstName"
+                                          Label="First Name"
+                                          Variant="Variant.Text"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Person"
+                                          Required="true"
+                                          RequiredError="First name is required"
+                                          Counter="100"
+                                          MaxLength="100"
+                                          Validation="@(new Func<string, IEnumerable<string>>(ValidateFirstName))" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_model.LastName"
+                                          Label="Last Name"
+                                          Variant="Variant.Text"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Person"
+                                          Required="true"
+                                          RequiredError="Last name is required"
+                                          Counter="100"
+                                          MaxLength="100"
+                                          Validation="@(new Func<string, IEnumerable<string>>(ValidateLastName))" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_model.RegistrationNumber"
+                                          Label="Registration Number"
+                                          Variant="Variant.Text"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Badge"
+                                          Required="true"
+                                          RequiredError="Registration number is required"
+                                          Validation="@(new Func<string, IEnumerable<string>>(ValidateRegistrationNumber))" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudDatePicker Date="_dateOfBirth"
+                                           DateChanged="@(value => _dateOfBirth = value)"
+                                           Label="Date of Birth"
+                                           Variant="Variant.Text"
+                                           Margin="Margin.Dense"
+                                           DateFormat="dd.MM.yyyy."
+                                           Editable="true"
+                                           Adornment="Adornment.Start"
+                                           AdornmentIcon="@Icons.Material.Filled.Cake"
+                                           Required="true"
+                                           RequiredError="Date of birth is required"
+                                           MaxDate="@DateTime.Today.AddDays(-1)"
+                                           OpenTo="OpenTo.Year"
+                                           Validation="@(new Func<DateTime?, IEnumerable<string>>(ValidateDateOfBirth))" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudSelect T="string"
+                                       @bind-Value="_model.Nationality"
+                                       Label="Nationality"
+                                       Variant="Variant.Text"
+                                       Adornment="Adornment.Start"
+                                       AdornmentIcon="@Icons.Material.Filled.Flag"
+                                       Dense="true"
+                                       Clearable="true">
+                                @foreach (var country in _countries)
+                                {
+                                    <MudSelectItem T="string" Value="@country">@country</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.body2" Class="mb-1" Style="color: var(--mud-palette-text-secondary)">Gender *</MudText>
+                            <MudRadioGroup T="HRKošarka.UI.Services.Base.Gender"
+                                           @bind-Value="_model.Gender">
+                                <MudRadio T="HRKošarka.UI.Services.Base.Gender"
+                                          Value="@HRKošarka.UI.Services.Base.Gender._0"
+                                          Color="Color.Info">
+                                    Male
+                                </MudRadio>
+                                <MudRadio T="HRKošarka.UI.Services.Base.Gender"
+                                          Value="@HRKošarka.UI.Services.Base.Gender._1"
+                                          Color="Color.Secondary">
+                                    Female
+                                </MudRadio>
+                            </MudRadioGroup>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Class="section-title">
+                                <MudIcon Icon="@Icons.Material.Filled.FitnessCenter" Class="section-icon" />
+                                Physical & Sport Information
+                            </MudText>
+                            <MudDivider Class="section-divider" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="4">
+                            <MudSelect T="HRKošarka.UI.Services.Base.Position"
+                                       @bind-Value="_model.Position"
+                                       Label="Position"
+                                       Variant="Variant.Text"
+                                       Adornment="Adornment.Start"
+                                       AdornmentIcon="@Icons.Material.Filled.SportsBasketball"
+                                       Dense="true">
+                                <MudSelectItem Value="@HRKošarka.UI.Services.Base.Position._0">Point Guard</MudSelectItem>
+                                <MudSelectItem Value="@HRKošarka.UI.Services.Base.Position._1">Shooting Guard</MudSelectItem>
+                                <MudSelectItem Value="@HRKošarka.UI.Services.Base.Position._2">Small Forward</MudSelectItem>
+                                <MudSelectItem Value="@HRKošarka.UI.Services.Base.Position._3">Power Forward</MudSelectItem>
+                                <MudSelectItem Value="@HRKošarka.UI.Services.Base.Position._4">Center</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+
+                        <MudItem xs="12" md="4">
+                            <MudNumericField @bind-Value="_model.Height"
+                                             Label="Height (cm)"
+                                             Variant="Variant.Text"
+                                             Adornment="Adornment.Start"
+                                             AdornmentIcon="@Icons.Material.Filled.Height"
+                                             Min="100"
+                                             Max="250"
+                                             Step="1"
+                                             Validation="@(new Func<int?, IEnumerable<string>>(ValidateHeight))" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="4">
+                            <MudNumericField @bind-Value="_model.Weight"
+                                             Label="Weight (kg)"
+                                             Variant="Variant.Text"
+                                             Adornment="Adornment.Start"
+                                             AdornmentIcon="@Icons.Material.Filled.MonitorWeight"
+                                             Min="30"
+                                             Max="200"
+                                             Step="1"
+                                             Validation="@(new Func<int?, IEnumerable<string>>(ValidateWeight))" />
+                        </MudItem>
+
+                        <MudItem xs="12" Class="form-actions">
+                            <MudButton OnClick="HandleSubmit"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Size="Size.Large"
+                                       StartIcon="@Icons.Material.Filled.Save"
+                                       Disabled="@(_isLoading || !_isFormValid)"
+                                       Class="action-button">
+                                @if (_isLoading)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2">Creating Player...</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Create Player</MudText>
+                                }
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Secondary"
+                                       Size="Size.Large"
+                                       StartIcon="@Icons.Material.Filled.Cancel"
+                                       OnClick="@(() => NavigationManager.NavigateTo("/players"))"
+                                       Disabled="@_isLoading"
+                                       Class="action-button ml-4">
+                                Cancel
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </MudPaper>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>

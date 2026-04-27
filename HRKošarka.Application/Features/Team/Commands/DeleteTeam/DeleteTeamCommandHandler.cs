@@ -8,11 +8,16 @@ namespace HRKošarka.Application.Features.Team.Commands.DeleteTeam
     public class DeleteTeamCommandHandler : IRequestHandler<DeleteTeamCommand, Unit>
     {
         private readonly ITeamRepository _teamRepository;
+        private readonly IPlayerTeamHistoryRepository _historyRepository;
         private readonly IAppLogger<DeleteTeamCommandHandler> _logger;
 
-        public DeleteTeamCommandHandler(ITeamRepository teamRepository, IAppLogger<DeleteTeamCommandHandler> logger)
+        public DeleteTeamCommandHandler(
+            ITeamRepository teamRepository,
+            IPlayerTeamHistoryRepository historyRepository,
+            IAppLogger<DeleteTeamCommandHandler> logger)
         {
             _teamRepository = teamRepository;
+            _historyRepository = historyRepository;
             _logger = logger;
         }
 
@@ -33,6 +38,9 @@ namespace HRKošarka.Application.Features.Team.Commands.DeleteTeam
                 _logger.LogInformation("Team with ID {Id} is already deleted", request.Id);
                 throw new BadRequestException("Team is already deleted");
             }
+
+            if (await _historyRepository.HasActiveAssignmentsForTeamAsync(request.Id, cancellationToken))
+                throw new BadRequestException("Cannot delete a team that has active player assignments. Remove all players first.");
 
             await _teamRepository.DeleteAsync(teamToDelete.Id, cancellationToken);
 

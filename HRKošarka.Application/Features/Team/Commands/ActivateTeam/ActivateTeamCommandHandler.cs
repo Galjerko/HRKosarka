@@ -1,18 +1,16 @@
 ﻿using HRKošarka.Application.Contracts.Logging;
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
-using HRKošarka.Application.Features.Team.Commands.DeactivateTeam;
 using MediatR;
-
 
 namespace HRKošarka.Application.Features.Team.Commands.ActivateTeam
 {
     internal class ActivateTeamCommandHandler : IRequestHandler<ActivateTeamCommand, Unit>
     {
         private readonly ITeamRepository _teamRepository;
-        private IAppLogger<DeactivateTeamCommandHandler> _logger;
+        private readonly IAppLogger<ActivateTeamCommandHandler> _logger;
 
-        public ActivateTeamCommandHandler(ITeamRepository teamRepository, IAppLogger<DeactivateTeamCommandHandler> logger)
+        public ActivateTeamCommandHandler(ITeamRepository teamRepository, IAppLogger<ActivateTeamCommandHandler> logger)
         {
             _teamRepository = teamRepository;
             _logger = logger;

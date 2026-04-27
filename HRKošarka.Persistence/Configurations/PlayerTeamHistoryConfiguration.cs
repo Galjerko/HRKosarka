@@ -25,7 +25,13 @@ namespace HRKošarka.Persistence.Configurations
 
             builder.HasIndex(e => new { e.PlayerId, e.TeamId, e.SeasonId })
                    .IsUnique()
+                   .HasFilter("[IsActive] = 1")
                    .HasDatabaseName("IX_PlayerTeamHistory_Unique");
+
+            builder.HasIndex(e => new { e.TeamId, e.JerseyNumber })
+                   .IsUnique()
+                   .HasFilter("[IsActive] = 1 AND [JerseyNumber] IS NOT NULL")
+                   .HasDatabaseName("IX_PlayerTeamHistory_ActiveTeamJerseyNumber");
         }
     }
 }

@@ -673,6 +673,9 @@ namespace HRKošarka.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
                     b.Property<int?>("Height")
                         .HasColumnType("int");
 
@@ -890,11 +893,15 @@ namespace HRKošarka.Persistence.Migrations
 
                     b.HasIndex("SeasonId");
 
-                    b.HasIndex("TeamId");
+                    b.HasIndex("TeamId", "JerseyNumber")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PlayerTeamHistory_ActiveTeamJerseyNumber")
+                        .HasFilter("[IsActive] = 1 AND [JerseyNumber] IS NOT NULL");
 
                     b.HasIndex("PlayerId", "TeamId", "SeasonId")
                         .IsUnique()
-                        .HasDatabaseName("IX_PlayerTeamHistory_Unique");
+                        .HasDatabaseName("IX_PlayerTeamHistory_Unique")
+                        .HasFilter("[IsActive] = 1");
 
                     b.ToTable("PlayerTeamHistory");
                 });

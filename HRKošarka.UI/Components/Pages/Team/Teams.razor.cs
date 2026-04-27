@@ -61,12 +61,13 @@ namespace HRKošarka.UI.Components.Pages.Team
         {
             try
             {
-            if (CurrentUser == null)
-            {
-                await LoadUserContext();
-            }
 
-            return await PermissionService.GetPermissionsAsync(CurrentUser!, clubId);
+                if (CurrentUser == null)
+                {
+                    await LoadUserContext();
+                }
+
+                return await PermissionService.GetPermissionsAsync(CurrentUser!, clubId);
             }
             catch (Exception ex)
             {

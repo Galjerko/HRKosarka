@@ -65,19 +65,35 @@
                             </MudItem>
 
                             <MudItem xs="12" md="6">
-                                <MudSelect T="HRKošarka.UI.Services.Base.Gender" Label="Gender" @bind-Value="_model.Gender" Required="true">
-                                    <MudSelectItem Value="@HRKošarka.UI.Services.Base.Gender._0">Male</MudSelectItem>
-                                    <MudSelectItem Value="@HRKošarka.UI.Services.Base.Gender._1">Female</MudSelectItem>
+                                <MudSelect T="HRKošarka.UI.Services.Base.Gender"
+                                           Label="Gender"
+                                           @bind-Value="_model.Gender"
+                                           Variant="Variant.Text"
+                                           Adornment="Adornment.Start"
+                                           AdornmentIcon="@Icons.Material.Filled.Person"
+                                           Dense="true"
+                                           Required="true"
+                                           RequiredError="Gender is required">
+                                    <MudSelectItem T="HRKošarka.UI.Services.Base.Gender" Value="@HRKošarka.UI.Services.Base.Gender._0">Male</MudSelectItem>
+                                    <MudSelectItem T="HRKošarka.UI.Services.Base.Gender" Value="@HRKošarka.UI.Services.Base.Gender._1">Female</MudSelectItem>
                                 </MudSelect>
                             </MudItem>
 
                             <MudItem xs="12" md="6">
-                                <MudSelect T="Guid" Label="Age Category" @bind-Value="_model.AgeCategoryId" Required="true" Dense="true">
+                                <MudSelect T="Guid"
+                                           Label="Age Category"
+                                           @bind-Value="_model.AgeCategoryId"
+                                           Variant="Variant.Text"
+                                           Adornment="Adornment.Start"
+                                           AdornmentIcon="@Icons.Material.Filled.Groups"
+                                           Dense="true"
+                                           Required="true"
+                                           RequiredError="Age category is required">
                                     @if (_ageCategories != null)
                                     {
                                         @foreach (var ac in _ageCategories)
                                         {
-                                            <MudSelectItem Value="@ac.Id">@ac.Code</MudSelectItem>
+                                            <MudSelectItem T="Guid" Value="@ac.Id">@ac.Code</MudSelectItem>
                                         }
                                     }
                                 </MudSelect>

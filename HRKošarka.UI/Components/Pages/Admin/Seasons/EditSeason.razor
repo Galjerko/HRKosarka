@@ -1,7 +1,7 @@
 @page "/admin/seasons/{Id:guid}/edit"
-@using HRKoöarka.UI.Services.Base
-@using HRKoöarka.UI.Components.Base
-@inherits HRKoöarka.UI.Components.Base.PermissionBaseComponent
+@using HRKo≈°arka.UI.Services.Base
+@using HRKo≈°arka.UI.Components.Base
+@inherits HRKo≈°arka.UI.Components.Base.PermissionBaseComponent
 
 <AuthorizeView Roles="Administrator">
     <Authorized>
@@ -22,8 +22,26 @@
                                       Required="true"
                                       MaxLength="10"
                                       Class="mb-3" />
-                        <MudDatePicker @bind-Date="_startDate" Label="Start date" Required="true" Class="mb-3" />
-                        <MudDatePicker @bind-Date="_endDate" Label="End date" Required="true" Class="mb-4" />
+                        <MudDatePicker Date="_startDate"
+                                       DateChanged="@(value => _startDate = value)"
+                                       Label="Start date"
+                                       Margin="Margin.Dense"
+                                       DateFormat="dd.MM.yyyy."
+                                       Editable="true"
+                                       Adornment="Adornment.Start"
+                                       AdornmentIcon="@Icons.Material.Filled.Event"
+                                       Required="true"
+                                       Class="mb-3" />
+                        <MudDatePicker Date="_endDate"
+                                       DateChanged="@(value => _endDate = value)"
+                                       Label="End date"
+                                       Margin="Margin.Dense"
+                                       DateFormat="dd.MM.yyyy."
+                                       Editable="true"
+                                       Adornment="Adornment.Start"
+                                       AdornmentIcon="@Icons.Material.Filled.EventAvailable"
+                                       Required="true"
+                                       Class="mb-4" />
                         <MudCheckBox @bind-Value="_command.IsActive" Label="Active" Class="mb-4" />
                         <MudStack Row="true" Spacing="2">
                             <MudButton Variant="Variant.Filled" Color="Color.Primary"

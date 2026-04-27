@@ -35,7 +35,7 @@ namespace HRKošarka.Application.Features.Team.Commands.UpdateTeam
 
             // Only update the name
             teamToUpdate.Name = request.Name;
-            teamToUpdate.DateModified = DateTime.UtcNow;
+            teamToUpdate.DateModified = DateTime.Now;
 
             await _teamRepository.UpdateAsync(teamToUpdate, cancellationToken);
 

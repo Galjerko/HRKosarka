@@ -1,4 +1,4 @@
-﻿using Blazored.LocalStorage;
+using Blazored.LocalStorage;
 using HRKošarka.UI.Services.Base.Common.Responses;
 
 namespace HRKošarka.UI.Services.Base

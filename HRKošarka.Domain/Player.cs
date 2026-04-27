@@ -25,6 +25,8 @@ namespace HRKošarka.Domain
 
         public Position? Position { get; set; }
 
+        public Gender Gender { get; set; }
+
         [MaxLength(50)]
         public string? Nationality { get; set; }
 
