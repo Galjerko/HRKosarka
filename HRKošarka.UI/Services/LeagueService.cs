@@ -171,5 +171,87 @@ namespace HRKošarka.UI.Services
                 return ConvertApiExceptions<bool>(ex);
             }
         }
+
+        public async Task<QueryResponse<List<LeagueTeamDTO>>> GetLeagueTeams(Guid leagueId)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetLeagueTeamsAsync(leagueId);
+                return new QueryResponse<List<LeagueTeamDTO>>
+                {
+                    Data = response.Data?.ToList() ?? new List<LeagueTeamDTO>(),
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<List<LeagueTeamDTO>>(ex);
+            }
+        }
+
+        public async Task<QueryResponse<List<AvailableTeamForLeagueDTO>>> GetAvailableTeamsForLeague(Guid leagueId, string? searchTerm = null)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetAvailableTeamsForLeagueAsync(leagueId, searchTerm);
+                return new QueryResponse<List<AvailableTeamForLeagueDTO>>
+                {
+                    Data = response.Data?.ToList() ?? new List<AvailableTeamForLeagueDTO>(),
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<List<AvailableTeamForLeagueDTO>>(ex);
+            }
+        }
+
+        public async Task<CommandResponse<Guid>> RegisterTeamInLeague(Guid leagueId, RegisterTeamInLeagueCommand command)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.RegisterTeamInLeagueAsync(leagueId, command);
+                return new CommandResponse<Guid>
+                {
+                    Data = response.Data,
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<Guid>(ex);
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptions<Guid>(ex);
+            }
+        }
+
+        public async Task<CommandResponse<bool>> RemoveTeamFromLeague(Guid leagueId, Guid teamId)
+        {
+            try
+            {
+                await AddBearerToken();
+                await _client.RemoveTeamFromLeagueAsync(leagueId, teamId);
+                return CommandResponse<bool>.Success(true, "Team removed from league.");
+            }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
+        }
     }
 }

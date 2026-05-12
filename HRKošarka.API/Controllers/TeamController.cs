@@ -9,6 +9,7 @@ using HRKošarka.Application.Features.Team.Commands.UpdatePlayerAssignmentInTeam
 using HRKošarka.Application.Features.Team.Commands.UpdateTeam;
 using HRKošarka.Application.Features.Team.Queries.GetAllTeams;
 using HRKošarka.Application.Features.Team.Queries.GetTeamDetails;
+using HRKošarka.Application.Features.Team.Queries.GetTeamLeagues;
 using HRKošarka.Application.Features.Team.Queries.GetTeamRoster;
 using HRKošarka.Application.Models.Responses;
 using MediatR;
@@ -124,6 +125,15 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<QueryResponse<List<TeamRosterPlayerDTO>>>> GetRoster(Guid id)
         {
             var response = await _mediator.Send(new GetTeamRosterQuery(id));
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/leagues", Name = "GetTeamLeagues")]
+        [ProducesResponseType(typeof(QueryResponse<List<TeamLeagueDTO>>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<TeamLeagueDTO>>>> GetLeagues(Guid id)
+        {
+            var response = await _mediator.Send(new GetTeamLeaguesQuery(id));
             return Ok(response);
         }
 

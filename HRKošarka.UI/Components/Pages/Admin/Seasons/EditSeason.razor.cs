@@ -1,10 +1,10 @@
-using HRKošarka.UI.Components.Base;
-using HRKošarka.UI.Contracts;
-using HRKošarka.UI.Services.Base;
+using HRKoÅ¡arka.UI.Components.Base;
+using HRKoÅ¡arka.UI.Contracts;
+using HRKoÅ¡arka.UI.Services.Base;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace HRKošarka.UI.Components.Pages.Admin.Seasons
+namespace HRKoÅ¡arka.UI.Components.Pages.Admin.Seasons
 {
     public partial class EditSeason : PermissionBaseComponent
     {
@@ -37,7 +37,6 @@ namespace HRKošarka.UI.Components.Pages.Admin.Seasons
                     var season = result.Data;
                     _command.Id = season.Id;
                     _command.Name = season.Name;
-                    _command.IsActive = season.IsActive;
                     _startDate = season.StartDate;
                     _endDate = season.EndDate;
                 }

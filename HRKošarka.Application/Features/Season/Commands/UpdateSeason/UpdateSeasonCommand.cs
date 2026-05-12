@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace HRKoöarka.Application.Features.Season.Commands.UpdateSeason
+namespace HRKo≈°arka.Application.Features.Season.Commands.UpdateSeason
 {
     public class UpdateSeasonCommand : IRequest<Unit>
     {
@@ -8,6 +8,5 @@ namespace HRKoöarka.Application.Features.Season.Commands.UpdateSeason
         public string Name { get; set; } = string.Empty;
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public bool IsActive { get; set; }
     }
 }

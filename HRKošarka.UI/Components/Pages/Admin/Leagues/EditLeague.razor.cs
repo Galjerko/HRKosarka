@@ -97,7 +97,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                         Snackbar.Add(response.Message ?? "Failed to load league details.", Severity.Error);
                     }
 
-                    NavigationManager.NavigateTo("leagues");
+                    NavigationManager.NavigateTo("/leagues");
                 }
             }
             catch (Exception ex)
@@ -145,7 +145,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                 if (response.IsSuccess)
                 {
                     Snackbar.Add("League updated successfully!", Severity.Success);
-                    NavigationManager.NavigateTo($"/admin/leagues/{Id}");
+                    NavigationManager.NavigateTo($"/leagues/{Id}");
                 }
                 else
                 {

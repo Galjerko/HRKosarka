@@ -9,15 +9,18 @@ namespace HRKošarka.Application.Features.Team.Commands.DeactivateTeam
     {
         private readonly ITeamRepository _teamRepository;
         private readonly IPlayerTeamHistoryRepository _historyRepository;
+        private readonly ILeagueRepository _leagueRepository;
         private readonly IAppLogger<DeactivateTeamCommandHandler> _logger;
 
         public DeactivateTeamCommandHandler(
             ITeamRepository teamRepository,
             IPlayerTeamHistoryRepository historyRepository,
+            ILeagueRepository leagueRepository,
             IAppLogger<DeactivateTeamCommandHandler> logger)
         {
             _teamRepository = teamRepository;
             _historyRepository = historyRepository;
+            _leagueRepository = leagueRepository;
             _logger = logger;
         }
 
@@ -38,6 +41,7 @@ namespace HRKošarka.Application.Features.Team.Commands.DeactivateTeam
             }
 
             await _historyRepository.DeactivateAllForTeamAsync(request.Id, cancellationToken);
+            await _leagueRepository.DeactivateAllForTeamAsync(request.Id, cancellationToken);
 
             teamToDeactivate.DeactivateDate = DateTime.Now;
             await _teamRepository.UpdateAsync(teamToDeactivate, cancellationToken);

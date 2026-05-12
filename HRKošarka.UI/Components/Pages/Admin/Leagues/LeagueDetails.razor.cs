@@ -1,4 +1,5 @@
 ﻿using HRKošarka.UI.Components.Base;
+using HRKošarka.UI.Components.Pages.Dialogs;
 using HRKošarka.UI.Contracts;
 using HRKošarka.UI.Services.Base;
 using Microsoft.AspNetCore.Components;
@@ -12,11 +13,15 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
         [Inject] private ILeagueService LeagueService { get; set; } = default!;
 
         private LeagueDetailsDTO? _league;
+        private List<LeagueTeamDTO> _leagueTeams = new();
         private bool _isLoading = true;
+        private bool _isLoadingTeams = false;
         private bool _isProcessing = false;
         private bool _showDeactivateDialog = false;
         private bool _showActivateDialog = false;
         private bool _showDeleteDialog = false;
+        private bool _showRemoveTeamDialog = false;
+        private LeagueTeamDTO? _teamToRemove;
 
         private string _deactivateMessage => _league is null
             ? string.Empty
@@ -39,7 +44,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
-            await LoadLeagueDetails();
+            await Task.WhenAll(LoadLeagueDetails(), LoadLeagueTeams());
         }
 
         private async Task LoadLeagueDetails()
@@ -58,9 +63,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                     if (response.Errors?.Any() == true)
                     {
                         foreach (var error in response.Errors)
-                        {
                             Snackbar.Add(error, Severity.Error);
-                        }
                     }
                     else
                     {
@@ -76,6 +79,81 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
             finally
             {
                 _isLoading = false;
+            }
+        }
+
+        private async Task LoadLeagueTeams()
+        {
+            _isLoadingTeams = true;
+            try
+            {
+                var response = await LeagueService.GetLeagueTeams(Id);
+                if (response.IsSuccess)
+                    _leagueTeams = response.Data ?? new List<LeagueTeamDTO>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading league teams: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingTeams = false;
+            }
+        }
+
+        private async Task OpenRegisterTeamDialog()
+        {
+            var parameters = new DialogParameters
+            {
+                ["LeagueId"] = Id,
+                ["LeagueStartDate"] = _league!.StartDate,
+                ["LeagueEndDate"] = _league!.EndDate
+            };
+            var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+            var dialog = await DialogService.ShowAsync<RegisterTeamInLeague>("Register Team", parameters, options);
+            var result = await dialog.Result;
+
+            if (result is { Canceled: false })
+            {
+                Snackbar.Add("Team registered successfully!", Severity.Success);
+                await LoadLeagueTeams();
+            }
+        }
+
+        private void RemoveTeam(LeagueTeamDTO team)
+        {
+            _teamToRemove = team;
+            _showRemoveTeamDialog = true;
+        }
+
+        private async Task ConfirmRemoveTeam()
+        {
+            if (_teamToRemove == null) return;
+
+            _isProcessing = true;
+            try
+            {
+                var response = await LeagueService.RemoveTeamFromLeague(Id, _teamToRemove.TeamId);
+                if (response.IsSuccess)
+                {
+                    Snackbar.Add("Team removed from league.", Severity.Success);
+                    _showRemoveTeamDialog = false;
+                    await LoadLeagueTeams();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to remove team.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add("An unexpected error occurred.", Severity.Error);
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+            finally
+            {
+                _isProcessing = false;
+                _teamToRemove = null;
             }
         }
 

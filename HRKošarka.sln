@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{EBA550CB-BFDF-4C2E-9A9D-5C81D631427D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{85C5E157-FB4F-4996-96FA-AE8531772D8C}"
+	ProjectSection(SolutionItems) = preProject
+		HRKošarka.Application\Contracts\Persistence\ILeagueRepository.cs = HRKošarka.Application\Contracts\Persistence\ILeagueRepository.cs
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{9F86830D-69D9-4D7C-B568-1AAF60D1FAAA}"
 EndProject

@@ -35,6 +35,7 @@ namespace HRKošarka.Application.Features.League.Commands.CreateLeague
             }
 
             var league = _mapper.Map<Domain.League>(request);
+            league.IsActive = true;
             await _leagueRepository.CreateAsync(league, cancellationToken);
 
             _logger.LogInformation("League {Name} created with Id {Id}", league.Name, league.Id);

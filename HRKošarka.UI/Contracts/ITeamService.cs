@@ -9,6 +9,7 @@ namespace HRKošarka.UI.Contracts
         Task<PaginatedResponse<TeamDTO>> GetTeams(TeamPaginationRequest request);
         Task<QueryResponse<TeamDetailsDTO>> GetTeamDetails(Guid id);
         Task<QueryResponse<List<TeamRosterPlayerDTO>>> GetTeamRoster(Guid teamId);
+        Task<QueryResponse<List<TeamLeagueDTO>>> GetTeamLeagues(Guid teamId);
         Task<CommandResponse<Guid>> CreateTeam(CreateTeamCommand team);
         Task<CommandResponse<bool>> UpdateTeam(Guid id, UpdateTeamCommand team);
         Task<CommandResponse<bool>> DeactivateTeam(Guid id);

@@ -20,5 +20,9 @@ namespace HRKošarka.UI.Contracts
         Task<CommandResponse<bool>> DeactivateLeague(Guid id);
         Task<CommandResponse<bool>> ActivateLeague(Guid id);
         Task<CommandResponse<bool>> DeleteLeague(Guid id);
+        Task<QueryResponse<List<LeagueTeamDTO>>> GetLeagueTeams(Guid leagueId);
+        Task<QueryResponse<List<AvailableTeamForLeagueDTO>>> GetAvailableTeamsForLeague(Guid leagueId, string? searchTerm = null);
+        Task<CommandResponse<Guid>> RegisterTeamInLeague(Guid leagueId, RegisterTeamInLeagueCommand command);
+        Task<CommandResponse<bool>> RemoveTeamFromLeague(Guid leagueId, Guid teamId);
     }
 }

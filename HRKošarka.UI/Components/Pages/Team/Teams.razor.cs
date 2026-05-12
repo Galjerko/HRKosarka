@@ -215,11 +215,6 @@ namespace HRKošarka.UI.Components.Pages.Team
             NavigationManager.NavigateTo($"/teams/{id}");
         }
 
-        private void CreateTeam()
-        {
-            NavigationManager.NavigateTo("/teams/create");
-        }
-
         private void EditTeam(Guid id, string name)
         {
             _selectedTeamId = id;

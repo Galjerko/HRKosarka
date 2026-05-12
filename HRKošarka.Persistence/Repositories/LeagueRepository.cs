@@ -1,11 +1,15 @@
-using HRKo�arka.Application.Contracts.Persistence;
-using HRKo�arka.Application.Features.League.Queries.GetAllLeagues;
-using HRKo�arka.Application.Models.Responses;
-using HRKo�arka.Domain;
-using HRKo�arka.Persistence.DatabaseContext;
+using HRKošarka.Application.Contracts.Persistence;
+using HRKošarka.Application.Features.League.Queries.GetAllLeagues;
+using HRKošarka.Application.Features.League.Queries.GetAvailableTeamsForLeague;
+using HRKošarka.Application.Features.League.Queries.GetLeagueTeams;
+using HRKošarka.Application.Features.Team.Queries.GetTeamLeagues;
+using HRKošarka.Application.Models.Responses;
+using HRKošarka.Domain;
+using HRKošarka.Domain.Common;
+using HRKošarka.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
-namespace HRKo�arka.Persistence.Repositories
+namespace HRKošarka.Persistence.Repositories
 {
     public class LeagueRepository : GenericRepository<League>, ILeagueRepository
     {
@@ -115,6 +119,118 @@ namespace HRKo�arka.Persistence.Repositories
                 totalCount,
                 $"Retrieved {items.Count} leagues from page {request.Page}"
             );
+        }
+
+        public async Task<List<LeagueTeamDTO>> GetLeagueTeamsAsync(Guid leagueId, CancellationToken cancellationToken = default)
+        {
+            return await _context.LeagueTeams
+                .Include(lt => lt.Team).ThenInclude(t => t.Club)
+                .Include(lt => lt.Team).ThenInclude(t => t.AgeCategory)
+                .Where(lt => lt.LeagueId == leagueId && lt.IsActive && lt.Team.DateDeleted == null)
+                .OrderBy(lt => lt.Team.Name)
+                .Select(lt => new LeagueTeamDTO
+                {
+                    Id = lt.Id,
+                    TeamId = lt.TeamId,
+                    TeamName = lt.Team.Name,
+                    ClubName = lt.Team.Club.Name,
+                    AgeCategoryName = lt.Team.AgeCategory.Name,
+                    RegistrationDate = lt.RegistrationDate
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<AvailableTeamForLeagueDTO>> GetAvailableTeamsForLeagueAsync(
+            Guid leagueId, string? searchTerm, CancellationToken cancellationToken = default)
+        {
+            var league = await _context.Leagues
+                .AsNoTracking()
+                .FirstOrDefaultAsync(l => l.Id == leagueId, cancellationToken);
+            if (league == null) return new List<AvailableTeamForLeagueDTO>();
+
+            var registeredTeamIds = await _context.LeagueTeams
+                .Where(lt => lt.LeagueId == leagueId && lt.IsActive)
+                .Select(lt => lt.TeamId)
+                .ToListAsync(cancellationToken);
+
+            var query = _context.Teams
+                .Include(t => t.Club)
+                .Include(t => t.AgeCategory)
+                .Where(t => t.DeactivateDate == null && t.DateDeleted == null)
+                .Where(t => t.Gender == league.Gender)
+                .Where(t => t.AgeCategoryId == league.AgeCategoryId)
+                .Where(t => !registeredTeamIds.Contains(t.Id));
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+                query = query.Where(t => t.Name.ToLower().Contains(term) || t.Club.Name.ToLower().Contains(term));
+            }
+
+            return await query
+                .OrderBy(t => t.Name)
+                .Select(t => new AvailableTeamForLeagueDTO
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    ClubName = t.Club.Name,
+                    AgeCategoryName = t.AgeCategory.Name
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<LeagueTeam?> GetLeagueTeamAsync(Guid leagueId, Guid teamId, CancellationToken cancellationToken = default)
+        {
+            return await _context.LeagueTeams
+                .FirstOrDefaultAsync(lt => lt.LeagueId == leagueId && lt.TeamId == teamId, cancellationToken);
+        }
+
+        public async Task<List<TeamLeagueDTO>> GetTeamLeaguesAsync(Guid teamId, CancellationToken cancellationToken = default)
+        {
+            return await _context.LeagueTeams
+                .Include(lt => lt.League).ThenInclude(l => l.Season)
+                .Include(lt => lt.League).ThenInclude(l => l.AgeCategory)
+                .Where(lt => lt.TeamId == teamId && lt.IsActive && lt.League.DateDeleted == null)
+                .OrderByDescending(lt => lt.League.StartDate)
+                .Select(lt => new TeamLeagueDTO
+                {
+                    LeagueId = lt.LeagueId,
+                    LeagueName = lt.League.Name,
+                    SeasonName = lt.League.Season.Name,
+                    AgeCategoryName = lt.League.AgeCategory.Name,
+                    Gender = lt.League.Gender,
+                    CompetitionType = lt.League.CompetitionType,
+                    RegistrationDate = lt.RegistrationDate,
+                    IsLeagueActive = lt.League.DeactivateDate == null
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task DeactivateAllForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+        {
+            var registrations = await _context.LeagueTeams
+                .Where(lt => lt.TeamId == teamId && lt.IsActive)
+                .ToListAsync(cancellationToken);
+
+            foreach (var lt in registrations)
+                lt.IsActive = false;
+
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task DeactivateAllForLeagueAsync(Guid leagueId, CancellationToken cancellationToken = default)
+        {
+            var registrations = await _context.LeagueTeams
+                .Where(lt => lt.LeagueId == leagueId && lt.IsActive)
+                .ToListAsync(cancellationToken);
+
+            foreach (var lt in registrations)
+                lt.IsActive = false;
+
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

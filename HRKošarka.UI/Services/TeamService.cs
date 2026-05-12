@@ -180,6 +180,26 @@ public class TeamService : BaseHttpService, ITeamService
         }
     }
 
+    public async Task<QueryResponse<List<TeamLeagueDTO>>> GetTeamLeagues(Guid teamId)
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.GetTeamLeaguesAsync(teamId);
+            return new QueryResponse<List<TeamLeagueDTO>>
+            {
+                Data = response.Data?.ToList() ?? new List<TeamLeagueDTO>(),
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptionsToQuery<List<TeamLeagueDTO>>(ex);
+        }
+    }
+
     public async Task<CommandResponse<Guid>> AssignPlayerToTeam(Guid teamId, AssignPlayerToTeamCommand command)
     {
         try

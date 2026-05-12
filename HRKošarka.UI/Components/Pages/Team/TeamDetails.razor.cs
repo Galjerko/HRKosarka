@@ -16,8 +16,10 @@ namespace HRKošarka.UI.Components.Pages.Team
 
         private TeamDetailsDTO? _team;
         private List<TeamRosterPlayerDTO> _roster = new();
+        private List<TeamLeagueDTO> _leagues = new();
         private bool _isLoading = true;
         private bool _isLoadingRoster = false;
+        private bool _isLoadingLeagues = false;
         private bool _isProcessing = false;
         private bool _showDeactivateDialog = false;
         private bool _showActivateDialog = false;
@@ -69,7 +71,7 @@ namespace HRKošarka.UI.Components.Pages.Team
                     _newTeamName = _team.Name;
 
                     await SetClubPermissions(_team.ClubId);
-                    await LoadRoster();
+                    await Task.WhenAll(LoadRoster(), LoadLeagues());
                 }
                 else
                 {
@@ -123,6 +125,24 @@ namespace HRKošarka.UI.Components.Pages.Team
             finally
             {
                 _isLoadingRoster = false;
+            }
+        }
+
+        private async Task LoadLeagues()
+        {
+            _isLoadingLeagues = true;
+            try
+            {
+                var response = await TeamService.GetTeamLeagues(Id);
+                _leagues = response.IsSuccess ? response.Data ?? new List<TeamLeagueDTO>() : new List<TeamLeagueDTO>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading leagues: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingLeagues = false;
             }
         }
 

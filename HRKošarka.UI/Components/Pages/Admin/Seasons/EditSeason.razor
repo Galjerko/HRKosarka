@@ -40,9 +40,9 @@
                                        Editable="true"
                                        Adornment="Adornment.Start"
                                        AdornmentIcon="@Icons.Material.Filled.EventAvailable"
+                                       MinDate="@_startDate"
                                        Required="true"
                                        Class="mb-4" />
-                        <MudCheckBox @bind-Value="_command.IsActive" Label="Active" Class="mb-4" />
                         <MudStack Row="true" Spacing="2">
                             <MudButton Variant="Variant.Filled" Color="Color.Primary"
                                        OnClick="HandleSubmit" Disabled="_isProcessing">

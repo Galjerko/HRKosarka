@@ -1,0 +1,98 @@
+@using HRKošarka.UI.Services.Base
+@using MudBlazor
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-3">Register Team in League</MudText>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-1">Select Team</MudText>
+        <MudTextField Value="_searchTerm"
+                      ValueChanged="@((string v) => OnSearchChanged(v))"
+                      Placeholder="Search by team or club name..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      DebounceInterval="300"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="mb-2" />
+
+        @if (_selectedTeam is not null)
+        {
+            var displayTeam = _selectedTeam;
+            <MudChip T="string"
+                     Color="Color.Primary"
+                     Icon="@Icons.Material.Filled.Group"
+                     OnClose="@(() => _selectedTeam = null)"
+                     Class="mb-2">
+                @displayTeam.Name · @displayTeam.ClubName
+            </MudChip>
+        }
+
+        <div class="picker-table-container mb-4">
+            @if (_loadingTeams)
+            {
+                <div class="d-flex justify-center align-center pa-4">
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <MudText Typo="Typo.body2">Loading teams...</MudText>
+                </div>
+            }
+            else if (!_teams.Any())
+            {
+                <div class="d-flex justify-center align-center pa-4">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        No eligible teams found. All matching teams may already be registered.
+                    </MudText>
+                </div>
+            }
+            else
+            {
+                <MudTable Items="_teams"
+                          Dense="true"
+                          Hover="false"
+                          Elevation="0"
+                          RowClassFunc="TeamRowClass"
+                          OnRowClick="@((TableRowClickEventArgs<AvailableTeamForLeagueDTO> e) => { if (e.Item is not null) SelectTeam(e.Item); })">
+                    <HeaderContent>
+                        <MudTh>Team</MudTh>
+                        <MudTh>Club</MudTh>
+                        <MudTh>Age Category</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Team">@context.Name</MudTd>
+                        <MudTd DataLabel="Club">@context.ClubName</MudTd>
+                        <MudTd DataLabel="Age Category">@context.AgeCategoryName</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </div>
+
+        <MudDatePicker Date="_registrationDate"
+                       DateChanged="@(value => _registrationDate = value)"
+                       Label="Registration Date"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       DateFormat="dd.MM.yyyy."
+                       Editable="true"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@Icons.Material.Filled.Event"
+                       MinDate="@LeagueStartDate"
+                       MaxDate="@LeagueEndDate"
+                       HelperText="@($"League period: {LeagueStartDate:dd.MM.yyyy.} – {LeagueEndDate:dd.MM.yyyy.}")" />
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="!CanSave"
+                   OnClick="Save">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Register
+        </MudButton>
+    </DialogActions>
+</MudDialog>

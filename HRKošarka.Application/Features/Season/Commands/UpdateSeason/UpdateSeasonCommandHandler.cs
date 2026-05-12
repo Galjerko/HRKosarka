@@ -1,10 +1,10 @@
 using AutoMapper;
-using HRKošarka.Application.Contracts.Logging;
-using HRKošarka.Application.Contracts.Persistence;
-using HRKošarka.Application.Exceptions;
+using HRKoÅ¡arka.Application.Contracts.Logging;
+using HRKoÅ¡arka.Application.Contracts.Persistence;
+using HRKoÅ¡arka.Application.Exceptions;
 using MediatR;
 
-namespace HRKošarka.Application.Features.Season.Commands.UpdateSeason
+namespace HRKoÅ¡arka.Application.Features.Season.Commands.UpdateSeason
 {
     public class UpdateSeasonCommandHandler : IRequestHandler<UpdateSeasonCommand, Unit>
     {

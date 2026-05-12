@@ -1,7 +1,6 @@
 ﻿using HRKošarka.Application.Contracts.Logging;
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
-using HRKošarka.Application.Features.Club.Commands.DeactivateClub;
 using MediatR;
 
 namespace HRKošarka.Application.Features.Club.Commands.ActivateClub
@@ -9,9 +8,9 @@ namespace HRKošarka.Application.Features.Club.Commands.ActivateClub
     public class ActivateClubCommandHandler : IRequestHandler<ActivateClubCommand, Unit>
     {
         private readonly IClubRepository _clubRepository;
-        private IAppLogger<DeactivateClubCommandHandler> _logger;
+        private IAppLogger<ActivateClubCommandHandler> _logger;
 
-        public ActivateClubCommandHandler(IClubRepository clubRepository, IAppLogger<DeactivateClubCommandHandler> logger)
+        public ActivateClubCommandHandler(IClubRepository clubRepository, IAppLogger<ActivateClubCommandHandler> logger)
         {
             _clubRepository = clubRepository;
             _logger = logger;

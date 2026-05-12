@@ -1,5 +1,6 @@
 ﻿@page "/leagues/{Id:guid}"
 @using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Pages.Dialogs
 @inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
 <PageTitle>League Details - Basketball Management</PageTitle>
@@ -168,6 +169,82 @@
                         </div>
                     </ChildContent>
                 </MudExpansionPanel>
+                <MudExpansionPanel Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Groups" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">
+                                Registered Teams
+                                @if (_leagueTeams.Any())
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2">@_leagueTeams.Count</MudChip>
+                                }
+                            </MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <AuthorizeView Roles="Administrator">
+                            <Authorized>
+                                @if (_league?.IsActive == true)
+                                {
+                                    <div class="mb-3">
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   StartIcon="@Icons.Material.Filled.GroupAdd"
+                                                   OnClick="OpenRegisterTeamDialog"
+                                                   Size="Size.Small">
+                                            Register Team
+                                        </MudButton>
+                                    </div>
+                                }
+                            </Authorized>
+                        </AuthorizeView>
+
+                        @if (_isLoadingTeams)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                        }
+                        else if (!_leagueTeams.Any())
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">No teams registered in this league yet.</MudText>
+                        }
+                        else
+                        {
+                            <MudTable Items="_leagueTeams" Dense="true" Hover="true" Striped="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh>Team</MudTh>
+                                    <MudTh>Club</MudTh>
+                                    <MudTh>Age Category</MudTh>
+                                    <MudTh>Registration Date</MudTh>
+                                    <AuthorizeView Roles="Administrator">
+                                        <Authorized>
+                                            <MudTh></MudTh>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd>
+                                        <MudLink Href="@($"/teams/{context.TeamId}")">@context.TeamName</MudLink>
+                                    </MudTd>
+                                    <MudTd>@context.ClubName</MudTd>
+                                    <MudTd>@context.AgeCategoryName</MudTd>
+                                    <MudTd>@context.RegistrationDate.ToString("dd.MM.yyyy.")</MudTd>
+                                    <AuthorizeView Roles="Administrator" Context="authCtx">
+                                        <Authorized>
+                                            <MudTd>
+                                                <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
+                                                               Color="Color.Error"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => RemoveTeam(context))"
+                                                               Disabled="_isProcessing" />
+                                            </MudTd>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </ChildContent>
+                </MudExpansionPanel>
             </MudExpansionPanels>
         </MudPaper>
     }
@@ -186,6 +263,19 @@
         </div>
     }
 </MudContainer>
+
+<ConfirmActionDialog @bind-Visible="_showRemoveTeamDialog"
+                     Title="Confirm Remove Team"
+                     TitleIcon="@Icons.Material.Filled.PersonRemove"
+                     TitleIconColor="Color.Error"
+                     Message="@($"Are you sure you want to remove <strong>{_teamToRemove?.TeamName}</strong> from this league?")"
+                     SecondaryMessage="The team can be re-registered later."
+                     SecondaryMessageColor="Color.Warning"
+                     CancelText="CANCEL" CancelVariant="Variant.Outlined"
+                     ConfirmText="REMOVE" ConfirmIcon="@Icons.Material.Filled.PersonRemove"
+                     ConfirmColor="Color.Error" ConfirmVariant="Variant.Filled"
+                     IsProcessing="_isProcessing" OnConfirm="ConfirmRemoveTeam"
+                     Options="_dialogOptions" />
 
 <ConfirmActionDialog @bind-Visible="_showDeactivateDialog"
                      Title="Confirm Deactivation"

@@ -195,7 +195,7 @@
                                     <MudTd DataLabel="#">@(context.JerseyNumber?.ToString() ?? "-")</MudTd>
                                     <MudTd DataLabel="Player">
                                         <div class="d-flex flex-column">
-                                            <MudText Typo="Typo.body1">@context.PlayerFirstName @context.PlayerLastName</MudText>
+                                            <MudLink Href="@($"/players/{context.PlayerId}")" Typo="Typo.body1">@context.PlayerFirstName @context.PlayerLastName</MudLink>
                                             <MudText Typo="Typo.caption" Color="Color.Secondary">
                                                 @GetPositionLabel(context.Position)
                                             </MudText>
@@ -225,6 +225,62 @@
                                             </MudTooltip>
                                         </MudTd>
                                     }
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </ChildContent>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">
+                                League Registrations
+                                @if (_leagues.Any())
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2">@_leagues.Count</MudChip>
+                                }
+                            </MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        @if (_isLoadingLeagues)
+                        {
+                            <div class="d-flex justify-center pa-4">
+                                <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                            </div>
+                        }
+                        else if (!_leagues.Any())
+                        {
+                            <MudText Typo="Typo.body2" Class="pa-4" Color="Color.Secondary">
+                                This team is not registered in any league.
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudTable Items="_leagues" Hover="true" Dense="true" Elevation="0" Breakpoint="Breakpoint.Sm">
+                                <HeaderContent>
+                                    <MudTh>League</MudTh>
+                                    <MudTh>Season</MudTh>
+                                    <MudTh>Competition</MudTh>
+                                    <MudTh>Registered</MudTh>
+                                    <MudTh>Status</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="League">
+                                        <MudLink Href="@($"/leagues/{context.LeagueId}")">@context.LeagueName</MudLink>
+                                    </MudTd>
+                                    <MudTd DataLabel="Season">@context.SeasonName</MudTd>
+                                    <MudTd DataLabel="Competition">@context.CompetitionType.ToDisplayString()</MudTd>
+                                    <MudTd DataLabel="Registered">@context.RegistrationDate.ToString("dd.MM.yyyy.")</MudTd>
+                                    <MudTd DataLabel="Status">
+                                        <MudChip T="string"
+                                                 Size="Size.Small"
+                                                 Color="@(context.IsLeagueActive ? Color.Success : Color.Default)">
+                                            @(context.IsLeagueActive ? "Active" : "Inactive")
+                                        </MudChip>
+                                    </MudTd>
                                 </RowTemplate>
                             </MudTable>
                         }

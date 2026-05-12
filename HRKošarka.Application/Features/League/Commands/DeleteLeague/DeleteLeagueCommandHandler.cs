@@ -7,11 +7,11 @@ namespace HRKošarka.Application.Features.League.Commands.DeleteLeague
 {
     public class DeleteLeagueCommandHandler : IRequestHandler<DeleteLeagueCommand, Unit>
     {
-        private readonly IGenericRepository<Domain.League> _leagueRepository;
+        private readonly ILeagueRepository _leagueRepository;
         private readonly IAppLogger<DeleteLeagueCommandHandler> _logger;
 
         public DeleteLeagueCommandHandler(
-            IGenericRepository<Domain.League> leagueRepository,
+            ILeagueRepository leagueRepository,
             IAppLogger<DeleteLeagueCommandHandler> logger)
         {
             _leagueRepository = leagueRepository;
@@ -36,6 +36,7 @@ namespace HRKošarka.Application.Features.League.Commands.DeleteLeague
                 throw new BadRequestException("League is already deleted");
             }
 
+            await _leagueRepository.DeactivateAllForLeagueAsync(league.Id, cancellationToken);
             await _leagueRepository.DeleteAsync(league.Id, cancellationToken);
 
             _logger.LogInformation("Successfully deleted league with ID: {Id}", request.Id);

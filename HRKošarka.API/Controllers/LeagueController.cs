@@ -3,9 +3,13 @@ using HRKošarka.Application.Features.League.Commands.ActivateLeague;
 using HRKošarka.Application.Features.League.Commands.CreateLeague;
 using HRKošarka.Application.Features.League.Commands.DeactivateLeague;
 using HRKošarka.Application.Features.League.Commands.DeleteLeague;
+using HRKošarka.Application.Features.League.Commands.RegisterTeamInLeague;
+using HRKošarka.Application.Features.League.Commands.RemoveTeamFromLeague;
 using HRKošarka.Application.Features.League.Commands.UpdateLeague;
 using HRKošarka.Application.Features.League.Queries.GetAllLeagues;
+using HRKošarka.Application.Features.League.Queries.GetAvailableTeamsForLeague;
 using HRKošarka.Application.Features.League.Queries.GetLeagueDetails;
+using HRKošarka.Application.Features.League.Queries.GetLeagueTeams;
 using HRKošarka.Application.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -109,6 +113,51 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult> Delete(Guid id)
         {
             await _mediator.Send(new DeleteLeagueCommand(id));
+            return NoContent();
+        }
+
+        [HttpGet("{id}/teams", Name = "GetLeagueTeams")]
+        [ProducesResponseType(typeof(QueryResponse<List<LeagueTeamDTO>>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<LeagueTeamDTO>>>> GetTeams(Guid id)
+        {
+            var response = await _mediator.Send(new GetLeagueTeamsQuery(id));
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/available-teams", Name = "GetAvailableTeamsForLeague")]
+        [ProducesResponseType(typeof(QueryResponse<List<AvailableTeamForLeagueDTO>>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<AvailableTeamForLeagueDTO>>>> GetAvailableTeams(Guid id, [FromQuery] string? searchTerm)
+        {
+            var response = await _mediator.Send(new GetAvailableTeamsForLeagueQuery { LeagueId = id, SearchTerm = searchTerm });
+            return Ok(response);
+        }
+
+        [HttpPost("{id}/teams", Name = "RegisterTeamInLeague")]
+        [Authorize(Roles = "Administrator")]
+        [ProducesResponseType(typeof(CommandResponse<Guid>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<CommandResponse<Guid>>> RegisterTeam(Guid id, RegisterTeamInLeagueCommand command)
+        {
+            command.LeagueId = id;
+            var response = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetTeams), new { id }, response);
+        }
+
+        [HttpDelete("{id}/teams/{teamId}", Name = "RemoveTeamFromLeague")]
+        [Authorize(Roles = "Administrator")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult> RemoveTeam(Guid id, Guid teamId)
+        {
+            await _mediator.Send(new RemoveTeamFromLeagueCommand { LeagueId = id, TeamId = teamId });
             return NoContent();
         }
     }

@@ -5,7 +5,7 @@ using MediatR;
 
 namespace HRKošarka.Application.Features.Team.Commands.ActivateTeam
 {
-    internal class ActivateTeamCommandHandler : IRequestHandler<ActivateTeamCommand, Unit>
+    public class ActivateTeamCommandHandler : IRequestHandler<ActivateTeamCommand, Unit>
     {
         private readonly ITeamRepository _teamRepository;
         private readonly IAppLogger<ActivateTeamCommandHandler> _logger;

@@ -23,12 +23,12 @@ namespace HRKošarka.UI.Components.Pages
 
         protected void GoToLogin()
         {
-            NavigationManager.NavigateTo("login/");
+            NavigationManager.NavigateTo("/login");
         }
 
         protected void GoToRegister()
         {
-            NavigationManager.NavigateTo("register/");
+            NavigationManager.NavigateTo("/register");
         }
 
         protected async Task Logout()
