@@ -24,5 +24,11 @@ namespace HRKošarka.UI.Contracts
         Task<QueryResponse<List<AvailableTeamForLeagueDTO>>> GetAvailableTeamsForLeague(Guid leagueId, string? searchTerm = null);
         Task<CommandResponse<Guid>> RegisterTeamInLeague(Guid leagueId, RegisterTeamInLeagueCommand command);
         Task<CommandResponse<bool>> RemoveTeamFromLeague(Guid leagueId, Guid teamId);
+        Task<QueryResponse<List<LeagueBreakDTO>>> GetLeagueBreaks(Guid leagueId);
+        Task<CommandResponse<Guid>> AddLeagueBreak(Guid leagueId, AddLeagueBreakCommand command);
+        Task<CommandResponse<bool>> RemoveLeagueBreak(Guid leagueId, Guid breakId);
+        Task<CommandResponse<int>> GenerateLeagueSchedule(Guid leagueId);
+        Task<QueryResponse<List<LeagueRoundDTO>>> GetLeagueSchedule(Guid leagueId);
+        Task<QueryResponse<List<FeaturedLeagueRoundDTO>>> GetFeaturedLeagueMatches();
     }
 }

@@ -14,6 +14,8 @@ namespace HRKošarka.Application.Features.League.Queries.GetLeagueDetails
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int NumberOfRounds { get; set; }
+        public bool ScheduleGenerated { get; set; }
+        public bool IsFeatured { get; set; }
         public DateTime? DeactivateDate { get; set; }
         public bool IsActive => DeactivateDate == null;
         public string? ImageName { get; set; }

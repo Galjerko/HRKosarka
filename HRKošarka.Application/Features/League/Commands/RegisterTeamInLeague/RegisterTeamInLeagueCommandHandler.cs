@@ -34,6 +34,8 @@ namespace HRKošarka.Application.Features.League.Commands.RegisterTeamInLeague
                 throw new NotFoundException(nameof(League), request.LeagueId);
             if (!league.IsActive)
                 throw new BadRequestException("Cannot register a team in an inactive league.");
+            if (league.ScheduleGenerated)
+                throw new BadRequestException("Schedule has already been generated. Team registration is locked.");
 
             var team = await _teamRepository.GetByIdWithIncludesAsync(request.TeamId, cancellationToken);
             if (team == null)

@@ -253,5 +253,131 @@ namespace HRKošarka.UI.Services
                 return ConvertApiExceptions<bool>(ex);
             }
         }
+
+        public async Task<QueryResponse<List<LeagueBreakDTO>>> GetLeagueBreaks(Guid leagueId)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetLeagueBreaksAsync(leagueId);
+                return new QueryResponse<List<LeagueBreakDTO>>
+                {
+                    Data = response.Data?.ToList() ?? new List<LeagueBreakDTO>(),
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<List<LeagueBreakDTO>>(ex);
+            }
+        }
+
+        public async Task<CommandResponse<Guid>> AddLeagueBreak(Guid leagueId, AddLeagueBreakCommand command)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.AddLeagueBreakAsync(leagueId, command);
+                return new CommandResponse<Guid>
+                {
+                    Data = response.Data,
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<Guid>(ex);
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptions<Guid>(ex);
+            }
+        }
+
+        public async Task<CommandResponse<bool>> RemoveLeagueBreak(Guid leagueId, Guid breakId)
+        {
+            try
+            {
+                await AddBearerToken();
+                await _client.RemoveLeagueBreakAsync(leagueId, breakId);
+                return CommandResponse<bool>.Success(true, "Break removed.");
+            }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
+        }
+
+        public async Task<CommandResponse<int>> GenerateLeagueSchedule(Guid leagueId)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GenerateLeagueScheduleAsync(leagueId);
+                return new CommandResponse<int>
+                {
+                    Data = response.Data,
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<int>(ex);
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptions<int>(ex);
+            }
+        }
+
+        public async Task<QueryResponse<List<LeagueRoundDTO>>> GetLeagueSchedule(Guid leagueId)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetLeagueScheduleAsync(leagueId);
+                return new QueryResponse<List<LeagueRoundDTO>>
+                {
+                    Data = response.Data?.ToList() ?? new List<LeagueRoundDTO>(),
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<List<LeagueRoundDTO>>(ex);
+            }
+        }
+
+        public async Task<QueryResponse<List<FeaturedLeagueRoundDTO>>> GetFeaturedLeagueMatches()
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetFeaturedLeagueMatchesAsync();
+                return new QueryResponse<List<FeaturedLeagueRoundDTO>>
+                {
+                    Data = response.Data?.ToList() ?? new List<FeaturedLeagueRoundDTO>(),
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<List<FeaturedLeagueRoundDTO>>(ex);
+            }
+        }
     }
 }

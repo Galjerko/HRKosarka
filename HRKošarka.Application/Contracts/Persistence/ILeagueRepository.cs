@@ -1,5 +1,8 @@
 using HRKošarka.Application.Features.League.Queries.GetAllLeagues;
 using HRKošarka.Application.Features.League.Queries.GetAvailableTeamsForLeague;
+using HRKošarka.Application.Features.League.Queries.GetFeaturedLeagueMatches;
+using HRKošarka.Application.Features.League.Queries.GetLeagueBreaks;
+using HRKošarka.Application.Features.League.Queries.GetLeagueSchedule;
 using HRKošarka.Application.Features.League.Queries.GetLeagueTeams;
 using HRKošarka.Application.Features.Team.Queries.GetTeamLeagues;
 using HRKošarka.Application.Models.Responses;
@@ -18,5 +21,9 @@ namespace HRKošarka.Application.Contracts.Persistence
         Task<List<TeamLeagueDTO>> GetTeamLeaguesAsync(Guid teamId, CancellationToken cancellationToken = default);
         Task DeactivateAllForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
         Task DeactivateAllForLeagueAsync(Guid leagueId, CancellationToken cancellationToken = default);
+        Task<List<LeagueBreakDTO>> GetLeagueBreaksAsync(Guid leagueId, CancellationToken cancellationToken = default);
+        Task<List<LeagueRoundDTO>> GetLeagueScheduleAsync(Guid leagueId, CancellationToken cancellationToken = default);
+        Task<bool> HasActiveMatchesForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
+        Task<List<FeaturedLeagueRoundDTO>> GetFeaturedLeagueMatchesAsync(CancellationToken cancellationToken = default);
     }
 }

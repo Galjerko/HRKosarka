@@ -191,6 +191,21 @@
                                                RequiredError="End date is required" />
                             </MudItem>
 
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Class="section-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="section-icon" />
+                                    Dashboard
+                                </MudText>
+                                <MudDivider Class="section-divider" />
+                                <MudSwitch @bind-Value="_model.IsFeatured"
+                                           Color="Color.Primary"
+                                           Label="Feature on Dashboard"
+                                           Class="mt-2" />
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    When enabled, this league's current round will appear as a match slideshow on the home dashboard.
+                                </MudText>
+                            </MudItem>
+
                             <MudItem xs="12" Class="form-actions">
                                 <MudButton OnClick="HandleSubmit"
                                            Variant="Variant.Filled"

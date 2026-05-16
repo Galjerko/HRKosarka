@@ -45,6 +45,9 @@ namespace HRKošarka.Application.Features.Team.Commands.DeleteTeam
             if (await _historyRepository.HasActiveAssignmentsForTeamAsync(request.Id, cancellationToken))
                 throw new BadRequestException("Cannot delete a team that has active player assignments. Remove all players first.");
 
+            if (await _leagueRepository.HasActiveMatchesForTeamAsync(request.Id, cancellationToken))
+                throw new BadRequestException("Cannot delete a team that has scheduled matches.");
+
             await _leagueRepository.DeactivateAllForTeamAsync(request.Id, cancellationToken);
             await _teamRepository.DeleteAsync(teamToDelete.Id, cancellationToken);
 

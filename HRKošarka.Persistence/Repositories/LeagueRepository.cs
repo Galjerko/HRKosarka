@@ -1,6 +1,9 @@
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Features.League.Queries.GetAllLeagues;
 using HRKošarka.Application.Features.League.Queries.GetAvailableTeamsForLeague;
+using HRKošarka.Application.Features.League.Queries.GetFeaturedLeagueMatches;
+using HRKošarka.Application.Features.League.Queries.GetLeagueBreaks;
+using HRKošarka.Application.Features.League.Queries.GetLeagueSchedule;
 using HRKošarka.Application.Features.League.Queries.GetLeagueTeams;
 using HRKošarka.Application.Features.Team.Queries.GetTeamLeagues;
 using HRKošarka.Application.Models.Responses;
@@ -133,7 +136,10 @@ namespace HRKošarka.Persistence.Repositories
                     Id = lt.Id,
                     TeamId = lt.TeamId,
                     TeamName = lt.Team.Name,
+                    ClubId = lt.Team.ClubId,
                     ClubName = lt.Team.Club.Name,
+                    ClubImageBytes = lt.Team.Club.ImageBytes,
+                    ClubImageContentType = lt.Team.Club.ImageContentType,
                     AgeCategoryName = lt.Team.AgeCategory.Name,
                     RegistrationDate = lt.RegistrationDate
                 })
@@ -231,6 +237,168 @@ namespace HRKošarka.Persistence.Repositories
                 lt.IsActive = false;
 
             await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<List<LeagueBreakDTO>> GetLeagueBreaksAsync(Guid leagueId, CancellationToken cancellationToken = default)
+        {
+            return await _context.LeagueBreaks
+                .Where(b => b.LeagueId == leagueId)
+                .OrderBy(b => b.StartDate)
+                .Select(b => new LeagueBreakDTO
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    StartDate = b.StartDate,
+                    EndDate = b.EndDate
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<LeagueRoundDTO>> GetLeagueScheduleAsync(Guid leagueId, CancellationToken cancellationToken = default)
+        {
+            var matches = await _context.Matches
+                .Include(m => m.HomeTeam)
+                .Include(m => m.AwayTeam)
+                .Where(m => m.LeagueId == leagueId
+                         && m.HomeTeam.DateDeleted == null
+                         && m.AwayTeam.DateDeleted == null)
+                .OrderBy(m => m.Round)
+                .ThenBy(m => m.HomeTeam.Name)
+                .Select(m => new
+                {
+                    m.Id,
+                    m.Round,
+                    m.RoundName,
+                    m.DefaultScheduledDate,
+                    m.ActualScheduledDate,
+                    m.Status,
+                    m.HomeScore,
+                    m.AwayScore,
+                    HomeTeamId = m.HomeTeamId,
+                    HomeTeamName = m.HomeTeam.Name,
+                    AwayTeamId = m.AwayTeamId,
+                    AwayTeamName = m.AwayTeam.Name,
+                    Venue = m.VenueOverride ?? m.HomeTeam.Club.VenueName
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            return matches
+                .GroupBy(m => m.Round)
+                .Select(g => new LeagueRoundDTO
+                {
+                    Round = g.Key,
+                    RoundName = g.First().RoundName ?? $"Round {g.Key}",
+                    ScheduledDate = g.First().DefaultScheduledDate,
+                    Matches = g.Select(m => new LeagueMatchDTO
+                    {
+                        Id = m.Id,
+                        HomeTeamId = m.HomeTeamId,
+                        HomeTeamName = m.HomeTeamName,
+                        AwayTeamId = m.AwayTeamId,
+                        AwayTeamName = m.AwayTeamName,
+                        DefaultScheduledDate = m.DefaultScheduledDate,
+                        ActualScheduledDate = m.ActualScheduledDate,
+                        Status = m.Status,
+                        HomeScore = m.HomeScore,
+                        AwayScore = m.AwayScore,
+                        Venue = m.Venue
+                    }).ToList()
+                })
+                .ToList();
+        }
+
+        public async Task<bool> HasActiveMatchesForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Matches
+                .AnyAsync(m => (m.HomeTeamId == teamId || m.AwayTeamId == teamId)
+                            && m.Status != MatchStatus.Completed
+                            && m.Status != MatchStatus.Cancelled,
+                          cancellationToken);
+        }
+
+        public async Task<List<FeaturedLeagueRoundDTO>> GetFeaturedLeagueMatchesAsync(CancellationToken cancellationToken = default)
+        {
+            var now = DateTime.Now;
+
+            var featuredLeagues = await _context.Leagues
+                .Where(l => l.IsFeatured && l.ScheduleGenerated)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            var result = new List<FeaturedLeagueRoundDTO>();
+
+            foreach (var league in featuredLeagues)
+            {
+                // Summarise rounds without loading full match data
+                var roundSummaries = await _context.Matches
+                    .Where(m => m.LeagueId == league.Id)
+                    .GroupBy(m => m.Round)
+                    .Select(g => new
+                    {
+                        Round = g.Key,
+                        RoundName = g.Min(m => m.RoundName),
+                        AllCompleted = !g.Any(m => m.Status != MatchStatus.Completed),
+                        AnyStarted = g.Any(m => m.ActualScheduledDate <= now)
+                    })
+                    .OrderBy(x => x.Round)
+                    .AsNoTracking()
+                    .ToListAsync(cancellationToken);
+
+                if (!roundSummaries.Any()) continue;
+
+                // Active round = first round that is not fully completed
+                var activeRound = roundSummaries.FirstOrDefault(r => !r.AllCompleted)
+                                  ?? roundSummaries.Last();
+
+                // If active round hasn't started yet, fall back to the previous round
+                int displayRound = activeRound.Round;
+                if (!activeRound.AnyStarted && activeRound.Round > roundSummaries[0].Round)
+                {
+                    var prev = roundSummaries.LastOrDefault(r => r.Round < activeRound.Round);
+                    if (prev != null) displayRound = prev.Round;
+                }
+
+                var displayRoundName = roundSummaries
+                    .FirstOrDefault(r => r.Round == displayRound)?.RoundName
+                    ?? $"Round {displayRound}";
+
+                var matches = await _context.Matches
+                    .Where(m => m.LeagueId == league.Id && m.Round == displayRound)
+                    .OrderBy(m => m.ActualScheduledDate)
+                    .Select(m => new FeaturedMatchDTO
+                    {
+                        Id = m.Id,
+                        HomeTeamId = m.HomeTeamId,
+                        HomeTeamName = m.HomeTeam.Name,
+                        HomeTeamLogoBytes = m.HomeTeam.Club.ImageBytes,
+                        HomeTeamLogoContentType = m.HomeTeam.Club.ImageContentType,
+                        AwayTeamId = m.AwayTeamId,
+                        AwayTeamName = m.AwayTeam.Name,
+                        AwayTeamLogoBytes = m.AwayTeam.Club.ImageBytes,
+                        AwayTeamLogoContentType = m.AwayTeam.Club.ImageContentType,
+                        ActualScheduledDate = m.ActualScheduledDate,
+                        Status = m.Status,
+                        HomeScore = m.HomeScore,
+                        AwayScore = m.AwayScore
+                    })
+                    .AsNoTracking()
+                    .ToListAsync(cancellationToken);
+
+                result.Add(new FeaturedLeagueRoundDTO
+                {
+                    LeagueId = league.Id,
+                    LeagueName = league.Name,
+                    LeagueImageBytes = league.ImageBytes,
+                    LeagueImageContentType = league.ImageContentType,
+                    RoundNumber = displayRound,
+                    RoundName = displayRoundName ?? $"Round {displayRound}",
+                    Matches = matches
+                });
+            }
+
+            return result;
         }
     }
 }

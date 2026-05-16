@@ -29,6 +29,10 @@ namespace HRKošarka.Domain
 
         public int NumberOfRounds { get; set; } = 1; // For double round-robin = 2
 
+        public bool ScheduleGenerated { get; set; } = false;
+
+        public bool IsFeatured { get; set; } = false;
+
         public bool IsActive { get; set; } = true;
 
         public DateTime? DeactivateDate { get; set; }
@@ -46,5 +50,6 @@ namespace HRKošarka.Domain
         public virtual ICollection<LeagueTeam> LeagueTeams { get; set; } = new List<LeagueTeam>();
         public virtual ICollection<Match> Matches { get; set; } = new List<Match>();
         public virtual ICollection<LeagueStanding> Standings { get; set; } = new List<LeagueStanding>();
+        public virtual ICollection<LeagueBreak> Breaks { get; set; } = new List<LeagueBreak>();
     }
 }

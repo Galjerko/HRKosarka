@@ -1,75 +1,216 @@
-﻿@page "/"
+@page "/"
+@using HRKošarka.UI.Services.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
 <PageTitle>HRKošarka</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="dashboard-container">
-    <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true" Class="dashboard-title">
-        Welcome to Basketball Management System
-    </MudText>
 
-    <MudText Typo="Typo.h6" Align="Align.Center" Class="dashboard-subtitle mb-6">
-        Explore Croatian basketball clubs, teams, and matches
-    </MudText>
+    <!-- Hero -->
+    <div class="dash-hero">
+        <div class="dash-hero-badge">Croatian Basketball</div>
+        <h1 class="dash-hero-title">HRKošarka</h1>
+        <p class="dash-hero-sub">Clubs, teams, players and league schedules — all in one place.</p>
+    </div>
 
-    <MudGrid Spacing="3">
+    <!-- Navigation cards -->
+    <MudGrid Spacing="3" Class="mb-2">
         <MudItem xs="12" sm="6" md="3">
-            <MudCard Class="dashboard-card card-primary">
-                <MudCardContent>
-                    <div class="dashboard-icon">
-                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Primary" />
-                    </div>
-                    <MudText Typo="Typo.h6" Align="Align.Center" Class="text-primary">Clubs</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="text-secondary">Browse basketball clubs across Croatia</MudText>
-                </MudCardContent>
-                <MudCardActions Class="dashboard-actions">
-                    <MudButton Href="/clubs" Color="Color.Primary" Variant="Variant.Filled">View Clubs</MudButton>
-                </MudCardActions>
-            </MudCard>
+            <a href="/clubs" class="dash-nav-card dash-nav-primary">
+                <div class="dash-nav-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Medium" />
+                </div>
+                <div class="dash-nav-content">
+                    <div class="dash-nav-title">Clubs</div>
+                    <div class="dash-nav-desc">Browse basketball clubs across Croatia</div>
+                </div>
+                <span class="dash-nav-arrow">›</span>
+            </a>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="3">
-            <MudCard Class="dashboard-card card-secondary">
-                <MudCardContent>
-                    <div class="dashboard-icon">
-                        <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Secondary" />
-                    </div>
-                    <MudText Typo="Typo.h6" Align="Align.Center" Class="text-primary">Teams</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="text-secondary">Discover teams and their rosters</MudText>
-                </MudCardContent>
-                <MudCardActions Class="dashboard-actions">
-                    <MudButton Href="/teams" Color="Color.Secondary" Variant="Variant.Filled">View Teams</MudButton>
-                </MudCardActions>
-            </MudCard>
+            <a href="/teams" class="dash-nav-card dash-nav-secondary">
+                <div class="dash-nav-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Medium" />
+                </div>
+                <div class="dash-nav-content">
+                    <div class="dash-nav-title">Teams</div>
+                    <div class="dash-nav-desc">Discover teams and their rosters</div>
+                </div>
+                <span class="dash-nav-arrow">›</span>
+            </a>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="3">
-            <MudCard Class="dashboard-card card-tertiary">
-                <MudCardContent>
-                    <div class="dashboard-icon">
-                        <MudIcon Icon="@Icons.Material.Filled.SportsBasketball" Size="Size.Large" Color="Color.Tertiary" />
-                    </div>
-                    <MudText Typo="Typo.h6" Align="Align.Center" Class="text-primary">Matches</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="text-secondary">Check match schedules and results</MudText>
-                </MudCardContent>
-                <MudCardActions Class="dashboard-actions">
-                    <MudButton Href="/leagues" Color="Color.Tertiary" Variant="Variant.Filled">View Matches</MudButton>
-                </MudCardActions>
-            </MudCard>
+            <a href="/players" class="dash-nav-card dash-nav-tertiary">
+                <div class="dash-nav-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Medium" />
+                </div>
+                <div class="dash-nav-content">
+                    <div class="dash-nav-title">Players</div>
+                    <div class="dash-nav-desc">Browse registered basketball players</div>
+                </div>
+                <span class="dash-nav-arrow">›</span>
+            </a>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="3">
-            <MudCard Class="dashboard-card card-success">
-                <MudCardContent>
-                    <div class="dashboard-icon">
-                        <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Success" />
-                    </div>
-                    <MudText Typo="Typo.h6" Align="Align.Center" Class="text-primary">Leagues</MudText>
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="text-secondary">Follow league standings and tournaments</MudText>
-                </MudCardContent>
-                <MudCardActions Class="dashboard-actions">
-                    <MudButton Href="/leagues" Color="Color.Success" Variant="Variant.Filled">View Leagues</MudButton>
-                </MudCardActions>
-            </MudCard>
+            <a href="/leagues" class="dash-nav-card dash-nav-success">
+                <div class="dash-nav-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Medium" />
+                </div>
+                <div class="dash-nav-content">
+                    <div class="dash-nav-title">Leagues</div>
+                    <div class="dash-nav-desc">Follow league standings and tournaments</div>
+                </div>
+                <span class="dash-nav-arrow">›</span>
+            </a>
         </MudItem>
     </MudGrid>
+
+    <!-- Featured league match slideshow -->
+    @if (_loadingFeatured)
+    {
+        <div class="d-flex justify-center mt-6">
+            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+        </div>
+    }
+    else if (_featuredLeagues.Any())
+    {
+        <div class="featured-section mt-6">
+            @foreach (var league in _featuredLeagues)
+            {
+                var leagueLogo = league.LeagueImageBytes?.Length > 0 && !string.IsNullOrEmpty(league.LeagueImageContentType)
+                    ? $"data:{league.LeagueImageContentType};base64,{Convert.ToBase64String(league.LeagueImageBytes)}"
+                    : null;
+                var rowId = $"frow-{league.LeagueId}";
+
+                <div class="featured-league-block mb-6">
+
+                    <!-- League header -->
+                    <div class="featured-league-header">
+                        <div class="featured-league-identity">
+                            @if (leagueLogo is not null)
+                            {
+                                <img src="@leagueLogo" class="featured-league-logo" alt="" />
+                            }
+                            else
+                            {
+                                <div class="featured-league-logo-fallback">
+                                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Small" />
+                                </div>
+                            }
+                            <MudText Typo="Typo.h6" Class="featured-league-name">@league.LeagueName</MudText>
+                            <span class="featured-round-badge">@league.RoundName</span>
+                        </div>
+                        <a href="/leagues/@league.LeagueId/schedule" class="featured-view-all">
+                            Full Schedule <span class="featured-view-arrow">→</span>
+                        </a>
+                    </div>
+
+                    <!-- Scroll row with arrow buttons -->
+                    <div class="featured-scroll-outer">
+                        <button class="featured-arrow featured-arrow-left"
+                                @onclick="@(() => ScrollRow(rowId, -1))"
+                                aria-label="Scroll left">
+                            ‹
+                        </button>
+
+                        <div id="@rowId" class="featured-scroll-row">
+                            @foreach (var match in league.Matches)
+                            {
+                                var homeLogo = GetLogo(match.HomeTeamId);
+                                var awayLogo = GetLogo(match.AwayTeamId);
+                                var hasScore = match.HomeScore.HasValue && match.AwayScore.HasValue;
+                                var homeWins = hasScore && match.HomeScore > match.AwayScore;
+                                var awayWins = hasScore && match.AwayScore > match.HomeScore;
+                                var statusClass = match.Status == MatchStatus._2 ? "fmc fmc-final"
+                                                : match.Status == MatchStatus._1 ? "fmc fmc-rescheduled"
+                                                : match.Status == MatchStatus._3 ? "fmc fmc-cancelled"
+                                                : "fmc fmc-upcoming";
+
+                                <a href="/leagues/@league.LeagueId/schedule" class="fmc-link">
+                                    <div class="@statusClass">
+
+                                        <!-- Card header: status + time -->
+                                        <div class="fmc-header">
+                                            <span class="fmc-status-pill">@MatchStatusLabel(match.Status)</span>
+                                            <span class="fmc-time">@match.ActualScheduledDate.ToString("HH:mm")</span>
+                                        </div>
+
+                                        <!-- Separator -->
+                                        <div class="fmc-divider"></div>
+
+                                        <!-- Home team row -->
+                                        <div class="fmc-team-row">
+                                            @if (homeLogo is not null)
+                                            {
+                                                <img src="@homeLogo" class="fmc-logo" alt="" />
+                                            }
+                                            else
+                                            {
+                                                <div class="fmc-logo-fallback">@match.HomeTeamName.First()</div>
+                                            }
+                                            <span class="fmc-name @(homeWins ? "fmc-winner-name" : "")">
+                                                @match.HomeTeamName
+                                            </span>
+                                            @if (hasScore)
+                                            {
+                                                <span class="fmc-score @(homeWins ? "fmc-winner-score" : "")">
+                                                    @match.HomeScore
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="fmc-score-dash">–</span>
+                                            }
+                                        </div>
+
+                                        <!-- Away team row -->
+                                        <div class="fmc-team-row">
+                                            @if (awayLogo is not null)
+                                            {
+                                                <img src="@awayLogo" class="fmc-logo" alt="" />
+                                            }
+                                            else
+                                            {
+                                                <div class="fmc-logo-fallback">@match.AwayTeamName.First()</div>
+                                            }
+                                            <span class="fmc-name @(awayWins ? "fmc-winner-name" : "")">
+                                                @match.AwayTeamName
+                                            </span>
+                                            @if (hasScore)
+                                            {
+                                                <span class="fmc-score @(awayWins ? "fmc-winner-score" : "")">
+                                                    @match.AwayScore
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="fmc-score-dash">–</span>
+                                            }
+                                        </div>
+
+                                        <!-- Card footer: date -->
+                                        <div class="fmc-footer">
+                                            @match.ActualScheduledDate.ToString("dd.MM.yyyy.")
+                                        </div>
+
+                                    </div>
+                                </a>
+                            }
+                        </div>
+
+                        <button class="featured-arrow featured-arrow-right"
+                                @onclick="@(() => ScrollRow(rowId, 1))"
+                                aria-label="Scroll right">
+                            ›
+                        </button>
+                    </div>
+
+                </div>
+            }
+        </div>
+    }
+
 </MudContainer>

@@ -40,6 +40,9 @@ namespace HRKošarka.Application.Features.Team.Commands.DeactivateTeam
                 throw new BadRequestException("Team is already deactivated");
             }
 
+            if (await _leagueRepository.HasActiveMatchesForTeamAsync(request.Id, cancellationToken))
+                throw new BadRequestException("Cannot deactivate a team that has scheduled matches. Complete or cancel the matches first.");
+
             await _historyRepository.DeactivateAllForTeamAsync(request.Id, cancellationToken);
             await _leagueRepository.DeactivateAllForTeamAsync(request.Id, cancellationToken);
 

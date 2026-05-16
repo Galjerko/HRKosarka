@@ -27,6 +27,7 @@ namespace HRKošarka.Persistence.DatabaseContext
         public DbSet<Season> Seasons { get; set; }
         public DbSet<League> Leagues { get; set; }
         public DbSet<LeagueTeam> LeagueTeams { get; set; }
+        public DbSet<LeagueBreak> LeagueBreaks { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<PlayerTeamHistory> PlayerTeamHistory { get; set; }
         public DbSet<TeamRepresentative> TeamRepresentatives { get; set; }

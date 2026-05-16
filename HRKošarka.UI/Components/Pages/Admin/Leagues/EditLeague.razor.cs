@@ -79,6 +79,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                         CompetitionType = _league.CompetitionType,
                         NumberOfRounds = _league.NumberOfRounds,
                         IsActive = _league.IsActive,
+                        IsFeatured = _league.IsFeatured,
                         StartDate = _league.StartDate,
                         EndDate = _league.EndDate
                     };

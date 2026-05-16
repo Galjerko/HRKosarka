@@ -164,6 +164,12 @@ namespace HRKošarka.Persistence.Repositories
             return entity;
         }
 
+        public async Task CreateRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+        {
+            await _context.Set<T>().AddRangeAsync(entities, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
         public async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default)
         {
             _context.Entry(entity).State = EntityState.Modified;

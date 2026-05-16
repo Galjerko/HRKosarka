@@ -12,6 +12,7 @@ namespace HRKošarka.Application.Contracts.Persistence
         IQueryable<T> GetQueryable(); 
         Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
         Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default);
+        Task CreateRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
         Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default);
         Task DeleteAsync(Guid id, CancellationToken cancellationToken = default); 
     }

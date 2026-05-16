@@ -21,6 +21,12 @@ namespace HRKošarka.Application.Features.League.Commands.RemoveTeamFromLeague
 
         public async Task<CommandResponse<bool>> Handle(RemoveTeamFromLeagueCommand request, CancellationToken cancellationToken)
         {
+            var league = await _leagueRepository.GetByIdAsync(request.LeagueId, cancellationToken)
+                ?? throw new NotFoundException(nameof(Domain.League), request.LeagueId);
+
+            if (league.ScheduleGenerated)
+                throw new BadRequestException("Schedule has already been generated. Team registration is locked.");
+
             var existing = await _leagueRepository.GetLeagueTeamAsync(request.LeagueId, request.TeamId, cancellationToken);
             if (existing == null || !existing.IsActive)
                 throw new NotFoundException("LeagueTeam", $"{request.LeagueId}/{request.TeamId}");

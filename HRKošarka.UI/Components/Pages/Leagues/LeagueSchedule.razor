@@ -1,0 +1,234 @@
+@page "/leagues/{Id:guid}/schedule"
+@using HRKošarka.UI.Services.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<PageTitle>@(_league?.Name ?? "Schedule") – Match Schedule</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+
+    @if (_isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="height: 200px;">
+            <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else if (_league is null)
+    {
+        <MudText Color="Color.Error">League not found.</MudText>
+    }
+    else if (!_league.ScheduleGenerated)
+    {
+        <MudAlert Severity="Severity.Info">
+            The schedule has not been generated yet for <strong>@_league.Name</strong>.
+        </MudAlert>
+        <MudButton Class="mt-3" StartIcon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="@(() => NavigationManager.NavigateTo($"/leagues/{Id}"))">
+            Back to League
+        </MudButton>
+    }
+    else
+    {
+        <!-- Page header -->
+        <div class="sched-page-header">
+            <div>
+                <MudText Typo="Typo.h5" Class="sched-league-name">@_league.Name</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @_schedule.Sum(r => r.Matches.Count) matches · @_schedule.Count rounds
+                </MudText>
+            </div>
+            <MudButton Variant="Variant.Text"
+                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="@(() => NavigationManager.NavigateTo($"/leagues/{Id}"))">
+                Back
+            </MudButton>
+        </div>
+
+        <!-- Round navigator -->
+        <div class="sched-navigator">
+            <MudIconButton Icon="@Icons.Material.Filled.FirstPage"
+                           Size="Size.Small"
+                           Disabled="IsFirstRound"
+                           OnClick="GoToFirstRound"
+                           Class="sched-nav-arrow" />
+            <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                           Size="Size.Small"
+                           Disabled="IsFirstRound"
+                           OnClick="GoToPrevRound"
+                           Class="sched-nav-arrow" />
+
+            <!-- Desktop: numbered buttons -->
+            <div class="sched-page-numbers">
+                @foreach (var page in GetRoundPageNumbers())
+                {
+                    @if (page == -1)
+                    {
+                        <span class="sched-ellipsis">…</span>
+                    }
+                    else
+                    {
+                        <MudButton Size="Size.Small"
+                                   Variant="@(page == _selectedRound ? Variant.Filled : Variant.Text)"
+                                   Color="@(page == _selectedRound ? Color.Primary : Color.Default)"
+                                   OnClick="@(() => _selectedRound = page)"
+                                   Class="sched-round-btn">
+                            @(page)
+                        </MudButton>
+                    }
+                }
+            </div>
+
+            <!-- Mobile: text label -->
+            <span class="sched-round-label-mobile">
+                Round @_selectedRound / @_schedule.Count
+            </span>
+
+            <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                           Size="Size.Small"
+                           Disabled="IsLastRound"
+                           OnClick="GoToNextRound"
+                           Class="sched-nav-arrow" />
+            <MudIconButton Icon="@Icons.Material.Filled.LastPage"
+                           Size="Size.Small"
+                           Disabled="IsLastRound"
+                           OnClick="GoToLastRound"
+                           Class="sched-nav-arrow" />
+        </div>
+
+        <!-- Matches for selected round -->
+        @if (CurrentRoundData is { } round)
+        {
+            <div class="sched-round-header">
+                <MudText Typo="Typo.h6" Class="font-weight-semibold">@round.RoundName</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @round.ScheduledDate.ToString("dddd, dd.MM.yyyy.")
+                </MudText>
+            </div>
+
+            <div class="sched-matches-container">
+
+                <!-- Column header (desktop only) -->
+                <div class="sched-col-header">
+                    <div class="sm-time"></div>
+                    <div class="sm-team sm-home">Home</div>
+                    <div class="sm-score-col"></div>
+                    <div class="sm-team sm-away">Away</div>
+                    <div class="sm-status-col">Status</div>
+                    <div class="sm-venue-col">Venue</div>
+                </div>
+
+                @foreach (var match in round.Matches.OrderBy(m => m.ActualScheduledDate))
+                {
+                    var homeLogo = GetTeamLogo(match.HomeTeamId);
+                    var awayLogo = GetTeamLogo(match.AwayTeamId);
+                    var hasScore = match.HomeScore.HasValue && match.AwayScore.HasValue;
+                    var rowClass = match.Status == MatchStatus._2 ? "sched-match-row sm-completed" : "sched-match-row";
+                    var homeLinkClass = hasScore && match.HomeScore > match.AwayScore ? "sm-team-link sm-winner" : "sm-team-link";
+                    var awayLinkClass = hasScore && match.AwayScore > match.HomeScore ? "sm-team-link sm-winner" : "sm-team-link";
+
+                    <div class="@rowClass">
+
+                        <!-- Time -->
+                        <div class="sm-time">
+                            @match.ActualScheduledDate.ToString("HH:mm")
+                        </div>
+
+                        <!-- Home team -->
+                        <div class="sm-team sm-home">
+                            <MudLink Href="@($"/teams/{match.HomeTeamId}")" Class="@homeLinkClass">
+                                @match.HomeTeamName
+                            </MudLink>
+                            @if (homeLogo is not null)
+                            {
+                                <img src="@homeLogo" class="sm-logo" alt="" />
+                            }
+                            else
+                            {
+                                <MudAvatar Size="Size.Small" Class="sm-logo-fallback">
+                                    @match.HomeTeamName.First()
+                                </MudAvatar>
+                            }
+                        </div>
+
+                        <!-- Score / separator -->
+                        <div class="sm-score-col">
+                            @if (hasScore)
+                            {
+                                <span class="@(match.HomeScore > match.AwayScore ? "sm-score sm-winner-score" : "sm-score")">
+                                    @match.HomeScore
+                                </span>
+                                <span class="sm-score-sep">:</span>
+                                <span class="@(match.AwayScore > match.HomeScore ? "sm-score sm-winner-score" : "sm-score")">
+                                    @match.AwayScore
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="sm-dash">–</span>
+                            }
+                        </div>
+
+                        <!-- Away team -->
+                        <div class="sm-team sm-away">
+                            @if (awayLogo is not null)
+                            {
+                                <img src="@awayLogo" class="sm-logo" alt="" />
+                            }
+                            else
+                            {
+                                <MudAvatar Size="Size.Small" Class="sm-logo-fallback">
+                                    @match.AwayTeamName.First()
+                                </MudAvatar>
+                            }
+                            <MudLink Href="@($"/teams/{match.AwayTeamId}")" Class="@awayLinkClass">
+                                @match.AwayTeamName
+                            </MudLink>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="sm-status-col">
+                            <MudChip T="string" Size="Size.Small" Color="@match.Status.ToColor()">
+                                @match.Status.ToDisplayString()
+                            </MudChip>
+                        </div>
+
+                        <!-- Venue -->
+                        <div class="sm-venue-col">
+                            @if (!string.IsNullOrEmpty(match.Venue))
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn"
+                                         Size="Size.Small" Class="sm-venue-icon" />
+                                <span class="sm-venue-text">@match.Venue</span>
+                            }
+                        </div>
+
+                    </div>
+                }
+
+                <!-- Bye team -->
+                @{ var byeTeam = GetByeTeam(round); }
+                @if (byeTeam is not null)
+                {
+                    var byeLogo = GetTeamLogo(byeTeam.TeamId);
+                    <div class="sched-bye-row">
+                        @if (byeLogo is not null)
+                        {
+                            <img src="@byeLogo" class="sm-logo" alt="" />
+                        }
+                        else
+                        {
+                            <MudAvatar Size="Size.Small" Class="sm-logo-fallback">@byeTeam.TeamName.First()</MudAvatar>
+                        }
+                        <MudLink Href="@($"/teams/{byeTeam.TeamId}")" Class="sm-team-link">
+                            @byeTeam.TeamName
+                        </MudLink>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-style:italic">
+                            — Bye this round
+                        </MudText>
+                    </div>
+                }
+
+            </div>
+        }
+    }
+
+</MudContainer>
