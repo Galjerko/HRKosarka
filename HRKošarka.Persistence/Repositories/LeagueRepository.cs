@@ -163,7 +163,7 @@ namespace HRKošarka.Persistence.Repositories
             var query = _context.Teams
                 .Include(t => t.Club)
                 .Include(t => t.AgeCategory)
-                .Where(t => t.DeactivateDate == null && t.DateDeleted == null)
+                .Where(t => t.DeactivateDate == null)
                 .Where(t => t.Gender == league.Gender)
                 .Where(t => t.AgeCategoryId == league.AgeCategoryId)
                 .Where(t => !registeredTeamIds.Contains(t.Id));
