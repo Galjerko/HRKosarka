@@ -1,0 +1,152 @@
+@page "/my-responsibilities"
+@using HRKošarka.UI.Services.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<PageTitle>My Responsibilities</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+
+    <MudText Typo="Typo.h5" Class="mb-1">My Responsibilities</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-5">
+        Your club, teams and all pending actions across all leagues.
+    </MudText>
+
+    @if (_isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="height:200px;">
+            <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- My Club + Teams (ClubManager only) -->
+        @if (_isClubManager && _myClub != null)
+        {
+            <!-- Club row (full width) -->
+            <a href="@($"/clubs/{_myClub.Id}")" class="resp-club-card mb-2">
+                @{
+                    var logo = GetClubLogo();
+                }
+                @if (logo != null)
+                {
+                    <img src="@logo" class="resp-club-logo" alt="@_myClub.Name" />
+                }
+                else
+                {
+                    <MudAvatar Color="Color.Primary" Class="resp-club-avatar">
+                        <MudIcon Icon="@Icons.Material.Filled.Business" />
+                    </MudAvatar>
+                }
+                <div class="resp-club-info">
+                    <span class="resp-section-label">My Club</span>
+                    <span class="resp-club-name">@_myClub.Name</span>
+                </div>
+                <MudChip T="string" Size="Size.Small"
+                         Color="@(_myClub.IsActive ? Color.Success : Color.Error)"
+                         Class="ml-auto flex-shrink-0">
+                    @(_myClub.IsActive ? "Active" : "Inactive")
+                </MudChip>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Color="Color.Secondary" Size="Size.Small" Class="ml-2" />
+            </a>
+
+            <!-- Teams row (full width, expandable) -->
+            <div class="resp-group-panel mb-5">
+                <button class="resp-group-header-btn" @onclick="@(() => _teamsExpanded = !_teamsExpanded)">
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" Size="Size.Small" Class="mr-2" />
+                    <span class="resp-group-title-text">My Teams</span>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2 flex-shrink-0">
+                        @(_myClub.Teams?.Count ?? 0)
+                    </MudChip>
+                    <MudIcon Icon="@(_teamsExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                             Size="Size.Small" Class="ml-auto" Color="Color.Secondary" />
+                </button>
+                @if (_teamsExpanded)
+                {
+                    @if (_myClub.Teams == null || !_myClub.Teams.Any())
+                    {
+                        <div class="px-4 py-3">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">No teams in your club.</MudText>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var team in _myClub.Teams.OrderBy(t => t.Name))
+                        {
+                            <a href="@($"/teams/{team.Id}")" class="resp-row">
+                                <MudIcon Icon="@Icons.Material.Filled.Groups"
+                                         Size="Size.Small" Color="Color.Primary" Class="mr-3 flex-shrink-0" />
+                                <div class="resp-row-main">
+                                    <div class="resp-match">@team.Name</div>
+                                    <div class="resp-meta">@(team.IsActive ? "Active" : "Inactive")</div>
+                                </div>
+                                <MudIcon Icon="@Icons.Material.Filled.ChevronRight"
+                                         Color="Color.Secondary" Size="Size.Small" />
+                            </a>
+                        }
+                    }
+                }
+            </div>
+
+            <MudDivider Class="mb-5" />
+        }
+
+        <!-- Pending Actions -->
+        @if (!_actions.Any())
+        {
+            <MudPaper Class="pa-6 d-flex flex-column align-center" Elevation="1" Style="border-radius:12px;">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Size="Size.Large" Color="Color.Success" Class="mb-3" />
+                <MudText Typo="Typo.h6">All caught up!</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">No pending actions at the moment.</MudText>
+            </MudPaper>
+        }
+        else
+        {
+            @foreach (var group in _actions.GroupBy(a => a.ActionType).OrderBy(g => (int)g.Key))
+            {
+                var actionType = group.Key;
+                var (groupIcon, groupColor, groupTitle) = actionType switch
+                {
+                    PendingActionType._0 => (Icons.Material.Filled.Send,           Color.Primary, "Submit Home Stats"),
+                    PendingActionType._1 => (Icons.Material.Filled.Edit,            Color.Warning, "Enter Away Stats"),
+                    PendingActionType._2 => (Icons.Material.Filled.CheckCircle,     Color.Success, "Confirm Result"),
+                    PendingActionType._3 => (Icons.Material.Filled.SwapHoriz,       Color.Warning, "Respond to Reschedule"),
+                    PendingActionType._4 => (Icons.Material.Filled.HourglassEmpty,  Color.Default, "Awaiting Proposal Response"),
+                    PendingActionType._5 => (Icons.Material.Filled.Flag,            Color.Error,   "Resolve Dispute"),
+                    _                   => (Icons.Material.Filled.Info,             Color.Default, "Pending")
+                };
+                var isOpen = !_collapsedGroups.Contains((int)actionType);
+
+                <div class="resp-group-panel mb-3">
+                    <button class="resp-group-header-btn" @onclick="@(() => ToggleGroup((int)actionType))">
+                        <MudIcon Icon="@groupIcon" Color="@groupColor" Size="Size.Small" Class="mr-2" />
+                        <span class="resp-group-title-text">@groupTitle</span>
+                        <MudChip T="string" Size="Size.Small" Color="@groupColor" Class="ml-2 flex-shrink-0">@group.Count()</MudChip>
+                        <MudIcon Icon="@(isOpen ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                 Size="Size.Small" Class="ml-auto" Color="Color.Secondary" />
+                    </button>
+
+                    @if (isOpen)
+                    {
+                        @foreach (var action in group.OrderBy(a => a.ScheduledDate))
+                        {
+                            <a href="@($"/matches/{action.MatchId}")" class="resp-row">
+                                <div class="resp-row-main">
+                                    <div class="resp-league">@action.LeagueName</div>
+                                    <div class="resp-match">
+                                        @action.HomeTeamName
+                                        <span class="resp-vs">vs</span>
+                                        @action.AwayTeamName
+                                    </div>
+                                    <div class="resp-meta">@action.RoundName · @action.ScheduledDate.ToString("dd.MM.yyyy.")</div>
+                                </div>
+                                <MudIcon Icon="@Icons.Material.Filled.ChevronRight"
+                                         Color="Color.Secondary" Size="Size.Small" />
+                            </a>
+                        }
+                    }
+                </div>
+            }
+        }
+    }
+
+</MudContainer>
