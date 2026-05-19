@@ -23,10 +23,18 @@
 
     public enum MatchStatus
     {
-        Scheduled,   
-        Rescheduled,  
-        Completed, 
-        Cancelled 
+        Scheduled,
+        Rescheduled,
+        Completed,
+        Forfeit
+    }
+
+    public enum ResultSubmissionStatus
+    {
+        NotSubmitted,
+        HomeSubmitted,
+        Confirmed,
+        Disputed
     }
 
     public enum SchedulingStatus

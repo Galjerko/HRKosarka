@@ -4,6 +4,7 @@ using HRKošarka.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HRKošarka.Persistence.Migrations
 {
     [DbContext(typeof(HRDatabaseContext))]
-    partial class HRDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260516194233_AddMatchResultWorkflow")]
+    partial class AddMatchResultWorkflow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -567,10 +570,6 @@ namespace HRKošarka.Persistence.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("varchar(450)");
 
-                    b.Property<string>("DisputeReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<int?>("HomeScore")
                         .HasColumnType("int");
 
@@ -674,9 +673,6 @@ namespace HRKošarka.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<Guid>("RequestedByClubId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("RequestedByUserId")
                         .IsRequired()

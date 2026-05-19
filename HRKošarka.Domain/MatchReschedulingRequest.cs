@@ -14,6 +14,9 @@ namespace HRKošarka.Domain
         public string RequestedByUserId { get; set; } = string.Empty;
 
         [Required]
+        public Guid RequestedByClubId { get; set; }
+
+        [Required]
         public DateTime ProposedDate { get; set; }
 
         [Required]

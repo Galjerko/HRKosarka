@@ -11,6 +11,9 @@ namespace HRKošarka.Persistence.Configurations
             builder.Property(p => p.AveragePoints)
                    .HasPrecision(5, 2);
 
+            builder.Property(p => p.AverageFouls)
+                   .HasPrecision(5, 2);
+
             builder.Property(p => p.AverageThreePointers)
                    .HasPrecision(5, 2);
 

@@ -19,6 +19,12 @@ namespace HRKošarka.Persistence.Configurations
                    .HasForeignKey(pms => pms.PlayerId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(pms => pms.Team)
+                   .WithMany()
+                   .HasForeignKey(pms => pms.TeamId)
+                   .OnDelete(DeleteBehavior.Restrict)
+                   .IsRequired(false);
+
             // Unique constraint - one stat record per player per match
             builder.HasIndex(e => new { e.MatchId, e.PlayerId })
                    .IsUnique()

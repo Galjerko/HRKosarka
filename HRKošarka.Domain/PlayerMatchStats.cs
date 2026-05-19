@@ -17,7 +17,12 @@ namespace HRKošarka.Domain
 
         public int ThreePointers { get; set; } = 0;
 
+        public bool DidNotPlay { get; set; } = false;
+
+        public Guid? TeamId { get; set; }
+
         public virtual Match Match { get; set; } = null!;
         public virtual Player Player { get; set; } = null!;
+        public virtual Team? Team { get; set; }
     }
 }

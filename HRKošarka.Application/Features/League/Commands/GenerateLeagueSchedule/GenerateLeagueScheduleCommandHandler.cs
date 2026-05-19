@@ -4,6 +4,7 @@ using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Models.Responses;
 using HRKošarka.Domain;
 using HRKošarka.Domain.Common;
+using DomainMatch = HRKošarka.Domain.Match;
 using HRKošarka.Domain.Helpers;
 using MediatR;
 
@@ -12,12 +13,12 @@ namespace HRKošarka.Application.Features.League.Commands.GenerateLeagueSchedule
     public class GenerateLeagueScheduleCommandHandler : IRequestHandler<GenerateLeagueScheduleCommand, CommandResponse<int>>
     {
         private readonly ILeagueRepository _leagueRepository;
-        private readonly IGenericRepository<Match> _matchRepository;
+        private readonly IGenericRepository<DomainMatch> _matchRepository;
         private readonly IAppLogger<GenerateLeagueScheduleCommandHandler> _logger;
 
         public GenerateLeagueScheduleCommandHandler(
             ILeagueRepository leagueRepository,
-            IGenericRepository<Match> matchRepository,
+            IGenericRepository<DomainMatch> matchRepository,
             IAppLogger<GenerateLeagueScheduleCommandHandler> logger)
         {
             _leagueRepository = leagueRepository;
@@ -51,7 +52,7 @@ namespace HRKošarka.Application.Features.League.Commands.GenerateLeagueSchedule
 
             var slots = RoundRobinScheduler.Generate(teamIds, league.StartDate, league.NumberOfRounds, breakRanges);
 
-            var matches = slots.Select(s => new Match
+            var matches = slots.Select(s => new DomainMatch
             {
                 LeagueId = request.LeagueId,
                 HomeTeamId = s.HomeTeamId,

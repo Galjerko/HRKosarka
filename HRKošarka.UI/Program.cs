@@ -1,10 +1,10 @@
 using Blazored.LocalStorage;
 using Blazored.Toast.Services;
-using HRKošarka.UI.Components;
-using HRKošarka.UI.Contracts;
-using HRKošarka.UI.Providers;
-using HRKošarka.UI.Services;
-using HRKošarka.UI.Services.Base;
+using HRKoÅ¡arka.UI.Components;
+using HRKoÅ¡arka.UI.Contracts;
+using HRKoÅ¡arka.UI.Providers;
+using HRKoÅ¡arka.UI.Services;
+using HRKoÅ¡arka.UI.Services.Base;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -77,6 +77,7 @@ builder.Services.AddScoped<ISeasonService, SeasonService>();
 builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddScoped<ILeagueService, LeagueService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
+builder.Services.AddScoped<IMatchService, MatchService>();
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 

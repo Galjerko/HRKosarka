@@ -35,6 +35,8 @@ namespace HRKošarka.Domain
 
         public decimal AveragePoints { get; set; } = 0;
 
+        public decimal AverageFouls { get; set; } = 0;
+
         public decimal AverageThreePointers { get; set; } = 0;
 
         public bool IsFinal { get; set; } = false;

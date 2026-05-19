@@ -1,0 +1,585 @@
+@page "/matches/{Id:guid}"
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Extensions
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<PageTitle>@(_match is not null ? $"{_match.HomeTeamName} vs {_match.AwayTeamName}" : "Match")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+
+    @if (_isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="height:200px;">
+            <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else if (_match is null)
+    {
+        <MudAlert Severity="Severity.Error">Match not found.</MudAlert>
+    }
+    else
+    {
+        <!-- Header breadcrumb -->
+        <div class="md-breadcrumb">
+            <MudLink Href="@($"/leagues/{_match.LeagueId}/schedule")" Class="md-breadcrumb-link">
+                @_match.LeagueName
+            </MudLink>
+            <span class="md-breadcrumb-sep">›</span>
+            <span class="md-breadcrumb-current">@_match.RoundName</span>
+        </div>
+
+        <!-- Scoreboard card -->
+        <div class="md-scoreboard">
+            <div class="md-scoreboard-meta">
+                <span class="md-meta-date">@_match.ActualScheduledDate.ToString("dddd, dd.MM.yyyy. · HH:mm")</span>
+                <div class="d-flex gap-2 flex-wrap">
+                    <MudChip T="string" Size="Size.Small" Color="@_match.Status.ToColor()" Class="md-status-chip">
+                        @_match.Status.ToDisplayString()
+                    </MudChip>
+                    @if (!_match.IsResultConfirmed)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="@_match.ResultSubmissionStatus.ToColor()" Class="md-status-chip">
+                            @_match.ResultSubmissionStatus.ToDisplayString()
+                        </MudChip>
+                    }
+                </div>
+            </div>
+
+            <div class="md-teams-row">
+                <!-- Home team -->
+                <div class="md-team md-team-home">
+                    <MudLink Href="@($"/teams/{_match.HomeTeamId}")" Class="md-team-name">
+                        @_match.HomeTeamName
+                    </MudLink>
+                </div>
+
+                <!-- Score -->
+                <div class="md-score-block">
+                    @if (_canEditScore)
+                    {
+                        <input type="number" class="md-score-edit" min="0"
+                               value="@_homeScore"
+                               @onchange="@(e => _homeScore = int.TryParse(e.Value?.ToString(), out var v) ? Math.Max(0, v) : 0)" />
+                        <span class="md-score-colon">:</span>
+                        <input type="number" class="md-score-edit" min="0"
+                               value="@_awayScore"
+                               @onchange="@(e => _awayScore = int.TryParse(e.Value?.ToString(), out var v) ? Math.Max(0, v) : 0)" />
+                    }
+                    else
+                    {
+                        <span class="md-score-num @(_match.HomeScore > _match.AwayScore ? "md-score-win" : _match.HomeScore < _match.AwayScore ? "md-score-loss" : "")">
+                            @(_match.HomeScore?.ToString() ?? "–")
+                        </span>
+                        <span class="md-score-colon">:</span>
+                        <span class="md-score-num @(_match.AwayScore > _match.HomeScore ? "md-score-win" : _match.AwayScore < _match.HomeScore ? "md-score-loss" : "")">
+                            @(_match.AwayScore?.ToString() ?? "–")
+                        </span>
+                    }
+                </div>
+
+                <!-- Away team -->
+                <div class="md-team md-team-away">
+                    <MudLink Href="@($"/teams/{_match.AwayTeamId}")" Class="md-team-name">
+                        @_match.AwayTeamName
+                    </MudLink>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_match.Venue))
+            {
+                <div class="md-venue">
+                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" />
+                    @_match.Venue
+                    @if ((_isHomeManager || _isAdmin) && !_match.IsResultConfirmed)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                       Class="ml-1" Style="margin-top:-2px"
+                                       OnClick="@(() => { _venueEdit = _match.Venue ?? string.Empty; _showVenueEdit = true; })" />
+                    }
+                </div>
+            }
+            else if ((_isHomeManager || _isAdmin) && !_match.IsResultConfirmed)
+            {
+                <div class="md-venue">
+                    <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Default"
+                               StartIcon="@Icons.Material.Filled.AddLocation"
+                               OnClick="@(() => { _venueEdit = string.Empty; _showVenueEdit = true; })">
+                        Add venue
+                    </MudButton>
+                </div>
+            }
+
+            @if (_showVenueEdit)
+            {
+                <div class="md-venue-edit mt-2">
+                    <MudTextField @bind-Value="_venueEdit" Label="Venue" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" MaxLength="200" Class="flex-1" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                               OnClick="SaveVenue" Class="ml-2">Save</MudButton>
+                    <MudButton Variant="Variant.Text" Size="Size.Small"
+                               OnClick="@(() => _showVenueEdit = false)" Class="ml-1">Cancel</MudButton>
+                </div>
+            }
+        </div>
+
+        <!-- Reschedule proposal box -->
+        @if (_match.PendingReschedule != null)
+        {
+            <div class="md-reschedule-box mt-3">
+                <div class="md-reschedule-header">
+                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Class="mr-1" />
+                    Reschedule proposed
+                </div>
+                <div class="md-reschedule-meta">
+                    <span><strong>New date:</strong> @_match.PendingReschedule.ProposedDate.ToString("dddd, dd.MM.yyyy. · HH:mm")</span>
+                    <span><strong>Reason:</strong> @_match.PendingReschedule.Reason</span>
+                    <span class="md-reschedule-expiry">Expires: @_match.PendingReschedule.ExpiresAt.ToString("dd.MM.yyyy. HH:mm")</span>
+                </div>
+                @if (_canRespondToProposal)
+                {
+                    <div class="md-reschedule-actions">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Check"
+                                   OnClick="@(() => RespondToProposal(true))">
+                            Accept
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Close"
+                                   OnClick="@(() => RespondToProposal(false))">
+                            Reject
+                        </MudButton>
+                    </div>
+                }
+                else if (_isProposer)
+                {
+                    <div class="md-reschedule-waiting">
+                        <MudIcon Icon="@Icons.Material.Filled.HourglassEmpty" Size="Size.Small" Class="mr-1" />
+                        Waiting for the other team to respond
+                    </div>
+                }
+            </div>
+        }
+        else if (!_match.IsResultConfirmed && _match.ResultSubmissionStatus == ResultSubmissionStatus._0 && (_isHomeManager || _isAwayManager) && !_showProposeForm)
+        {
+            <div class="mt-2 mb-1">
+                <MudButton Variant="Variant.Text" Color="Color.Default" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.EditCalendar"
+                           OnClick="@(() => _showProposeForm = true)">
+                    Propose new time
+                </MudButton>
+            </div>
+        }
+
+        <!-- Inline reschedule proposal form -->
+        @if (_showProposeForm)
+        {
+            <div class="md-propose-form mt-2 mb-3">
+                <div class="md-propose-form-title">Propose new date &amp; time</div>
+                <div class="md-propose-form-fields">
+                    <MudDatePicker @bind-Date="_proposedDate"
+                                   Label="Date"
+                                   Variant="Variant.Outlined"
+                                   DateFormat="dd.MM.yyyy."
+                                   MinDate="_rescheduleMinDate"
+                                   MaxDate="_rescheduleMaxDate"
+                                   Class="md-propose-field" />
+                    <MudTimePicker @bind-Time="_proposedTime"
+                                   Label="Time"
+                                   Variant="Variant.Outlined"
+                                   AmPm="false"
+                                   Class="md-propose-field" />
+                    <MudTextField @bind-Value="_proposeReason"
+                                  Label="Reason"
+                                  Variant="Variant.Outlined"
+                                  MaxLength="500"
+                                  Class="md-propose-field md-propose-reason" />
+                </div>
+                <div class="d-flex gap-2 mt-2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                               OnClick="SubmitProposal" Disabled="_proposedDate == null || _proposedTime == null">
+                        Send Proposal
+                    </MudButton>
+                    <MudButton Variant="Variant.Text" Size="Size.Small"
+                               OnClick="@(() => { _showProposeForm = false; _proposedDate = null; _proposedTime = TimeSpan.FromHours(19); _proposeReason = string.Empty; })">
+                        Cancel
+                    </MudButton>
+                </div>
+            </div>
+        }
+
+        <!-- Score validation warning (only when editing) -->
+        @if (_canEditScore && _homeStats.Any() && HomeTotalPts != _homeScore)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2">
+                Home team: player totals (@HomeTotalPts pts) do not match score (@_homeScore pts)
+            </MudAlert>
+        }
+        @if (_canEditAwayStats && _awayStats.Any() && AwayTotalPts != _awayScore)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-4">
+                Away team: player totals (@AwayTotalPts pts) do not match score (@_awayScore pts)
+            </MudAlert>
+        }
+
+        <!-- Stats panels -->
+        <MudGrid Spacing="4" Class="mt-2">
+            <!-- HOME team stats -->
+            <MudItem xs="12" md="6">
+                <div class="md-stats-panel">
+                    <div class="md-stats-header">
+                        <span class="md-stats-team-name">@_match.HomeTeamName</span>
+                        @if (_isHomeManager)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">Your team</MudChip>
+                        }
+                    </div>
+
+                    @if (!_homeStats.Any())
+                    {
+                        <div class="md-no-roster">No players rostered for this season.</div>
+                    }
+                    else
+                    {
+                        <table class="md-stats-table">
+                            <thead>
+                                <tr>
+                                    <th class="mds-th-player">#&nbsp;&nbsp;Player</th>
+                                    <th class="mds-th-num">PTS</th>
+                                    <th class="mds-th-num">3PT</th>
+                                    <th class="mds-th-num">PF</th>
+                                    <th class="mds-th-dnp">DNP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var stat in _homeStats)
+                                {
+                                    var rowInvalid = !PlayerValid(stat);
+                                    <tr class="mds-row @(stat.DidNotPlay ? "mds-dnp" : "") @(rowInvalid ? "mds-invalid" : "")">
+                                        <td class="mds-td-player">
+                                            @if (stat.JerseyNumber.HasValue)
+                                            {
+                                                <span class="mds-jersey">@stat.JerseyNumber</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="mds-jersey mds-jersey-empty">–</span>
+                                            }
+                                            <MudLink Href="@($"/players/{stat.PlayerId}")" Class="mds-player-name mds-player-link">@stat.PlayerName</MudLink>
+                                            @if (rowInvalid && _canEditScore)
+                                            {
+                                                <MudTooltip Text="Points must be ≥ three-pointers × 3">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Color="Color.Warning" Class="ml-1" />
+                                                </MudTooltip>
+                                            }
+                                        </td>
+                                        @if (_canEditScore)
+                                        {
+                                            <td class="mds-td-input">
+                                                <MudNumericField T="int" @bind-Value="stat.Points" Min="0"
+                                                                 Disabled="stat.DidNotPlay" Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense" HideSpinButtons="true" Class="mds-input" />
+                                            </td>
+                                            <td class="mds-td-input">
+                                                <MudNumericField T="int" @bind-Value="stat.ThreePointers" Min="0"
+                                                                 Disabled="stat.DidNotPlay" Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense" HideSpinButtons="true" Class="mds-input" />
+                                            </td>
+                                            <td class="mds-td-input @(!stat.DidNotPlay && stat.Fouls >= 5 ? "mds-pf-ejected-td" : "")">
+                                                <MudNumericField T="int" @bind-Value="stat.Fouls" Min="0" Max="5"
+                                                                 Disabled="stat.DidNotPlay" Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense" HideSpinButtons="true" Class="mds-input" />
+                                            </td>
+                                            <td class="mds-td-dnp">
+                                                <MudCheckBox T="bool" Value="stat.DidNotPlay" Color="Color.Primary" Size="Size.Small"
+                                                             ValueChanged="@((bool v) => OnDnpChanged(stat, v))" />
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="mds-td-num">@(stat.DidNotPlay ? "–" : stat.Points.ToString())</td>
+                                            <td class="mds-td-num">@(stat.DidNotPlay ? "–" : stat.ThreePointers.ToString())</td>
+                                            <td class="mds-td-num @(!stat.DidNotPlay && stat.Fouls >= 5 ? "mds-pf-ejected" : "")">@(stat.DidNotPlay ? "–" : stat.Fouls.ToString())</td>
+                                            <td class="mds-td-dnp">@if (stat.DidNotPlay) { <span class="mds-dnp-badge">DNP</span> }</td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="mds-total-row">
+                                    <td class="mds-td-player mds-total-label">Total</td>
+                                    <td class="mds-td-num @(HomeTotalPts == _homeScore && _homeScore > 0 ? "mds-total-match" : HomeTotalPts != _homeScore && _homeScore > 0 ? "mds-total-mismatch" : "")">
+                                        @HomeTotalPts
+                                    </td>
+                                    <td class="mds-td-num">@HomeTotalThree</td>
+                                    <td class="mds-td-num">@HomeTotalFouls</td>
+                                    <td class="mds-td-dnp"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        @if (_canEditScore)
+                        {
+                            <div class="d-flex gap-2 mt-3">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Medium"
+                                           StartIcon="@Icons.Material.Filled.Save" Disabled="_isSaving"
+                                           OnClick="@(() => SaveStats(_match.HomeTeamId, _homeStats))">
+                                    @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
+                                    Save Draft
+                                </MudButton>
+                                @if (_isHomeManager)
+                                {
+                                    <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Medium"
+                                               StartIcon="@Icons.Material.Filled.Send" Disabled="@(_isSaving || !_canSubmitHome)"
+                                               OnClick="SubmitHome" Class="md-submit-btn">
+                                        <span class="md-submit-label-full">Submit to Away Team</span>
+                                        <span class="md-submit-label-short">Submit</span>
+                                    </MudButton>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </MudItem>
+
+            <!-- AWAY team stats -->
+            <MudItem xs="12" md="6">
+                <div class="md-stats-panel">
+                    <div class="md-stats-header">
+                        <span class="md-stats-team-name">@_match.AwayTeamName</span>
+                        @if (_isAwayManager)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">Your team</MudChip>
+                        }
+                    </div>
+
+                    @if (!_awayStats.Any())
+                    {
+                        <div class="md-no-roster">No players rostered for this season.</div>
+                    }
+                    else
+                    {
+                        <table class="md-stats-table">
+                            <thead>
+                                <tr>
+                                    <th class="mds-th-player">#&nbsp;&nbsp;Player</th>
+                                    <th class="mds-th-num">PTS</th>
+                                    <th class="mds-th-num">3PT</th>
+                                    <th class="mds-th-num">PF</th>
+                                    <th class="mds-th-dnp">DNP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var stat in _awayStats)
+                                {
+                                    var rowInvalid = !PlayerValid(stat);
+                                    <tr class="mds-row @(stat.DidNotPlay ? "mds-dnp" : "") @(rowInvalid ? "mds-invalid" : "")">
+                                        <td class="mds-td-player">
+                                            @if (stat.JerseyNumber.HasValue)
+                                            {
+                                                <span class="mds-jersey">@stat.JerseyNumber</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="mds-jersey mds-jersey-empty">–</span>
+                                            }
+                                            <MudLink Href="@($"/players/{stat.PlayerId}")" Class="mds-player-name mds-player-link">@stat.PlayerName</MudLink>
+                                            @if (rowInvalid && _canEditAwayStats)
+                                            {
+                                                <MudTooltip Text="Points must be ≥ three-pointers × 3">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Color="Color.Warning" Class="ml-1" />
+                                                </MudTooltip>
+                                            }
+                                        </td>
+                                        @if (_canEditAwayStats)
+                                        {
+                                            <td class="mds-td-input">
+                                                <MudNumericField T="int" @bind-Value="stat.Points" Min="0"
+                                                                 Disabled="stat.DidNotPlay" Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense" HideSpinButtons="true" Class="mds-input" />
+                                            </td>
+                                            <td class="mds-td-input">
+                                                <MudNumericField T="int" @bind-Value="stat.ThreePointers" Min="0"
+                                                                 Disabled="stat.DidNotPlay" Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense" HideSpinButtons="true" Class="mds-input" />
+                                            </td>
+                                            <td class="mds-td-input @(!stat.DidNotPlay && stat.Fouls >= 5 ? "mds-pf-ejected-td" : "")">
+                                                <MudNumericField T="int" @bind-Value="stat.Fouls" Min="0" Max="5"
+                                                                 Disabled="stat.DidNotPlay" Variant="Variant.Outlined"
+                                                                 Margin="Margin.Dense" HideSpinButtons="true" Class="mds-input" />
+                                            </td>
+                                            <td class="mds-td-dnp">
+                                                <MudCheckBox T="bool" Value="stat.DidNotPlay" Color="Color.Primary" Size="Size.Small"
+                                                             ValueChanged="@((bool v) => OnDnpChanged(stat, v))" />
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="mds-td-num">@(stat.DidNotPlay ? "–" : stat.Points.ToString())</td>
+                                            <td class="mds-td-num">@(stat.DidNotPlay ? "–" : stat.ThreePointers.ToString())</td>
+                                            <td class="mds-td-num @(!stat.DidNotPlay && stat.Fouls >= 5 ? "mds-pf-ejected" : "")">@(stat.DidNotPlay ? "–" : stat.Fouls.ToString())</td>
+                                            <td class="mds-td-dnp">@if (stat.DidNotPlay) { <span class="mds-dnp-badge">DNP</span> }</td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="mds-total-row">
+                                    <td class="mds-td-player mds-total-label">Total</td>
+                                    <td class="mds-td-num @(AwayTotalPts == _awayScore && _awayScore > 0 ? "mds-total-match" : AwayTotalPts != _awayScore && _awayScore > 0 ? "mds-total-mismatch" : "")">
+                                        @AwayTotalPts
+                                    </td>
+                                    <td class="mds-td-num">@AwayTotalThree</td>
+                                    <td class="mds-td-num">@AwayTotalFouls</td>
+                                    <td class="mds-td-dnp"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        @if (_canEditAwayStats)
+                        {
+                            <div class="mt-3">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium"
+                                           StartIcon="@Icons.Material.Filled.Save" Disabled="_isSaving"
+                                           OnClick="@(() => SaveStats(_match.AwayTeamId, _awayStats))">
+                                    @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
+                                    Save Away Stats
+                                </MudButton>
+                            </div>
+                        }
+                    }
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Action buttons -->
+        @if (!_match.IsResultConfirmed)
+        {
+            <div class="md-actions mt-5">
+                @if (_isAwayManager && _match.ResultSubmissionStatus == ResultSubmissionStatus._1)
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.CheckCircle"
+                               Disabled="_isConfirming" OnClick="ConfirmResult" Class="md-action-btn">
+                        @if (_isConfirming) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
+                        Confirm Result
+                    </MudButton>
+                    @if (!_showDisputeForm)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.Flag"
+                                   OnClick="@(() => _showDisputeForm = true)" Class="md-action-btn">
+                            Dispute
+                        </MudButton>
+                    }
+                }
+                @if (_isAdmin)
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.AdminPanelSettings"
+                               Disabled="_isConfirming" OnClick="ConfirmResult" Class="md-action-btn">
+                        @if (_isConfirming) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
+                        Force Confirm
+                    </MudButton>
+                    @if (_isDisputed)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.RestartAlt"
+                                   OnClick="@(() => _showResetDialog = true)" Class="md-forfeit-btn">
+                            Reset Result
+                        </MudButton>
+                    }
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small"
+                               OnClick="@(() => _showForfeitHomeDialog = true)" Class="md-forfeit-btn">
+                        Forfeit – @_match.HomeTeamName
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small"
+                               OnClick="@(() => _showForfeitAwayDialog = true)" Class="md-forfeit-btn">
+                        Forfeit – @_match.AwayTeamName
+                    </MudButton>
+                }
+            </div>
+
+            <!-- Inline dispute form -->
+            @if (_showDisputeForm)
+            {
+                <div class="md-dispute-form mt-3">
+                    <div class="md-dispute-form-title">
+                        <MudIcon Icon="@Icons.Material.Filled.Flag" Size="Size.Small" Class="mr-1" />
+                        Dispute reason
+                    </div>
+                    <MudTextField @bind-Value="_disputeReason"
+                                  Label="Explain why you are disputing this result"
+                                  Variant="Variant.Outlined"
+                                  Lines="3"
+                                  MaxLength="500"
+                                  Class="mt-2" />
+                    <div class="d-flex gap-2 mt-2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small"
+                                   OnClick="SubmitDispute">
+                            Submit Dispute
+                        </MudButton>
+                        <MudButton Variant="Variant.Text" Size="Size.Small"
+                                   OnClick="@(() => { _showDisputeForm = false; _disputeReason = string.Empty; })">
+                            Cancel
+                        </MudButton>
+                    </div>
+                </div>
+            }
+        }
+        else if (_isAdmin || _isHomeManager || _isAwayManager)
+        {
+            <div class="md-confirmed-banner mt-4">
+                <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" Class="mr-2" />
+                Result confirmed and locked
+            </div>
+        }
+
+        @if (_isDisputed)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">
+                <strong>Disputed</strong> — @_match.DisputeReason
+                @if (_isAdmin)
+                {
+                    <span> Use <em>Force Confirm</em> to accept the current result, or <em>Reset Result</em> to allow re-entry.</span>
+                }
+            </MudAlert>
+        }
+    }
+
+</MudContainer>
+
+@if (_match is not null)
+{
+    <ConfirmActionDialog Visible="_showForfeitHomeDialog"
+                         VisibleChanged="v => _showForfeitHomeDialog = v"
+                         Title="Record Forfeit"
+                         TitleIcon="@Icons.Material.Filled.SportsSoccer"
+                         TitleIconColor="Color.Warning"
+                         Message="@($"{_match.HomeTeamName} did not show up?")"
+                         SecondaryMessage="Result will be recorded as 0 : 20. Counts in standings. No player stats."
+                         ConfirmText="Record Forfeit"
+                         ConfirmColor="Color.Warning"
+                         OnConfirm="@(() => PerformForfeit(_match.HomeTeamId))" />
+
+    <ConfirmActionDialog Visible="_showForfeitAwayDialog"
+                         VisibleChanged="v => _showForfeitAwayDialog = v"
+                         Title="Record Forfeit"
+                         TitleIcon="@Icons.Material.Filled.SportsSoccer"
+                         TitleIconColor="Color.Warning"
+                         Message="@($"{_match.AwayTeamName} did not show up?")"
+                         SecondaryMessage="Result will be recorded as 20 : 0. Counts in standings. No player stats."
+                         ConfirmText="Record Forfeit"
+                         ConfirmColor="Color.Warning"
+                         OnConfirm="@(() => PerformForfeit(_match.AwayTeamId))" />
+
+    <ConfirmActionDialog Visible="_showResetDialog"
+                         VisibleChanged="v => _showResetDialog = v"
+                         Title="Reset Match Result"
+                         TitleIcon="@Icons.Material.Filled.RestartAlt"
+                         TitleIconColor="Color.Warning"
+                         Message="Reset this match result?"
+                         SecondaryMessage="Score and all player stats will be cleared. The home team must re-enter the result from scratch."
+                         ConfirmText="Reset"
+                         ConfirmColor="Color.Warning"
+                         OnConfirm="ResetResult" />
+}

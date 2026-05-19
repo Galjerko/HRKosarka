@@ -43,6 +43,9 @@ namespace HRKošarka.Domain
         public bool IsResultConfirmed { get; set; } = false;
 
         [Required]
+        public ResultSubmissionStatus ResultSubmissionStatus { get; set; } = ResultSubmissionStatus.NotSubmitted;
+
+        [Required]
         public SchedulingStatus SchedulingStatus { get; set; } = SchedulingStatus.Default;
 
         [Column(TypeName = "varchar(450)")]
@@ -55,6 +58,9 @@ namespace HRKošarka.Domain
 
         [MaxLength(1000)]
         public string? Notes { get; set; }
+
+        [MaxLength(500)]
+        public string? DisputeReason { get; set; }
 
         // Navigation properties
         public virtual League League { get; set; } = null!;

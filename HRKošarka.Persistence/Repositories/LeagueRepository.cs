@@ -314,7 +314,7 @@ namespace HRKošarka.Persistence.Repositories
             return await _context.Matches
                 .AnyAsync(m => (m.HomeTeamId == teamId || m.AwayTeamId == teamId)
                             && m.Status != MatchStatus.Completed
-                            && m.Status != MatchStatus.Cancelled,
+                            && m.Status != MatchStatus.Forfeit,
                           cancellationToken);
         }
 

@@ -23,7 +23,7 @@ namespace HRKošarka.UI.Extensions
             HRKošarka.UI.Services.Base.MatchStatus._0 => "Scheduled",
             HRKošarka.UI.Services.Base.MatchStatus._1 => "Rescheduled",
             HRKošarka.UI.Services.Base.MatchStatus._2 => "Completed",
-            HRKošarka.UI.Services.Base.MatchStatus._3 => "Cancelled",
+            HRKošarka.UI.Services.Base.MatchStatus._3 => "Forfeit",
             _ => status.ToString()
         };
 
@@ -31,7 +31,24 @@ namespace HRKošarka.UI.Extensions
         {
             HRKošarka.UI.Services.Base.MatchStatus._1 => Color.Warning,
             HRKošarka.UI.Services.Base.MatchStatus._2 => Color.Success,
-            HRKošarka.UI.Services.Base.MatchStatus._3 => Color.Error,
+            HRKošarka.UI.Services.Base.MatchStatus._3 => Color.Secondary,
+            _ => Color.Default
+        };
+
+        public static string ToDisplayString(this HRKošarka.UI.Services.Base.ResultSubmissionStatus status) => status switch
+        {
+            HRKošarka.UI.Services.Base.ResultSubmissionStatus._0 => "Not Submitted",
+            HRKošarka.UI.Services.Base.ResultSubmissionStatus._1 => "Pending Confirmation",
+            HRKošarka.UI.Services.Base.ResultSubmissionStatus._2 => "Confirmed",
+            HRKošarka.UI.Services.Base.ResultSubmissionStatus._3 => "Disputed",
+            _ => status.ToString()
+        };
+
+        public static Color ToColor(this HRKošarka.UI.Services.Base.ResultSubmissionStatus status) => status switch
+        {
+            HRKošarka.UI.Services.Base.ResultSubmissionStatus._1 => Color.Warning,
+            HRKošarka.UI.Services.Base.ResultSubmissionStatus._2 => Color.Success,
+            HRKošarka.UI.Services.Base.ResultSubmissionStatus._3 => Color.Error,
             _ => Color.Default
         };
     }
