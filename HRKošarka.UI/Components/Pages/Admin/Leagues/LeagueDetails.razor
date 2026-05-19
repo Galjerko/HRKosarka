@@ -475,15 +475,11 @@
                                             </div>
                                             @foreach (var matchCtx in round.Matches)
                                             {
-                                                <div class="match-row">
+                                                <a href="@($"/matches/{matchCtx.Id}")" class="match-row match-row-link">
                                                     <div class="match-col-home">
-                                                        <MudLink Href="@($"/teams/{matchCtx.HomeTeamId}")" Class="match-team-link">@matchCtx.HomeTeamName</MudLink>
+                                                        <span class="match-team-link">@matchCtx.HomeTeamName</span>
                                                     </div>
-                                                    <div class="match-col-sep">–</div>
-                                                    <div class="match-col-away">
-                                                        <MudLink Href="@($"/teams/{matchCtx.AwayTeamId}")" Class="match-team-link">@matchCtx.AwayTeamName</MudLink>
-                                                    </div>
-                                                    <div class="match-col-result">
+                                                    <div class="match-col-sep">
                                                         @if (matchCtx.HomeScore.HasValue && matchCtx.AwayScore.HasValue)
                                                         {
                                                             <span class="match-score">@matchCtx.HomeScore : @matchCtx.AwayScore</span>
@@ -493,12 +489,15 @@
                                                             <span class="match-result-placeholder">–</span>
                                                         }
                                                     </div>
+                                                    <div class="match-col-away">
+                                                        <span class="match-team-link">@matchCtx.AwayTeamName</span>
+                                                    </div>
                                                     <div class="match-col-status">
                                                         <MudChip T="string" Size="Size.Small" Color="@matchCtx.Status.ToColor()">
                                                             @matchCtx.Status.ToDisplayString()
                                                         </MudChip>
                                                     </div>
-                                                </div>
+                                                </a>
                                             }
                                             @{ var byeTeam = GetByeTeam(round); }
                                             @if (byeTeam is not null)

@@ -35,10 +35,7 @@ namespace HRKošarka.UI.Components.Pages.Leagues
                 if (response.IsSuccess && response.Data != null)
                     _league = response.Data;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading league: {ex.Message}");
-            }
+            catch (Exception ex) { Console.WriteLine($"Error loading league: {ex.Message}"); }
         }
 
         private async Task LoadSchedule()
@@ -49,10 +46,7 @@ namespace HRKošarka.UI.Components.Pages.Leagues
                 if (response.IsSuccess)
                     _schedule = response.Data ?? new();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading schedule: {ex.Message}");
-            }
+            catch (Exception ex) { Console.WriteLine($"Error loading schedule: {ex.Message}"); }
         }
 
         private async Task LoadTeams()
@@ -63,10 +57,7 @@ namespace HRKošarka.UI.Components.Pages.Leagues
                 if (response.IsSuccess)
                     _teams = response.Data ?? new();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading teams: {ex.Message}");
-            }
+            catch (Exception ex) { Console.WriteLine($"Error loading teams: {ex.Message}"); }
         }
 
         private void BuildLogoCache()
@@ -81,11 +72,8 @@ namespace HRKošarka.UI.Components.Pages.Leagues
         private int DetermineActiveRound()
         {
             if (!_schedule.Any()) return 1;
-
-            // First round where not all matches are completed
             var firstIncomplete = _schedule.FirstOrDefault(r =>
-                r.Matches.Any(m => m.Status != MatchStatus._2));
-
+                r.Matches.Any(m => m.Status != MatchStatus._2 && m.Status != MatchStatus._3));
             return firstIncomplete?.Round ?? _schedule.Last().Round;
         }
 
@@ -99,10 +87,8 @@ namespace HRKošarka.UI.Components.Pages.Leagues
             return _teams.FirstOrDefault(t => !playing.Contains(t.TeamId));
         }
 
-        private string? GetTeamLogo(Guid teamId) =>
-            _teamLogos.GetValueOrDefault(teamId);
+        private string? GetTeamLogo(Guid teamId) => _teamLogos.GetValueOrDefault(teamId);
 
-        // Returns round numbers with -1 as sentinel for "…"
         private List<int> GetRoundPageNumbers()
         {
             var rounds = _schedule.Select(r => r.Round).OrderBy(r => r).ToList();
@@ -124,15 +110,14 @@ namespace HRKošarka.UI.Components.Pages.Leagues
             var result = new List<int>();
             for (int i = 0; i < sorted.Count; i++)
             {
-                if (i > 0 && sorted[i] - sorted[i - 1] > 1)
-                    result.Add(-1);
+                if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.Add(-1);
                 result.Add(sorted[i]);
             }
             return result;
         }
 
-        private void GoToFirstRound()  => _selectedRound = _schedule.First().Round;
-        private void GoToLastRound()   => _selectedRound = _schedule.Last().Round;
+        private void GoToFirstRound() => _selectedRound = _schedule.First().Round;
+        private void GoToLastRound()  => _selectedRound = _schedule.Last().Round;
 
         private void GoToPrevRound()
         {
@@ -147,12 +132,12 @@ namespace HRKošarka.UI.Components.Pages.Leagues
         }
 
         private bool IsFirstRound => _schedule.FirstOrDefault()?.Round == _selectedRound;
-        private bool IsLastRound => _schedule.LastOrDefault()?.Round == _selectedRound;
+        private bool IsLastRound  => _schedule.LastOrDefault()?.Round == _selectedRound;
 
         private static Color MatchBorderColor(MatchStatus status) => status switch
         {
             MatchStatus._2 => Color.Success,
-            MatchStatus._3 => Color.Error,
+            MatchStatus._3 => Color.Secondary,
             MatchStatus._1 => Color.Warning,
             _ => Color.Default
         };

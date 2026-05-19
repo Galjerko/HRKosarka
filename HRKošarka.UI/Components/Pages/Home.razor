@@ -68,6 +68,7 @@
         </MudItem>
     </MudGrid>
 
+
     <!-- Featured league match slideshow -->
     @if (_loadingFeatured)
     {
@@ -126,10 +127,10 @@
                                 var awayWins = hasScore && match.AwayScore > match.HomeScore;
                                 var statusClass = match.Status == MatchStatus._2 ? "fmc fmc-final"
                                                 : match.Status == MatchStatus._1 ? "fmc fmc-rescheduled"
-                                                : match.Status == MatchStatus._3 ? "fmc fmc-cancelled"
+                                                : match.Status == MatchStatus._3 ? "fmc fmc-forfeit"
                                                 : "fmc fmc-upcoming";
 
-                                <a href="/leagues/@league.LeagueId/schedule" class="fmc-link">
+                                <a href="/matches/@match.Id" class="fmc-link">
                                     <div class="@statusClass">
 
                                         <!-- Card header: status + time -->

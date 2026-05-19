@@ -13,6 +13,10 @@ namespace HRKošarka.UI.Components.Shared
         private bool _drawerOpen = true;
         private bool _isDarkMode = true;
         private MudTheme _currentTheme = new();
+        private bool _userMenuOpen = false;
+
+        private void ToggleUserMenu() => _userMenuOpen = !_userMenuOpen;
+        private void CloseUserMenu() => _userMenuOpen = false;
 
         protected override async Task OnInitializedAsync()
         {

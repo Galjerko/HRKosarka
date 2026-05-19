@@ -76,7 +76,7 @@ namespace HRKošarka.UI.Components.Pages
         private static string MatchStatusLabel(MatchStatus status) => status switch
         {
             MatchStatus._2 => "Final",
-            MatchStatus._3 => "Cancelled",
+            MatchStatus._3 => "Forfeit",
             MatchStatus._1 => "Rescheduled",
             _ => "Upcoming"
         };

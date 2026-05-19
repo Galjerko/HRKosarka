@@ -1,7 +1,18 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 
 <MudNavMenu Class="enhanced-nav-menu">
+
+    <!-- My Responsibilities (ClubManager / Administrator only) -->
+    <AuthorizeView Roles="Administrator,ClubManager">
+        <Authorized>
+            <MudNavLink Href="/my-responsibilities"
+                        Icon="@Icons.Material.Filled.AssignmentLate"
+                        Class="nav-item">
+                <MudText Typo="Typo.body2">My Responsibilities</MudText>
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
 
     <MudNavLink Href="/"
                 Match="NavLinkMatch.All"

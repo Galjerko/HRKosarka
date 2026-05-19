@@ -7,6 +7,10 @@
 <MudSnackbarProvider />
 
 <MudLayout>
+    @if (_userMenuOpen)
+    {
+        <div class="appbar-overlay" @onclick="CloseUserMenu"></div>
+    }
     <MudAppBar Elevation="0" Class="custom-appbar" Fixed="true">
         <MudIconButton Icon="@Icons.Material.Filled.Menu"
                        Color="Color.Inherit"
@@ -19,14 +23,32 @@
         <MudSpacer />
 
         <AuthorizeView>
-            <Authorized Context="authContext">
-                <MudButton Variant="Variant.Text"
-                           Color="Color.Inherit"
-                           StartIcon="@Icons.Material.Filled.Logout"
-                           OnClick="@(() => NavigationManager.NavigateTo("/logout"))"
-                           Class="auth-button">
-                    Logout
-                </MudButton>
+            <Authorized Context="authCtx">
+                <div class="appbar-avatar-wrap">
+                    <MudAvatar Color="Color.Primary"
+                               Size="Size.Medium"
+                               Style="cursor:pointer;font-weight:700;"
+                               @onclick="ToggleUserMenu">
+                        @(authCtx.User.Identity?.Name?.ToUpperInvariant().FirstOrDefault() ?? 'U')
+                    </MudAvatar>
+                    @if (_userMenuOpen)
+                    {
+                        <div class="appbar-user-dropdown">
+                            <div class="appbar-user-dropdown-name">
+                                <MudIcon Icon="@Icons.Material.Filled.AccountCircle"
+                                         Size="Size.Small" Color="Color.Primary" Class="mr-2 flex-shrink-0" />
+                                <span>@authCtx.User.Identity?.Name</span>
+                            </div>
+                            <MudDivider />
+                            <button class="appbar-logout-row"
+                                    @onclick="@(() => { CloseUserMenu(); NavigationManager.NavigateTo("/logout"); })">
+                                <MudIcon Icon="@Icons.Material.Filled.Logout"
+                                         Size="Size.Small" Color="Color.Error" Class="mr-2" />
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    }
+                </div>
             </Authorized>
             <NotAuthorized>
                 <MudButton Href="/login"
@@ -53,13 +75,6 @@
                Variant="DrawerVariant.Mini"
                OpenMiniOnHover="true"
                Class="custom-drawer">
-        <MudDrawerHeader Class="custom-drawer-header">
-            <div class="drawer-logo">
-                <MudIcon Icon="@Icons.Material.Filled.SportsBasketball"
-                         Class="logo-icon" />
-                <MudText Typo="Typo.h6" Class="drawer-title">HRKošarka</MudText>
-            </div>
-        </MudDrawerHeader>
         <NavMenu />
     </MudDrawer>
 

@@ -114,6 +114,7 @@
                     <div class="sm-team sm-away">Away</div>
                     <div class="sm-status-col">Status</div>
                     <div class="sm-venue-col">Venue</div>
+                    <div class="sm-actions-col"></div>
                 </div>
 
                 @foreach (var match in round.Matches.OrderBy(m => m.ActualScheduledDate))
@@ -149,22 +150,24 @@
                             }
                         </div>
 
-                        <!-- Score / separator -->
+                        <!-- Score / separator (clickable → match details) -->
                         <div class="sm-score-col">
-                            @if (hasScore)
-                            {
-                                <span class="@(match.HomeScore > match.AwayScore ? "sm-score sm-winner-score" : "sm-score")">
-                                    @match.HomeScore
-                                </span>
-                                <span class="sm-score-sep">:</span>
-                                <span class="@(match.AwayScore > match.HomeScore ? "sm-score sm-winner-score" : "sm-score")">
-                                    @match.AwayScore
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="sm-dash">–</span>
-                            }
+                            <a href="@($"/matches/{match.Id}")" class="sm-score-link">
+                                @if (hasScore)
+                                {
+                                    <span class="sm-score @(match.HomeScore > match.AwayScore ? "sm-winner-score" : match.HomeScore < match.AwayScore ? "sm-loser-score" : "")">
+                                        @match.HomeScore
+                                    </span>
+                                    <span class="sm-score-sep">:</span>
+                                    <span class="sm-score @(match.AwayScore > match.HomeScore ? "sm-winner-score" : match.AwayScore < match.HomeScore ? "sm-loser-score" : "")">
+                                        @match.AwayScore
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="sm-dash">–</span>
+                                }
+                            </a>
                         </div>
 
                         <!-- Away team -->
@@ -199,6 +202,15 @@
                                          Size="Size.Small" Class="sm-venue-icon" />
                                 <span class="sm-venue-text">@match.Venue</span>
                             }
+                        </div>
+
+                        <!-- Match detail link -->
+                        <div class="sm-actions-col">
+                            <MudTooltip Text="Match Details">
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                               Size="Size.Small"
+                                               Href="@($"/matches/{match.Id}")" />
+                            </MudTooltip>
                         </div>
 
                     </div>
