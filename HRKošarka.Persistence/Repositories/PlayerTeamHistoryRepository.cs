@@ -35,6 +35,22 @@ namespace HRKošarka.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<PlayerTeamHistory>> GetAllByPlayerAsync(
+            Guid playerId, CancellationToken cancellationToken = default)
+        {
+            return await _context.PlayerTeamHistory
+                .Include(pth => pth.Team)
+                    .ThenInclude(t => t.Club)
+                .Include(pth => pth.Team)
+                    .ThenInclude(t => t.AgeCategory)
+                .Include(pth => pth.Season)
+                .Where(pth => pth.PlayerId == playerId)
+                .OrderByDescending(pth => pth.IsActive)
+                .ThenByDescending(pth => pth.JoinDate)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<bool> IsJerseyNumberAvailableAsync(
             Guid teamId,
             int jerseyNumber,
@@ -92,6 +108,19 @@ namespace HRKošarka.Persistence.Repositories
             }
 
             await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<List<PlayerTeamHistory>> GetRosterAsync(Guid teamId, Guid seasonId, CancellationToken cancellationToken = default)
+        {
+            return await _context.PlayerTeamHistory
+                .Include(pth => pth.Player)
+                .Where(pth => pth.TeamId == teamId
+                           && pth.SeasonId == seasonId
+                           && pth.IsActive
+                           && pth.Player.DateDeleted == null)
+                .OrderBy(pth => pth.Player.LastName).ThenBy(pth => pth.Player.FirstName)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
     }
 }

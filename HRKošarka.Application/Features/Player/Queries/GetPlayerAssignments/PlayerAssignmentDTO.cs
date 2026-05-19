@@ -14,6 +14,8 @@ namespace HRKošarka.Application.Features.Player.Queries.GetPlayerAssignments
         public Guid SeasonId { get; set; }
         public string SeasonName { get; set; } = string.Empty;
         public DateTime JoinDate { get; set; }
+        public DateTime? LeaveDate { get; set; }
         public int? JerseyNumber { get; set; }
+        public bool IsActive { get; set; }
     }
 }

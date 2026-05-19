@@ -17,9 +17,11 @@ namespace HRKošarka.UI.Components.Pages.Team
         private TeamDetailsDTO? _team;
         private List<TeamRosterPlayerDTO> _roster = new();
         private List<TeamLeagueDTO> _leagues = new();
+        private List<TeamMatchHistoryItemDTO> _matchHistory = new();
         private bool _isLoading = true;
         private bool _isLoadingRoster = false;
         private bool _isLoadingLeagues = false;
+        private bool _isLoadingMatchHistory = false;
         private bool _isProcessing = false;
         private bool _showDeactivateDialog = false;
         private bool _showActivateDialog = false;
@@ -71,7 +73,7 @@ namespace HRKošarka.UI.Components.Pages.Team
                     _newTeamName = _team.Name;
 
                     await SetClubPermissions(_team.ClubId);
-                    await Task.WhenAll(LoadRoster(), LoadLeagues());
+                    await Task.WhenAll(LoadRoster(), LoadLeagues(), LoadMatchHistory());
                 }
                 else
                 {
@@ -143,6 +145,24 @@ namespace HRKošarka.UI.Components.Pages.Team
             finally
             {
                 _isLoadingLeagues = false;
+            }
+        }
+
+        private async Task LoadMatchHistory()
+        {
+            _isLoadingMatchHistory = true;
+            try
+            {
+                var response = await TeamService.GetTeamMatchHistory(Id);
+                _matchHistory = response.IsSuccess ? response.Data ?? new() : new();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading match history: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingMatchHistory = false;
             }
         }
 

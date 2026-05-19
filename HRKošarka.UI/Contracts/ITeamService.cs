@@ -18,5 +18,6 @@ namespace HRKošarka.UI.Contracts
         Task<CommandResponse<Guid>> AssignPlayerToTeam(Guid teamId, AssignPlayerToTeamCommand command);
         Task<CommandResponse<bool>> UpdatePlayerAssignmentInTeam(Guid teamId, Guid playerId, UpdatePlayerAssignmentInTeamCommand command);
         Task<CommandResponse<bool>> RemovePlayerFromTeam(Guid teamId, Guid playerId);
+        Task<QueryResponse<List<TeamMatchHistoryItemDTO>>> GetTeamMatchHistory(Guid teamId);
     }
 }

@@ -198,7 +198,7 @@
                         <div class="panel-title">
                             <MudIcon Icon="@Icons.Material.Filled.Groups" Class="panel-icon" />
                             <MudText Typo="Typo.h6">
-                                Current Team Assignments
+                                Team History
                                 @if (_assignments.Any())
                                 {
                                     <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2">@_assignments.Count</MudChip>
@@ -226,19 +226,19 @@
                         }
                         else if (!_assignments.Any())
                         {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">Player is not currently assigned to any team.</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">No team assignments on record.</MudText>
                         }
                         else
                         {
                             <MudTable Items="_assignments" Dense="true" Hover="true" Striped="true" Elevation="0">
                                 <HeaderContent>
+                                    <MudTh>Status</MudTh>
                                     <MudTh>Team</MudTh>
                                     <MudTh>Club</MudTh>
-                                    <MudTh>Age Category</MudTh>
-                                    <MudTh>Gender</MudTh>
                                     <MudTh>Season</MudTh>
                                     <MudTh>Jersey #</MudTh>
-                                    <MudTh>Join Date</MudTh>
+                                    <MudTh>From</MudTh>
+                                    <MudTh>To</MudTh>
                                     @if (_isAdmin)
                                     {
                                         <MudTh></MudTh>
@@ -246,28 +246,30 @@
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd>
+                                        <MudChip T="string" Size="Size.Small"
+                                                 Color="@(context.IsActive ? Color.Success : Color.Default)">
+                                            @(context.IsActive ? "Active" : "Past")
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd>
                                         <MudLink Href="@($"/teams/{context.TeamId}")">@context.TeamName</MudLink>
                                     </MudTd>
                                     <MudTd>@context.ClubName</MudTd>
-                                    <MudTd>@context.AgeCategoryName</MudTd>
-                                    <MudTd>
-                                        <MudChip T="string"
-                                                 Size="Size.Small"
-                                                 Color="@(context.Gender == Gender._0 ? Color.Info : Color.Secondary)">
-                                            @(context.Gender == Gender._0 ? "Male" : "Female")
-                                        </MudChip>
-                                    </MudTd>
                                     <MudTd>@context.SeasonName</MudTd>
                                     <MudTd>@(context.JerseyNumber.HasValue ? $"#{context.JerseyNumber}" : "-")</MudTd>
-                                    <MudTd>@context.JoinDate.ToString("dd/MM/yyyy")</MudTd>
+                                    <MudTd>@context.JoinDate.ToString("dd.MM.yyyy.")</MudTd>
+                                    <MudTd>@(context.LeaveDate.HasValue ? context.LeaveDate.Value.ToString("dd.MM.yyyy.") : "—")</MudTd>
                                     @if (_isAdmin)
                                     {
                                         <MudTd>
-                                            <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
-                                                           Color="Color.Error"
-                                                           Size="Size.Small"
-                                                           OnClick="@(() => RemoveAssignment(context))"
-                                                           Disabled="_isProcessing" />
+                                            @if (context.IsActive)
+                                            {
+                                                <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
+                                                               Color="Color.Error"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => RemoveAssignment(context))"
+                                                               Disabled="_isProcessing" />
+                                            }
                                         </MudTd>
                                     }
                                 </RowTemplate>

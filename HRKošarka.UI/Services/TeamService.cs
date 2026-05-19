@@ -262,4 +262,24 @@ public class TeamService : BaseHttpService, ITeamService
             return ConvertApiExceptions<bool>(ex);
         }
     }
+
+    public async Task<QueryResponse<List<TeamMatchHistoryItemDTO>>> GetTeamMatchHistory(Guid teamId)
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.GetTeamMatchHistoryAsync(teamId);
+            return new QueryResponse<List<TeamMatchHistoryItemDTO>>
+            {
+                Data = response.Data?.ToList() ?? new List<TeamMatchHistoryItemDTO>(),
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptionsToQuery<List<TeamMatchHistoryItemDTO>>(ex);
+        }
+    }
 }

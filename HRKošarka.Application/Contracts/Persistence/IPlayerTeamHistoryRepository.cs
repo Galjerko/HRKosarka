@@ -6,6 +6,7 @@ namespace HRKošarka.Application.Contracts.Persistence
     {
         Task<PlayerTeamHistory?> GetActiveByPlayerAndTeamAsync(Guid playerId, Guid teamId, CancellationToken cancellationToken = default);
         Task<List<PlayerTeamHistory>> GetActiveByPlayerAsync(Guid playerId, CancellationToken cancellationToken = default);
+        Task<List<PlayerTeamHistory>> GetAllByPlayerAsync(Guid playerId, CancellationToken cancellationToken = default);
         Task<bool> IsJerseyNumberAvailableAsync(
             Guid teamId,
             int jerseyNumber,
@@ -15,5 +16,6 @@ namespace HRKošarka.Application.Contracts.Persistence
         Task<bool> HasActiveAssignmentsForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
         Task DeactivateAllForPlayerAsync(Guid playerId, CancellationToken cancellationToken = default);
         Task DeactivateAllForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
+        Task<List<PlayerTeamHistory>> GetRosterAsync(Guid teamId, Guid seasonId, CancellationToken cancellationToken = default);
     }
 }
