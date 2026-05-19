@@ -41,7 +41,7 @@
                                           AdornmentIcon="@Icons.Material.Filled.Person"
                                           Required="true"
                                           RequiredError="First name is required"
-                                          Counter="100"
+                                          Counter="100" Immediate="true"
                                           MaxLength="100"
                                           Validation="@(new Func<string, IEnumerable<string>>(ValidateFirstName))" />
                         </MudItem>
@@ -54,7 +54,7 @@
                                           AdornmentIcon="@Icons.Material.Filled.Person"
                                           Required="true"
                                           RequiredError="Last name is required"
-                                          Counter="100"
+                                          Counter="100" Immediate="true"
                                           MaxLength="100"
                                           Validation="@(new Func<string, IEnumerable<string>>(ValidateLastName))" />
                         </MudItem>

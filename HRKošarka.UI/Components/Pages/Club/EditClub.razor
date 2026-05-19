@@ -68,7 +68,7 @@
                                               AdornmentIcon="@Icons.Material.Filled.Groups"
                                               Required="true"
                                               RequiredError="Club name is required"
-                                              Counter="150"
+                                              Counter="150" Immediate="true"
                                               MaxLength="150"
                                               Validation="@(new Func<string, IEnumerable<string>>(ValidateClubName))" />
                             </MudItem>
@@ -79,7 +79,7 @@
                                               Variant="Variant.Text"
                                               Adornment="Adornment.Start"
                                               AdornmentIcon="@Icons.Material.Filled.LocationCity"
-                                              Counter="100"
+                                              Counter="100" Immediate="true"
                                               MaxLength="100" />
                             </MudItem>
 
@@ -90,7 +90,7 @@
                                               Lines="3"
                                               Adornment="Adornment.Start"
                                               AdornmentIcon="@Icons.Material.Filled.Description"
-                                              Counter="1000"
+                                              Counter="1000" Immediate="true"
                                               MaxLength="1000" />
                             </MudItem>
 
@@ -122,7 +122,7 @@
                                               InputType="InputType.Email"
                                               Adornment="Adornment.Start"
                                               AdornmentIcon="@Icons.Material.Filled.Email"
-                                              Counter="255"
+                                              Counter="255" Immediate="true"
                                               MaxLength="255"
                                               Validation="@(new Func<string, IEnumerable<string>>(ValidateEmail))" />
                             </MudItem>
@@ -133,7 +133,7 @@
                                               Variant="Variant.Text"
                                               Adornment="Adornment.Start"
                                               AdornmentIcon="@Icons.Material.Filled.Phone"
-                                              Counter="20"
+                                              Counter="20" Immediate="true"
                                               MaxLength="20"
                                               Validation="@(new Func<string, IEnumerable<string>>(ValidatePhoneNumber))" />
                             </MudItem>
@@ -144,7 +144,7 @@
                                               Variant="Variant.Text"
                                               Adornment="Adornment.Start"
                                               AdornmentIcon="@Icons.Material.Filled.Language"
-                                              Counter="255"
+                                              Counter="255" Immediate="true"
                                               MaxLength="255"
                                               Validation="@(new Func<string, IEnumerable<string>>(ValidateWebsite))" />
                             </MudItem>
@@ -163,7 +163,7 @@
                                               Variant="Variant.Text"
                                               Adornment="Adornment.Start"
                                               AdornmentIcon="@Icons.Material.Filled.Home"
-                                              Counter="200"
+                                              Counter="200" Immediate="true"
                                               MaxLength="200" />
                             </MudItem>
 
@@ -173,7 +173,7 @@
                                               Variant="Variant.Text"
                                               Adornment="Adornment.Start"
                                               AdornmentIcon="@Icons.Material.Filled.MarkunreadMailbox"
-                                              Counter="20"
+                                              Counter="20" Immediate="true"
                                               MaxLength="20"
                                               Validation="@(new Func<string, IEnumerable<string>>(ValidatePostalCode))" />
                             </MudItem>
@@ -192,7 +192,7 @@
                                               Variant="Variant.Text"
                                               Adornment="Adornment.Start"
                                               AdornmentIcon="@Icons.Material.Filled.Stadium"
-                                              Counter="200"
+                                              Counter="200" Immediate="true"
                                               MaxLength="200"
                                               Validation="@(new Func<string, IEnumerable<string>>(ValidateVenueName))" />
                             </MudItem>

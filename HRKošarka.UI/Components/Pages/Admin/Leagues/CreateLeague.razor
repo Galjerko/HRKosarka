@@ -44,7 +44,7 @@
                                               AdornmentIcon="@Icons.Material.Filled.EmojiEvents"
                                               Required="true"
                                               RequiredError="League name is required"
-                                              Counter="200"
+                                              Counter="200" Immediate="true"
                                               MaxLength="200"
                                               Validation="@(new Func<string, IEnumerable<string>>(ValidateLeagueName))" />
                             </MudItem>
