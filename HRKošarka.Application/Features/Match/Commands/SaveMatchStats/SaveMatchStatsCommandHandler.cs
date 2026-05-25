@@ -44,8 +44,8 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
             if (match.HomeTeamId != request.TeamId && match.AwayTeamId != request.TeamId)
                 throw new BadRequestException("This team is not playing in this match.");
 
-            if (request.PlayerStats.Count < 5)
-                throw new BadRequestException("A team must have at least 5 players on the roster before stats can be saved.");
+            if (request.PlayerStats.Count(p => !p.DidNotPlay) < 5)
+                throw new BadRequestException("At least 5 players must have played (not DNP) before stats can be saved.");
 
             bool isAdmin = string.IsNullOrEmpty(request.SubmitterClubId) && string.IsNullOrEmpty(request.SubmitterUserId);
             if (!isAdmin)
