@@ -2280,6 +2280,82 @@ html, body {
 .md-score-edit::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .md-score-edit:focus { border-bottom-color: var(--mud-palette-primary); }
 
+.md-quarters {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: fit-content;
+    min-width: 200px;
+    margin: 8px auto 0;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.md-qtr-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 2px 0;
+}
+
+.md-qtr-header { margin-bottom: 2px; }
+
+.md-qtr-label {
+    font-size: 0.72rem;
+    color: var(--mud-palette-text-secondary);
+    font-weight: 700;
+    width: 38px;
+    flex-shrink: 0;
+    text-align: right;
+    padding-right: 10px;
+    letter-spacing: 0.03em;
+}
+
+.md-qtr-col-header {
+    width: 68px;
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--mud-palette-text-secondary);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.md-qtr-sep {
+    width: 18px;
+    text-align: center;
+    color: rgba(255,255,255,0.2);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.md-qtr-num {
+    width: 68px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.md-qtr-input-cell {
+    width: 68px;
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.md-qtr-field { width: 58px !important; }
+
+.md-qtr-divider {
+    width: 100%;
+    border-top: 1px solid rgba(255,255,255,0.25);
+    margin: 5px 0 3px;
+}
+
+.md-qtr-total-label { color: var(--mud-palette-text-primary) !important; font-weight: 800 !important; }
+.md-qtr-total-row .md-qtr-num { font-weight: 700; }
+
+.md-qtr-ot-btn { display: flex; gap: 4px; margin-top: 4px; justify-content: center; width: 100%; }
+
 /* Venue edit row */
 .md-venue-edit {
     display: flex;

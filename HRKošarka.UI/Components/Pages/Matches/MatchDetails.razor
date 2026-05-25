@@ -85,6 +85,75 @@
                 </div>
             </div>
 
+            <!-- Quarter scores -->
+            @if (_canEditScore || !string.IsNullOrEmpty(_match.QuarterResults))
+            {
+                <div class="md-quarters mt-3">
+                    <div class="md-qtr-row md-qtr-header">
+                        <span class="md-qtr-label"></span>
+                        <span class="md-qtr-col-header">Home</span>
+                        <span class="md-qtr-sep"></span>
+                        <span class="md-qtr-col-header">Away</span>
+                    </div>
+                    @for (int i = 0; i < _quarters.Count; i++)
+                    {
+                        var idx = i;
+                        var q = _quarters[idx];
+                        var label = idx < 4 ? $"Q{idx + 1}" : $"OT{idx - 3}";
+                        <div class="md-qtr-row">
+                            <span class="md-qtr-label">@label</span>
+                            @if (_canEditScore)
+                            {
+                                <span class="md-qtr-input-cell">
+                                    <MudNumericField T="int" @bind-Value="q.Home" Min="0" Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense" HideSpinButtons="true" Class="md-qtr-field" />
+                                </span>
+                                <span class="md-qtr-sep">|</span>
+                                <span class="md-qtr-input-cell">
+                                    <MudNumericField T="int" @bind-Value="q.Away" Min="0" Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense" HideSpinButtons="true" Class="md-qtr-field" />
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="md-qtr-num">@q.Home</span>
+                                <span class="md-qtr-sep">|</span>
+                                <span class="md-qtr-num">@q.Away</span>
+                            }
+                        </div>
+                    }
+                    <div class="md-qtr-divider"></div>
+                    <div class="md-qtr-row md-qtr-total-row">
+                        <span class="md-qtr-label md-qtr-total-label">Total</span>
+                        <span class="md-qtr-num @(HomeQuarterSum == _homeScore && _homeScore > 0 ? "mds-total-match" : HomeQuarterSum != _homeScore && _homeScore > 0 ? "mds-total-mismatch" : "")">
+                            @HomeQuarterSum
+                        </span>
+                        <span class="md-qtr-sep"></span>
+                        <span class="md-qtr-num @(AwayQuarterSum == _awayScore && _awayScore > 0 ? "mds-total-match" : AwayQuarterSum != _awayScore && _awayScore > 0 ? "mds-total-mismatch" : "")">
+                            @AwayQuarterSum
+                        </span>
+                    </div>
+                    @if (_canEditScore)
+                    {
+                        <div class="md-qtr-ot-btn">
+                            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Default"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="AddOtPeriod">
+                                + OT
+                            </MudButton>
+                            @if (_quarters.Count > 4)
+                            {
+                                <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error"
+                                           StartIcon="@Icons.Material.Filled.Remove"
+                                           OnClick="RemoveLastOtPeriod">
+                                    Remove OT
+                                </MudButton>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
             @if (!string.IsNullOrEmpty(_match.Venue))
             {
                 <div class="md-venue">

@@ -10,6 +10,7 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
         public int? HomeScore { get; set; }
         public int? AwayScore { get; set; }
         public List<PlayerStatEntry> PlayerStats { get; set; } = new();
+        public string? QuarterResults { get; set; }
         public string? SubmitterClubId { get; set; }
         public string? SubmitterUserId { get; set; }
     }

@@ -16,6 +16,7 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private List<TeamRepMembershipDTO> _myRepMemberships = new();
         private List<PlayerStatViewModel> _homeStats = new();
         private List<PlayerStatViewModel> _awayStats = new();
+        private List<QuarterEntry> _quarters = new();
         private int _homeScore;
         private int _awayScore;
         private bool _isLoading = true;
@@ -56,10 +57,12 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private bool _canSubmitHome =>
             _canEditScore && _isHomeManager &&
             _homeStats.Any() && HomeScoreMatchesStats &&
-            !_homeStats.Any(s => !PlayerValid(s));
+            !_homeStats.Any(s => !PlayerValid(s)) &&
+            QuarterSumsMatchScore;
 
         private bool _canEditAwayStats =>
-            !(_match?.IsResultConfirmed ?? true) && !_isDisputed && (_isAdmin || _isAwayManager);
+            !(_match?.IsResultConfirmed ?? true) && !_isDisputed &&
+            (_isAdmin || (_isAwayManager && _match?.ResultSubmissionStatus == ResultSubmissionStatus._1));
 
         private bool _canRespondToProposal =>
             _match?.PendingReschedule != null &&
@@ -83,6 +86,9 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private bool HomeScoreMatchesStats => HomeTotalPts == _homeScore;
         private bool AwayScoreMatchesStats => AwayTotalPts == _awayScore;
         private bool PlayerValid(PlayerStatViewModel s) => s.DidNotPlay || s.Points >= s.ThreePointers * 3;
+        private int HomeQuarterSum => _quarters.Sum(q => q.Home);
+        private int AwayQuarterSum => _quarters.Sum(q => q.Away);
+        private bool QuarterSumsMatchScore => HomeQuarterSum == _homeScore && AwayQuarterSum == _awayScore;
 
         protected override async Task OnInitializedAsync()
         {
@@ -121,6 +127,7 @@ namespace HRKošarka.UI.Components.Pages.Matches
 
             _homeStats = _match.HomeTeamStats?.Select(s => new PlayerStatViewModel(s)).ToList() ?? new();
             _awayStats = _match.AwayTeamStats?.Select(s => new PlayerStatViewModel(s)).ToList() ?? new();
+            _quarters = ParseQuarters(_match.QuarterResults);
         }
 
         private void OnDnpChanged(PlayerStatViewModel stat, bool isDnp)
@@ -140,6 +147,7 @@ namespace HRKošarka.UI.Components.Pages.Matches
                     TeamId = teamId,
                     HomeScore = _homeScore,
                     AwayScore = _awayScore,
+                    QuarterResults = FormatQuarters(_quarters),
                     PlayerStats = stats.Select(s => new PlayerStatEntry
                     {
                         PlayerId = s.PlayerId,
@@ -194,6 +202,11 @@ namespace HRKošarka.UI.Components.Pages.Matches
             if (_homeStats.Any(s => !PlayerValid(s)))
             {
                 Snackbar.Add("Cannot submit: one or more players have fewer total points than their three-pointers alone would give (PTS < 3PT × 3).", Severity.Error);
+                return;
+            }
+            if (!QuarterSumsMatchScore)
+            {
+                Snackbar.Add($"Cannot submit: quarter totals ({HomeQuarterSum}:{AwayQuarterSum}) do not match the score ({_homeScore}:{_awayScore}).", Severity.Error);
                 return;
             }
 
@@ -349,6 +362,32 @@ namespace HRKošarka.UI.Components.Pages.Matches
             }
         }
 
+        private void AddOtPeriod() => _quarters.Add(new QuarterEntry());
+
+        private void RemoveLastOtPeriod()
+        {
+            if (_quarters.Count > 4)
+                _quarters.RemoveAt(_quarters.Count - 1);
+        }
+
+        private static List<QuarterEntry> ParseQuarters(string? raw)
+        {
+            if (string.IsNullOrEmpty(raw))
+                return new List<QuarterEntry> { new(), new(), new(), new() };
+            return raw.Split(';').Select(seg =>
+            {
+                var parts = seg.Split(':');
+                return new QuarterEntry
+                {
+                    Home = int.TryParse(parts.ElementAtOrDefault(0), out var h) ? h : 0,
+                    Away = int.TryParse(parts.ElementAtOrDefault(1), out var a) ? a : 0
+                };
+            }).ToList();
+        }
+
+        private static string FormatQuarters(List<QuarterEntry> quarters)
+            => string.Join(";", quarters.Select(q => $"{q.Home}:{q.Away}"));
+
         private async Task RespondToProposal(bool accept)
         {
             if (_match is null) return;
@@ -368,6 +407,12 @@ namespace HRKošarka.UI.Components.Pages.Matches
                 Snackbar.Add(response.Message ?? "Failed.", Severity.Error);
             }
         }
+    }
+
+    public class QuarterEntry
+    {
+        public int Home { get; set; }
+        public int Away { get; set; }
     }
 
     public class PlayerStatViewModel

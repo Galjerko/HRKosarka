@@ -56,6 +56,7 @@ namespace HRKošarka.Application.Features.Match.Queries.GetMatchWithStats
                 AwayTeamClubId = match.AwayTeam.ClubId,
                 HomeScore = match.HomeScore,
                 AwayScore = match.AwayScore,
+                QuarterResults = match.QuarterResults,
                 Status = match.Status,
                 ResultSubmissionStatus = match.ResultSubmissionStatus,
                 IsResultConfirmed = match.IsResultConfirmed,

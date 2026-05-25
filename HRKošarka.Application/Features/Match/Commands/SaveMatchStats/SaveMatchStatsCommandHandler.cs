@@ -69,6 +69,7 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
             {
                 if (request.HomeScore.HasValue) match.HomeScore = request.HomeScore;
                 if (request.AwayScore.HasValue) match.AwayScore = request.AwayScore;
+                if (request.QuarterResults != null) match.QuarterResults = request.QuarterResults;
             }
 
             await _matchRepository.UpdateAsync(match, ct);

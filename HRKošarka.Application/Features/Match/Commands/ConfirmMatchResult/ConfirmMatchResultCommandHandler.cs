@@ -69,6 +69,11 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             if (allStats.Any(s => s.Points < s.ThreePointers * 3))
                 throw new BadRequestException("One or more players have fewer total points than their three-pointers alone account for.");
 
+            if (match.HomeScore.Value == match.AwayScore.Value)
+                throw new BadRequestException("Final score cannot be tied. Enter overtime scores to resolve.");
+
+            ValidateQuarterResults(match.QuarterResults, match.HomeScore.Value, match.AwayScore.Value);
+
             match.IsResultConfirmed = true;
             match.ResultSubmissionStatus = ResultSubmissionStatus.Confirmed;
             match.Status = MatchStatus.Completed;
@@ -87,6 +92,40 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
                 await UpdatePlayerSeasonStats(stat, match.LeagueId, seasonId, ct);
 
             return CommandResponse<bool>.Success(true, "Match result confirmed.");
+        }
+
+        private static void ValidateQuarterResults(string? raw, int homeScore, int awayScore)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+                throw new BadRequestException("Quarter scores are required before confirming the result.");
+
+            var segments = raw.Split(';');
+            if (segments.Length < 4)
+                throw new BadRequestException("Quarter scores must contain at least 4 periods (Q1–Q4).");
+
+            int homeTotal = 0, awayTotal = 0;
+            int homeRegulation = 0, awayRegulation = 0;
+
+            for (int i = 0; i < segments.Length; i++)
+            {
+                var parts = segments[i].Split(':');
+                if (parts.Length != 2
+                    || !int.TryParse(parts[0], out int h) || h < 0
+                    || !int.TryParse(parts[1], out int a) || a < 0)
+                    throw new BadRequestException($"Quarter score segment '{segments[i]}' is invalid. Expected format: home:away.");
+
+                homeTotal += h;
+                awayTotal += a;
+                if (i < 4) { homeRegulation += h; awayRegulation += a; }
+            }
+
+            if (homeTotal != homeScore)
+                throw new BadRequestException($"Quarter scores (home total: {homeTotal}) do not match the final score ({homeScore}).");
+            if (awayTotal != awayScore)
+                throw new BadRequestException($"Quarter scores (away total: {awayTotal}) do not match the final score ({awayScore}).");
+
+            if (homeRegulation == awayRegulation && segments.Length < 5)
+                throw new BadRequestException("Regulation ended tied. At least one overtime period must be entered.");
         }
 
         private async Task UpdateStanding(Guid leagueId, Guid teamId, Guid seasonId,

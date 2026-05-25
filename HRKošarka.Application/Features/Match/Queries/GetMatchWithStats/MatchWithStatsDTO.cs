@@ -18,6 +18,7 @@ namespace HRKošarka.Application.Features.Match.Queries.GetMatchWithStats
         public Guid AwayTeamClubId { get; set; }
         public int? HomeScore { get; set; }
         public int? AwayScore { get; set; }
+        public string? QuarterResults { get; set; }
         public MatchStatus Status { get; set; }
         public ResultSubmissionStatus ResultSubmissionStatus { get; set; }
         public bool IsResultConfirmed { get; set; }

@@ -10942,6 +10942,9 @@ namespace HRKošarka.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("awayScore")]
         public int? AwayScore { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("quarterResults")]
+        public string QuarterResults { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         public MatchStatus Status { get; set; }
 
@@ -11596,6 +11599,9 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("playerStats")]
         public System.Collections.Generic.ICollection<PlayerStatEntry> PlayerStats { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("quarterResults")]
+        public string QuarterResults { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("submitterClubId")]
         public string SubmitterClubId { get; set; }
