@@ -14,13 +14,11 @@ using HRKošarka.Application.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace HRKošarka.API.Controllers
 {
     [Route("api/matches")]
-    [ApiController]
-    public class MatchController : ControllerBase
+    public class MatchController : BaseController
     {
         private readonly IMediator _mediator;
 
@@ -35,27 +33,12 @@ namespace HRKošarka.API.Controllers
         [ProducesDefaultResponseType]
         public async Task<ActionResult<QueryResponse<List<PendingActionDTO>>>> GetPendingActions()
         {
-            bool isAdmin = User.IsInRole("Administrator");
-            Guid? clubId = null;
-            string? teamRepUserId = null;
-            if (!isAdmin)
-            {
-                if (User.IsInRole("ClubManager"))
-                {
-                    var raw = User.FindFirstValue("ClubId");
-                    if (!string.IsNullOrEmpty(raw) && Guid.TryParse(raw, out var parsed))
-                        clubId = parsed;
-                }
-                else
-                {
-                    teamRepUserId = User.FindFirstValue("uid");
-                }
-            }
+            var clubId = CallerClubGuid;
             var response = await _mediator.Send(new GetPendingActionsQuery
             {
+                IsAdmin = IsAdmin,
                 ClubId = clubId,
-                IsAdmin = isAdmin,
-                TeamRepUserId = teamRepUserId
+                TeamRepUserId = (!IsAdmin && clubId == null) ? CurrentUserId : null
             });
             return Ok(response);
         }
@@ -65,10 +48,7 @@ namespace HRKošarka.API.Controllers
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
         public async Task<ActionResult<QueryResponse<MatchWithStatsDTO>>> Get(Guid id)
-        {
-            var response = await _mediator.Send(new GetMatchWithStatsQuery(id));
-            return Ok(response);
-        }
+            => Ok(await _mediator.Send(new GetMatchWithStatsQuery(id)));
 
         [HttpPost("{id}/stats", Name = "SaveMatchStats")]
         [Authorize]
@@ -81,11 +61,9 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> SaveStats(Guid id, SaveMatchStatsCommand command)
         {
             command.MatchId = id;
-            bool isAdmin = User.IsInRole("Administrator");
-            command.SubmitterClubId = isAdmin ? null : User.FindFirstValue("ClubId");
-            command.SubmitterUserId = isAdmin ? null : User.FindFirstValue("uid");
-            var response = await _mediator.Send(command);
-            return Ok(response);
+            command.SubmitterClubId = CallerClubId;
+            command.SubmitterUserId = CallerUserId;
+            return Ok(await _mediator.Send(command));
         }
 
         [HttpPatch("{id}/venue", Name = "UpdateMatchVenue")]
@@ -98,11 +76,9 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> UpdateVenue(Guid id, UpdateMatchVenueCommand command)
         {
             command.MatchId = id;
-            bool isAdmin = User.IsInRole("Administrator");
-            command.RequesterClubId = isAdmin ? null : User.FindFirstValue("ClubId");
-            command.RequesterUserId = isAdmin ? null : User.FindFirstValue("uid");
-            var response = await _mediator.Send(command);
-            return Ok(response);
+            command.RequesterClubId = CallerClubId;
+            command.RequesterUserId = CallerUserId;
+            return Ok(await _mediator.Send(command));
         }
 
         [HttpPost("{id}/submit-home", Name = "SubmitHomeStats")]
@@ -115,15 +91,13 @@ namespace HRKošarka.API.Controllers
         [ProducesDefaultResponseType]
         public async Task<ActionResult<CommandResponse<bool>>> SubmitHome(Guid id)
         {
-            bool isAdmin = User.IsInRole("Administrator");
             var command = new SubmitHomeStatsCommand
             {
                 MatchId = id,
-                SubmitterClubId = isAdmin ? null : User.FindFirstValue("ClubId"),
-                SubmitterUserId = isAdmin ? null : User.FindFirstValue("uid")
+                SubmitterClubId = CallerClubId,
+                SubmitterUserId = CallerUserId
             };
-            var response = await _mediator.Send(command);
-            return Ok(response);
+            return Ok(await _mediator.Send(command));
         }
 
         [HttpPost("{id}/confirm", Name = "ConfirmMatchResult")]
@@ -136,18 +110,15 @@ namespace HRKošarka.API.Controllers
         [ProducesDefaultResponseType]
         public async Task<ActionResult<CommandResponse<bool>>> Confirm(Guid id)
         {
-            bool isAdmin = User.IsInRole("Administrator");
-            var userId = User.FindFirstValue("uid");
             var command = new ConfirmMatchResultCommand
             {
                 MatchId = id,
-                ConfirmedByUserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                IsForced = isAdmin,
-                ConfirmerClubId = isAdmin ? null : User.FindFirstValue("ClubId"),
-                ConfirmerUserId = isAdmin ? null : userId
+                ConfirmedByUserId = CurrentUserId,
+                IsForced = IsAdmin,
+                ConfirmerClubId = CallerClubId,
+                ConfirmerUserId = CallerUserId
             };
-            var response = await _mediator.Send(command);
-            return Ok(response);
+            return Ok(await _mediator.Send(command));
         }
 
         [HttpPost("{id}/dispute", Name = "DisputeMatchResult")]
@@ -161,11 +132,9 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> Dispute(Guid id, DisputeMatchResultCommand command)
         {
             command.MatchId = id;
-            bool isAdmin = User.IsInRole("Administrator");
-            command.DisputerClubId = isAdmin ? null : User.FindFirstValue("ClubId");
-            command.DisputerUserId = isAdmin ? null : User.FindFirstValue("uid");
-            var response = await _mediator.Send(command);
-            return Ok(response);
+            command.DisputerClubId = CallerClubId;
+            command.DisputerUserId = CallerUserId;
+            return Ok(await _mediator.Send(command));
         }
 
         [HttpPost("{id}/reset", Name = "ResetMatchResult")]
@@ -177,10 +146,7 @@ namespace HRKošarka.API.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesDefaultResponseType]
         public async Task<ActionResult<CommandResponse<bool>>> Reset(Guid id)
-        {
-            var response = await _mediator.Send(new ResetMatchResultCommand { MatchId = id });
-            return Ok(response);
-        }
+            => Ok(await _mediator.Send(new ResetMatchResultCommand { MatchId = id }));
 
         [HttpPost("{id}/forfeit", Name = "RecordForfeit")]
         [Authorize(Roles = "Administrator")]
@@ -193,9 +159,8 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> Forfeit(Guid id, RecordForfeitCommand command)
         {
             command.MatchId = id;
-            command.ConfirmedByUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var response = await _mediator.Send(command);
-            return Ok(response);
+            command.ConfirmedByUserId = CurrentUserId;
+            return Ok(await _mediator.Send(command));
         }
 
         [HttpPost("{id}/reschedule", Name = "ProposeReschedule")]
@@ -209,10 +174,9 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> ProposeReschedule(Guid id, ProposeRescheduleCommand command)
         {
             command.MatchId = id;
-            command.ProposerClubId = Guid.TryParse(User.FindFirstValue("ClubId"), out var clubId) ? clubId : (Guid?)null;
-            command.ProposerUserId = User.FindFirstValue("uid") ?? string.Empty;
-            var response = await _mediator.Send(command);
-            return Ok(response);
+            command.ProposerClubId = CallerClubGuid;
+            command.ProposerUserId = CurrentUserId;
+            return Ok(await _mediator.Send(command));
         }
 
         [HttpPost("{id}/reschedule/respond", Name = "RespondToReschedule")]
@@ -226,10 +190,9 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> RespondToReschedule(Guid id, RespondToRescheduleCommand command)
         {
             command.MatchId = id;
-            command.ResponderClubId = Guid.TryParse(User.FindFirstValue("ClubId"), out var clubId) ? clubId : (Guid?)null;
-            command.ResponderUserId = User.FindFirstValue("uid") ?? string.Empty;
-            var response = await _mediator.Send(command);
-            return Ok(response);
+            command.ResponderClubId = CallerClubGuid;
+            command.ResponderUserId = CurrentUserId;
+            return Ok(await _mediator.Send(command));
         }
     }
 }

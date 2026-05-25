@@ -17,7 +17,7 @@ namespace HRKošarka.API.Controllers
 {
     [Route("api/clubs")]
     [ApiController]
-    public class ClubController : ControllerBase
+    public class ClubController : BaseController
     {
         private readonly IMediator _mediator;
 

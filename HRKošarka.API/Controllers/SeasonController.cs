@@ -13,7 +13,7 @@ namespace HRKošarka.API.Controllers
 {
     [Route("api/seasons")]
     [ApiController]
-    public class SeasonController : ControllerBase
+    public class SeasonController : BaseController
     {
         private readonly IMediator _mediator;
 

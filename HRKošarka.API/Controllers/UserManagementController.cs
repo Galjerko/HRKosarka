@@ -13,7 +13,7 @@ namespace HRKošarka.API.Controllers
 {
     [Route("api/user-management")]
     [ApiController]
-    public class UserManagementController : ControllerBase
+    public class UserManagementController : BaseController
     {
         private readonly IMediator _mediator;
 

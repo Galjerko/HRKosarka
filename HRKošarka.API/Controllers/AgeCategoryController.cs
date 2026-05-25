@@ -7,7 +7,7 @@ namespace HRKošarka.API.Controllers
 {
     [Route("api/age-categories")]
     [ApiController]
-    public class AgeCategoryController : ControllerBase
+    public class AgeCategoryController : BaseController
     {
         private readonly IMediator _mediator;
 
