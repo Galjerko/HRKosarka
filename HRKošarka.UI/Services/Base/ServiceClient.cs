@@ -443,6 +443,15 @@ namespace HRKošarka.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PlayerSeasonGroupDTOListQueryResponse> GetPlayerSeasonStatsAsync(System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PlayerSeasonGroupDTOListQueryResponse> GetPlayerSeasonStatsAsync(System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<PlayerDetailsDTOQueryResponse> GetPlayerByIdAsync(System.Guid id);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -5845,6 +5854,93 @@ namespace HRKošarka.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<PlayerSeasonGroupDTOListQueryResponse> GetPlayerSeasonStatsAsync(System.Guid id)
+        {
+            return GetPlayerSeasonStatsAsync(id, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<PlayerSeasonGroupDTOListQueryResponse> GetPlayerSeasonStatsAsync(System.Guid id, System.Threading.CancellationToken cancellationToken)
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/players/{id}/season-stats"
+                    urlBuilder_.Append("api/players/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/season-stats");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<PlayerSeasonGroupDTOListQueryResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<PlayerDetailsDTOQueryResponse> GetPlayerByIdAsync(System.Guid id)
         {
             return GetPlayerByIdAsync(id, System.Threading.CancellationToken.None);
@@ -7499,16 +7595,6 @@ namespace HRKošarka.UI.Services.Base
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
-                        }
-                        else
-                        if (status_ == 500)
-                        {
-                            var objectResponse_ = await ReadObjectResponseAsync<TeamDTOPaginatedResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            throw new ApiException<TeamDTOPaginatedResponse>("Internal Server Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
                         }
                         else
                         {
@@ -11197,6 +11283,24 @@ namespace HRKošarka.UI.Services.Base
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PlayerBestGameDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("points")]
+        public int Points { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("threePointers")]
+        public int ThreePointers { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("opponentTeamName")]
+        public string OpponentTeamName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("matchDate")]
+        public System.DateTime MatchDate { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class PlayerDTO
     {
 
@@ -11341,6 +11445,48 @@ namespace HRKošarka.UI.Services.Base
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PlayerLeagueStatsDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("leagueId")]
+        public System.Guid LeagueId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("leagueName")]
+        public string LeagueName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("competitionType")]
+        public string CompetitionType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("teamName")]
+        public string TeamName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gamesPlayed")]
+        public int GamesPlayed { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("ppg")]
+        public double Ppg { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("threePG")]
+        public double ThreePG { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fpg")]
+        public double Fpg { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("totalPoints")]
+        public int TotalPoints { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("totalThreePointers")]
+        public int TotalThreePointers { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("totalFouls")]
+        public int TotalFouls { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("bestGame")]
+        public PlayerBestGameDTO BestGame { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class PlayerMatchStatDTO
     {
 
@@ -11367,6 +11513,51 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("statsEntered")]
         public bool StatsEntered { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PlayerSeasonGroupDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("seasonId")]
+        public System.Guid SeasonId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("seasonName")]
+        public string SeasonName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("totalGamesPlayed")]
+        public int TotalGamesPlayed { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("combinedPPG")]
+        public double CombinedPPG { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("combined3PG")]
+        public double Combined3PG { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("combinedFPG")]
+        public double CombinedFPG { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("leagueStats")]
+        public System.Collections.Generic.ICollection<PlayerLeagueStatsDTO> LeagueStats { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PlayerSeasonGroupDTOListQueryResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("isSuccess")]
+        public bool IsSuccess { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string Message { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("errors")]
+        public System.Collections.Generic.ICollection<string> Errors { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.ICollection<PlayerSeasonGroupDTO> Data { get; set; }
 
     }
 

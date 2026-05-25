@@ -17,5 +17,6 @@ namespace HRKošarka.UI.Contracts
         Task<CommandResponse<bool>> DeactivatePlayer(Guid id);
         Task<CommandResponse<bool>> ActivatePlayer(Guid id);
         Task<CommandResponse<bool>> DeletePlayer(Guid id);
+        Task<QueryResponse<List<PlayerSeasonGroupDTO>>> GetPlayerSeasonStats(Guid playerId);
     }
 }

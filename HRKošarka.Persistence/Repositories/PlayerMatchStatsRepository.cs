@@ -34,5 +34,15 @@ namespace HRKošarka.Persistence.Repositories
             return await _context.PlayerMatchStats
                 .CountAsync(s => s.MatchId == matchId && s.TeamId == teamId, ct);
         }
+
+        public async Task<List<PlayerMatchStats>> GetAllByPlayerWithMatchAsync(Guid playerId, CancellationToken ct = default)
+        {
+            return await _context.PlayerMatchStats
+                .Include(s => s.Match).ThenInclude(m => m.HomeTeam)
+                .Include(s => s.Match).ThenInclude(m => m.AwayTeam)
+                .Where(s => s.PlayerId == playerId && !s.DidNotPlay && s.TeamId.HasValue)
+                .AsNoTracking()
+                .ToListAsync(ct);
+        }
     }
 }

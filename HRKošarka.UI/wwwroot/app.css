@@ -3137,3 +3137,95 @@ html, body {
     .dash-nav-card { min-height: 84px; padding: 16px 14px; }
     .dash-nav-icon { width: 44px; height: 44px; }
 }
+
+/* Season Statistics — stat chip cards */
+.stats-grid {
+    display: grid;
+    gap: 5px;
+}
+
+.stats-grid.four-cols { grid-template-columns: repeat(4, 1fr); }
+
+.stat-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 7px 2px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    text-align: center;
+    min-width: 0;
+}
+
+.stat-chip .stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--mud-palette-text-primary);
+}
+
+.stat-chip .stat-label {
+    font-size: 0.58rem;
+    color: var(--mud-palette-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+.season-combined-card {
+    background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(88,166,255,0.03)) !important;
+    border: 1px solid rgba(88,166,255,0.18);
+    border-radius: 12px !important;
+}
+
+.season-combined-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #58a6ff;
+    margin-bottom: 8px;
+}
+
+.season-league-card {
+    border-radius: 12px !important;
+    border-left: 3px solid var(--mud-palette-primary) !important;
+}
+
+.season-league-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 2px;
+    flex-wrap: nowrap;
+}
+
+.season-total-pts {
+    font-size: 0.75rem;
+    color: var(--mud-palette-text-secondary);
+    margin-top: 7px;
+}
+
+.season-best-game {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 7px 8px;
+    background: rgba(255,193,7,0.07);
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.season-best-detail {
+    opacity: 0.8;
+}
+
+.season-best-date {
+    font-size: 0.7rem;
+    opacity: 0.55;
+    margin-top: 1px;
+}
