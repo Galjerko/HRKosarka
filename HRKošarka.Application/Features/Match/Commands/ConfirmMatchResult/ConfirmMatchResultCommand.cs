@@ -9,5 +9,6 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
         public string? ConfirmedByUserId { get; set; }
         public bool IsForced { get; set; }
         public string? ConfirmerClubId { get; set; }
+        public string? ConfirmerUserId { get; set; }
     }
 }

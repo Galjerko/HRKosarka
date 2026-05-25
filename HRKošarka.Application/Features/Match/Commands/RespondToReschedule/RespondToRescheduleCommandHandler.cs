@@ -10,13 +10,16 @@ namespace HRKošarka.Application.Features.Match.Commands.RespondToReschedule
     {
         private readonly IMatchRepository _matchRepository;
         private readonly IMatchReschedulingRequestRepository _reschedulingRepository;
+        private readonly ITeamRepresentativeRepository _repRepository;
 
         public RespondToRescheduleCommandHandler(
             IMatchRepository matchRepository,
-            IMatchReschedulingRequestRepository reschedulingRepository)
+            IMatchReschedulingRequestRepository reschedulingRepository,
+            ITeamRepresentativeRepository repRepository)
         {
             _matchRepository = matchRepository;
             _reschedulingRepository = reschedulingRepository;
+            _repRepository = repRepository;
         }
 
         public async Task<CommandResponse<bool>> Handle(RespondToRescheduleCommand request, CancellationToken ct)
@@ -27,11 +30,35 @@ namespace HRKošarka.Application.Features.Match.Commands.RespondToReschedule
             var proposal = await _reschedulingRepository.GetActiveForMatchAsync(request.MatchId, ct)
                 ?? throw new BadRequestException("No active reschedule proposal found for this match.");
 
-            if (proposal.RequestedByClubId == request.ResponderClubId)
-                throw new BadRequestException("You cannot respond to your own reschedule proposal.");
+            Guid responderTeamId;
+            if (request.ResponderClubId.HasValue && request.ResponderClubId != Guid.Empty)
+            {
+                bool isHomeClub = match.HomeTeam.ClubId == request.ResponderClubId;
+                bool isAwayClub = match.AwayTeam.ClubId == request.ResponderClubId;
+                if (!isHomeClub && !isAwayClub)
+                    throw new BadRequestException("Only a manager or representative of one of the match teams can respond.");
+                responderTeamId = isHomeClub ? match.HomeTeamId : match.AwayTeamId;
+            }
+            else if (!string.IsNullOrEmpty(request.ResponderUserId))
+            {
+                bool isHomeRep = await _repRepository.IsActiveRepForTeamAsync(request.ResponderUserId, match.HomeTeamId, ct);
+                bool isAwayRep = !isHomeRep && await _repRepository.IsActiveRepForTeamAsync(request.ResponderUserId, match.AwayTeamId, ct);
+                if (!isHomeRep && !isAwayRep)
+                    throw new BadRequestException("Only a manager or representative of one of the match teams can respond.");
+                responderTeamId = isHomeRep ? match.HomeTeamId : match.AwayTeamId;
+            }
+            else
+            {
+                throw new BadRequestException("Only a manager or representative of one of the match teams can respond.");
+            }
 
-            if (match.HomeTeam.ClubId != request.ResponderClubId && match.AwayTeam.ClubId != request.ResponderClubId)
-                throw new BadRequestException("Only a club manager from one of the match teams can respond.");
+            // Prevent responding to own proposal
+            bool ownProposalByTeam = proposal.RequestedByTeamId == responderTeamId;
+            bool ownProposalByClub = !proposal.RequestedByTeamId.HasValue &&
+                request.ResponderClubId.HasValue &&
+                proposal.RequestedByClubId == request.ResponderClubId;
+            if (ownProposalByTeam || ownProposalByClub)
+                throw new BadRequestException("You cannot respond to your own reschedule proposal.");
 
             proposal.ResponseByUserId = request.ResponderUserId;
             proposal.RespondedAt = DateTime.UtcNow;

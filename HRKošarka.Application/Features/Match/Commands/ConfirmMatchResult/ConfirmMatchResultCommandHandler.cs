@@ -13,17 +13,20 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
         private readonly IPlayerMatchStatsRepository _statsRepository;
         private readonly ILeagueStandingRepository _standingRepository;
         private readonly IPlayerSeasonStatsRepository _seasonStatsRepository;
+        private readonly ITeamRepresentativeRepository _repRepository;
 
         public ConfirmMatchResultCommandHandler(
             IMatchRepository matchRepository,
             IPlayerMatchStatsRepository statsRepository,
             ILeagueStandingRepository standingRepository,
-            IPlayerSeasonStatsRepository seasonStatsRepository)
+            IPlayerSeasonStatsRepository seasonStatsRepository,
+            ITeamRepresentativeRepository repRepository)
         {
             _matchRepository = matchRepository;
             _statsRepository = statsRepository;
             _standingRepository = standingRepository;
             _seasonStatsRepository = seasonStatsRepository;
+            _repRepository = repRepository;
         }
 
         public async Task<CommandResponse<bool>> Handle(ConfirmMatchResultCommand request, CancellationToken ct)
@@ -37,10 +40,15 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             if (!request.IsForced && match.ResultSubmissionStatus != ResultSubmissionStatus.HomeSubmitted)
                 throw new BadRequestException("Home team has not submitted the result yet.");
 
-            if (!request.IsForced && !string.IsNullOrEmpty(request.ConfirmerClubId))
+            if (!request.IsForced)
             {
-                if (match.AwayTeam.ClubId.ToString() != request.ConfirmerClubId)
-                    throw new BadRequestException("Only the away team's club manager can confirm the result.");
+                bool authorized = false;
+                if (!string.IsNullOrEmpty(request.ConfirmerClubId))
+                    authorized = match.AwayTeam.ClubId.ToString() == request.ConfirmerClubId;
+                if (!authorized && !string.IsNullOrEmpty(request.ConfirmerUserId))
+                    authorized = await _repRepository.IsActiveRepForTeamAsync(request.ConfirmerUserId, match.AwayTeamId, ct);
+                if (!authorized)
+                    throw new BadRequestException("Only the away team's manager or representative can confirm the result.");
             }
 
             if (!match.HomeScore.HasValue || !match.AwayScore.HasValue)

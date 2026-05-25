@@ -8,11 +8,16 @@ namespace HRKošarka.Application.Features.Team.Commands.UpdateTeam
     public class UpdateTeamCommandHandler : IRequestHandler<UpdateTeamCommand, Unit>
     {
         private readonly ITeamRepository _teamRepository;
+        private readonly ITeamRepresentativeRepository _repRepository;
         private readonly IAppLogger<UpdateTeamCommandHandler> _logger;
 
-        public UpdateTeamCommandHandler(ITeamRepository teamRepository, IAppLogger<UpdateTeamCommandHandler> logger)
+        public UpdateTeamCommandHandler(
+            ITeamRepository teamRepository,
+            ITeamRepresentativeRepository repRepository,
+            IAppLogger<UpdateTeamCommandHandler> logger)
         {
             _teamRepository = teamRepository;
+            _repRepository = repRepository;
             _logger = logger;
         }
 
@@ -29,8 +34,16 @@ namespace HRKošarka.Application.Features.Team.Commands.UpdateTeam
 
             var teamToUpdate = await _teamRepository.GetByIdAsync(request.Id, cancellationToken);
             if (teamToUpdate == null)
-            {
                 throw new NotFoundException(nameof(Domain.Team), request.Id);
+
+            bool isAdmin = string.IsNullOrEmpty(request.RequesterClubId) && string.IsNullOrEmpty(request.RequesterUserId);
+            if (!isAdmin)
+            {
+                bool authorized = !string.IsNullOrEmpty(request.RequesterClubId) && teamToUpdate.ClubId.ToString() == request.RequesterClubId;
+                if (!authorized && !string.IsNullOrEmpty(request.RequesterUserId))
+                    authorized = await _repRepository.IsActiveRepForTeamAsync(request.RequesterUserId, request.Id, cancellationToken);
+                if (!authorized)
+                    throw new BadRequestException("You are not authorized to manage this team.");
             }
 
             // Only update the name

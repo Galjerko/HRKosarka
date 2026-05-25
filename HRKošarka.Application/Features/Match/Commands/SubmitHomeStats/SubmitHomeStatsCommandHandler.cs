@@ -9,10 +9,14 @@ namespace HRKošarka.Application.Features.Match.Commands.SubmitHomeStats
     public class SubmitHomeStatsCommandHandler : IRequestHandler<SubmitHomeStatsCommand, CommandResponse<bool>>
     {
         private readonly IMatchRepository _matchRepository;
+        private readonly ITeamRepresentativeRepository _repRepository;
 
-        public SubmitHomeStatsCommandHandler(IMatchRepository matchRepository)
+        public SubmitHomeStatsCommandHandler(
+            IMatchRepository matchRepository,
+            ITeamRepresentativeRepository repRepository)
         {
             _matchRepository = matchRepository;
+            _repRepository = repRepository;
         }
 
         public async Task<CommandResponse<bool>> Handle(SubmitHomeStatsCommand request, CancellationToken ct)
@@ -29,9 +33,17 @@ namespace HRKošarka.Application.Features.Match.Commands.SubmitHomeStats
             if (match.ResultSubmissionStatus == ResultSubmissionStatus.HomeSubmitted)
                 throw new BadRequestException("Stats have already been submitted. Waiting for the away team to confirm.");
 
-            if (!string.IsNullOrEmpty(request.SubmitterClubId) &&
-                match.HomeTeam.ClubId.ToString() != request.SubmitterClubId)
-                throw new BadRequestException("Only the home team's club manager can submit the home stats.");
+            bool isAdmin = string.IsNullOrEmpty(request.SubmitterClubId) && string.IsNullOrEmpty(request.SubmitterUserId);
+            if (!isAdmin)
+            {
+                bool authorized = false;
+                if (!string.IsNullOrEmpty(request.SubmitterClubId))
+                    authorized = match.HomeTeam.ClubId.ToString() == request.SubmitterClubId;
+                if (!authorized && !string.IsNullOrEmpty(request.SubmitterUserId))
+                    authorized = await _repRepository.IsActiveRepForTeamAsync(request.SubmitterUserId, match.HomeTeamId, ct);
+                if (!authorized)
+                    throw new BadRequestException("Only the home team's manager or representative can submit the home stats.");
+            }
 
             if (!match.HomeScore.HasValue || !match.AwayScore.HasValue)
                 throw new BadRequestException("Score must be entered before submitting.");

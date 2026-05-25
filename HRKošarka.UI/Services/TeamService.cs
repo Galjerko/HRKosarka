@@ -282,4 +282,87 @@ public class TeamService : BaseHttpService, ITeamService
             return ConvertApiExceptionsToQuery<List<TeamMatchHistoryItemDTO>>(ex);
         }
     }
+
+    public async Task<QueryResponse<List<TeamRepresentativeDTO>>> GetTeamRepresentatives(Guid teamId)
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.GetTeamRepresentativesAsync(teamId);
+            return new QueryResponse<List<TeamRepresentativeDTO>>
+            {
+                Data = response.Data?.ToList() ?? new List<TeamRepresentativeDTO>(),
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptionsToQuery<List<TeamRepresentativeDTO>>(ex);
+        }
+    }
+
+    public async Task<CommandResponse<Guid>> AssignTeamRepresentative(Guid teamId, AssignTeamRepresentativeCommand command)
+    {
+        try
+        {
+            await AddBearerToken();
+            command.TeamId = teamId;
+            var response = await _client.AssignTeamRepresentativeAsync(teamId, command);
+            return new CommandResponse<Guid>
+            {
+                Data = response.Data,
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException<CustomProblemDetails> ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
+    }
+
+    public async Task<CommandResponse<bool>> RevokeTeamRepresentative(Guid teamId, Guid repId)
+    {
+        try
+        {
+            await AddBearerToken();
+            await _client.RevokeTeamRepresentativeAsync(teamId, repId);
+            return CommandResponse<bool>.Success(true, "Team representative revoked.");
+        }
+        catch (ApiException<CustomProblemDetails> ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+    }
+
+    public async Task<QueryResponse<List<TeamRepMembershipDTO>>> GetMyRepresentativeships()
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.GetMyRepresentativeshipsAsync();
+            return new QueryResponse<List<TeamRepMembershipDTO>>
+            {
+                Data = response.Data?.ToList() ?? new List<TeamRepMembershipDTO>(),
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptionsToQuery<List<TeamRepMembershipDTO>>(ex);
+        }
+    }
 }

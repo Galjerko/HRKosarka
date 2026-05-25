@@ -15,19 +15,22 @@ namespace HRKošarka.Application.Features.Team.Commands.AssignPlayerToTeam
         private readonly IGenericRepository<Domain.Season> _seasonRepository;
         private readonly IPlayerRepository _playerRepository;
         private readonly ITeamRepository _teamRepository;
+        private readonly ITeamRepresentativeRepository _repRepository;
 
         public AssignPlayerToTeamCommandHandler(
             IGenericRepository<PlayerTeamHistory> historyRepository,
             IPlayerTeamHistoryRepository playerTeamHistoryRepository,
             IGenericRepository<Domain.Season> seasonRepository,
             IPlayerRepository playerRepository,
-            ITeamRepository teamRepository)
+            ITeamRepository teamRepository,
+            ITeamRepresentativeRepository repRepository)
         {
             _historyRepository = historyRepository;
             _playerTeamHistoryRepository = playerTeamHistoryRepository;
             _seasonRepository = seasonRepository;
             _playerRepository = playerRepository;
             _teamRepository = teamRepository;
+            _repRepository = repRepository;
         }
 
         public async Task<CommandResponse<Guid>> Handle(AssignPlayerToTeamCommand request, CancellationToken cancellationToken)
@@ -40,6 +43,17 @@ namespace HRKošarka.Application.Features.Team.Commands.AssignPlayerToTeam
             var team = await _teamRepository.GetByIdWithIncludesAsync(request.TeamId, cancellationToken);
             if (team == null)
                 throw new NotFoundException(nameof(Team), request.TeamId);
+
+            bool isAdmin = string.IsNullOrEmpty(request.RequesterClubId) && string.IsNullOrEmpty(request.RequesterUserId);
+            if (!isAdmin)
+            {
+                bool authorized = !string.IsNullOrEmpty(request.RequesterClubId) && team.ClubId.ToString() == request.RequesterClubId;
+                if (!authorized && !string.IsNullOrEmpty(request.RequesterUserId))
+                    authorized = await _repRepository.IsActiveRepForTeamAsync(request.RequesterUserId, request.TeamId, cancellationToken);
+                if (!authorized)
+                    throw new BadRequestException("You are not authorized to manage this team's roster.");
+            }
+
             if (!team.IsActive)
                 throw new BadRequestException("Cannot assign a player to an inactive team.");
 

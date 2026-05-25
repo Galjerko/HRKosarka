@@ -24,6 +24,11 @@
                              Min="0"
                              Max="99"
                              HelperText="Leave empty if the player should not have a jersey number assigned yet." />
+
+            @if (_errorMessage != null)
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-3" Dense="true">@_errorMessage</MudAlert>
+            }
         }
     </DialogContent>
 

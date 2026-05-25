@@ -37,13 +37,26 @@ namespace HRKošarka.API.Controllers
         {
             bool isAdmin = User.IsInRole("Administrator");
             Guid? clubId = null;
-            if (!isAdmin && User.IsInRole("ClubManager"))
+            string? teamRepUserId = null;
+            if (!isAdmin)
             {
-                var raw = User.FindFirstValue("ClubId");
-                if (!string.IsNullOrEmpty(raw) && Guid.TryParse(raw, out var parsed))
-                    clubId = parsed;
+                if (User.IsInRole("ClubManager"))
+                {
+                    var raw = User.FindFirstValue("ClubId");
+                    if (!string.IsNullOrEmpty(raw) && Guid.TryParse(raw, out var parsed))
+                        clubId = parsed;
+                }
+                else
+                {
+                    teamRepUserId = User.FindFirstValue("uid");
+                }
             }
-            var response = await _mediator.Send(new GetPendingActionsQuery { ClubId = clubId, IsAdmin = isAdmin });
+            var response = await _mediator.Send(new GetPendingActionsQuery
+            {
+                ClubId = clubId,
+                IsAdmin = isAdmin,
+                TeamRepUserId = teamRepUserId
+            });
             return Ok(response);
         }
 
@@ -58,7 +71,7 @@ namespace HRKošarka.API.Controllers
         }
 
         [HttpPost("{id}/stats", Name = "SaveMatchStats")]
-        [Authorize(Roles = "Administrator,ClubManager")]
+        [Authorize]
         [ProducesResponseType(typeof(CommandResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
@@ -68,15 +81,15 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> SaveStats(Guid id, SaveMatchStatsCommand command)
         {
             command.MatchId = id;
-            command.SubmitterClubId = User.IsInRole("Administrator")
-                ? null
-                : User.FindFirstValue("ClubId");
+            bool isAdmin = User.IsInRole("Administrator");
+            command.SubmitterClubId = isAdmin ? null : User.FindFirstValue("ClubId");
+            command.SubmitterUserId = isAdmin ? null : User.FindFirstValue("uid");
             var response = await _mediator.Send(command);
             return Ok(response);
         }
 
         [HttpPatch("{id}/venue", Name = "UpdateMatchVenue")]
-        [Authorize(Roles = "Administrator,ClubManager")]
+        [Authorize]
         [ProducesResponseType(typeof(CommandResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -85,13 +98,15 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> UpdateVenue(Guid id, UpdateMatchVenueCommand command)
         {
             command.MatchId = id;
-            command.RequesterClubId = User.IsInRole("Administrator") ? null : User.FindFirstValue("ClubId");
+            bool isAdmin = User.IsInRole("Administrator");
+            command.RequesterClubId = isAdmin ? null : User.FindFirstValue("ClubId");
+            command.RequesterUserId = isAdmin ? null : User.FindFirstValue("uid");
             var response = await _mediator.Send(command);
             return Ok(response);
         }
 
         [HttpPost("{id}/submit-home", Name = "SubmitHomeStats")]
-        [Authorize(Roles = "Administrator,ClubManager")]
+        [Authorize]
         [ProducesResponseType(typeof(CommandResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
@@ -100,17 +115,19 @@ namespace HRKošarka.API.Controllers
         [ProducesDefaultResponseType]
         public async Task<ActionResult<CommandResponse<bool>>> SubmitHome(Guid id)
         {
+            bool isAdmin = User.IsInRole("Administrator");
             var command = new SubmitHomeStatsCommand
             {
                 MatchId = id,
-                SubmitterClubId = User.IsInRole("Administrator") ? null : User.FindFirstValue("ClubId")
+                SubmitterClubId = isAdmin ? null : User.FindFirstValue("ClubId"),
+                SubmitterUserId = isAdmin ? null : User.FindFirstValue("uid")
             };
             var response = await _mediator.Send(command);
             return Ok(response);
         }
 
         [HttpPost("{id}/confirm", Name = "ConfirmMatchResult")]
-        [Authorize(Roles = "Administrator,ClubManager")]
+        [Authorize]
         [ProducesResponseType(typeof(CommandResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
@@ -120,19 +137,21 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> Confirm(Guid id)
         {
             bool isAdmin = User.IsInRole("Administrator");
+            var userId = User.FindFirstValue("uid");
             var command = new ConfirmMatchResultCommand
             {
                 MatchId = id,
                 ConfirmedByUserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                 IsForced = isAdmin,
-                ConfirmerClubId = isAdmin ? null : User.FindFirstValue("ClubId")
+                ConfirmerClubId = isAdmin ? null : User.FindFirstValue("ClubId"),
+                ConfirmerUserId = isAdmin ? null : userId
             };
             var response = await _mediator.Send(command);
             return Ok(response);
         }
 
         [HttpPost("{id}/dispute", Name = "DisputeMatchResult")]
-        [Authorize(Roles = "ClubManager")]
+        [Authorize]
         [ProducesResponseType(typeof(CommandResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
@@ -142,7 +161,9 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> Dispute(Guid id, DisputeMatchResultCommand command)
         {
             command.MatchId = id;
-            command.DisputerClubId = User.FindFirstValue("ClubId");
+            bool isAdmin = User.IsInRole("Administrator");
+            command.DisputerClubId = isAdmin ? null : User.FindFirstValue("ClubId");
+            command.DisputerUserId = isAdmin ? null : User.FindFirstValue("uid");
             var response = await _mediator.Send(command);
             return Ok(response);
         }
@@ -178,7 +199,7 @@ namespace HRKošarka.API.Controllers
         }
 
         [HttpPost("{id}/reschedule", Name = "ProposeReschedule")]
-        [Authorize(Roles = "ClubManager")]
+        [Authorize]
         [ProducesResponseType(typeof(CommandResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
@@ -188,14 +209,14 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> ProposeReschedule(Guid id, ProposeRescheduleCommand command)
         {
             command.MatchId = id;
-            command.ProposerClubId = Guid.Parse(User.FindFirstValue("ClubId")!);
-            command.ProposerUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            command.ProposerClubId = Guid.TryParse(User.FindFirstValue("ClubId"), out var clubId) ? clubId : (Guid?)null;
+            command.ProposerUserId = User.FindFirstValue("uid") ?? string.Empty;
             var response = await _mediator.Send(command);
             return Ok(response);
         }
 
         [HttpPost("{id}/reschedule/respond", Name = "RespondToReschedule")]
-        [Authorize(Roles = "ClubManager")]
+        [Authorize]
         [ProducesResponseType(typeof(CommandResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
@@ -205,8 +226,8 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<bool>>> RespondToReschedule(Guid id, RespondToRescheduleCommand command)
         {
             command.MatchId = id;
-            command.ResponderClubId = Guid.Parse(User.FindFirstValue("ClubId")!);
-            command.ResponderUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            command.ResponderClubId = Guid.TryParse(User.FindFirstValue("ClubId"), out var clubId) ? clubId : (Guid?)null;
+            command.ResponderUserId = User.FindFirstValue("uid") ?? string.Empty;
             var response = await _mediator.Send(command);
             return Ok(response);
         }

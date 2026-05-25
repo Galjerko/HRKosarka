@@ -34,6 +34,8 @@ namespace HRKošarka.Domain
 
         public DateTime? RespondedAt { get; set; }
 
+        public Guid? RequestedByTeamId { get; set; }
+
         // Navigation properties
         public virtual Match Match { get; set; } = null!;
     }

@@ -31,7 +31,7 @@ namespace HRKošarka.Persistence.Repositories
         }
 
         public async Task<List<PendingActionDTO>> GetPendingActionsAsync(
-            Guid? clubId, bool isAdmin, CancellationToken ct = default)
+            Guid? clubId, bool isAdmin, string? teamRepUserId = null, CancellationToken ct = default)
         {
             var result = new List<PendingActionDTO>();
             var now = DateTime.UtcNow;
@@ -61,6 +61,80 @@ namespace HRKošarka.Persistence.Repositories
 
                 result.AddRange(disputed);
                 return result;
+            }
+
+            if (clubId == null && string.IsNullOrEmpty(teamRepUserId)) return result;
+
+            if (!string.IsNullOrEmpty(teamRepUserId))
+            {
+                var teamIds = await _context.TeamRepresentatives
+                    .Where(tr => tr.UserId == teamRepUserId && tr.DeactivateDate == null)
+                    .Select(tr => tr.TeamId)
+                    .ToListAsync(ct);
+
+                if (!teamIds.Any()) return result;
+
+                var repSubmitHome = await _context.Matches
+                    .Include(m => m.League).Include(m => m.HomeTeam).Include(m => m.AwayTeam)
+                    .Where(m => teamIds.Contains(m.HomeTeamId)
+                             && !m.IsResultConfirmed
+                             && m.ResultSubmissionStatus == HRKošarka.Domain.Common.ResultSubmissionStatus.NotSubmitted
+                             && m.Status != HRKošarka.Domain.Common.MatchStatus.Forfeit)
+                    .OrderBy(m => m.ActualScheduledDate)
+                    .Select(m => new PendingActionDTO
+                    {
+                        MatchId = m.Id, LeagueName = m.League.Name,
+                        RoundName = m.RoundName ?? $"Round {m.Round}",
+                        HomeTeamName = m.HomeTeam.Name, AwayTeamName = m.AwayTeam.Name,
+                        ScheduledDate = m.ActualScheduledDate, ActionType = PendingActionType.SubmitHomeStats
+                    }).AsNoTracking().ToListAsync(ct);
+                result.AddRange(repSubmitHome);
+
+                var repAwayPending = await _context.Matches
+                    .Include(m => m.League).Include(m => m.HomeTeam).Include(m => m.AwayTeam)
+                    .Where(m => teamIds.Contains(m.AwayTeamId)
+                             && !m.IsResultConfirmed
+                             && m.ResultSubmissionStatus == HRKošarka.Domain.Common.ResultSubmissionStatus.HomeSubmitted)
+                    .OrderBy(m => m.ActualScheduledDate).AsNoTracking().ToListAsync(ct);
+
+                foreach (var m in repAwayPending)
+                {
+                    var hasAwayStats = await _context.PlayerMatchStats
+                        .AnyAsync(s => s.MatchId == m.Id && s.TeamId == m.AwayTeamId, ct);
+                    result.Add(new PendingActionDTO
+                    {
+                        MatchId = m.Id, LeagueName = m.League.Name,
+                        RoundName = m.RoundName ?? $"Round {m.Round}",
+                        HomeTeamName = m.HomeTeam.Name, AwayTeamName = m.AwayTeam.Name,
+                        ScheduledDate = m.ActualScheduledDate,
+                        ActionType = hasAwayStats ? PendingActionType.ConfirmResult : PendingActionType.EnterAwayStats
+                    });
+                }
+
+                var repProposals = await _context.MatchReschedulingRequests
+                    .Include(r => r.Match).ThenInclude(m => m.League)
+                    .Include(r => r.Match).ThenInclude(m => m.HomeTeam)
+                    .Include(r => r.Match).ThenInclude(m => m.AwayTeam)
+                    .Where(r => r.Status == HRKošarka.Domain.Common.RequestStatus.Pending
+                             && r.ExpiresAt > now
+                             && (teamIds.Contains(r.Match.HomeTeamId) || teamIds.Contains(r.Match.AwayTeamId)))
+                    .OrderBy(r => r.ExpiresAt).AsNoTracking().ToListAsync(ct);
+
+                foreach (var req in repProposals)
+                {
+                    bool isProposer = req.RequestedByUserId == teamRepUserId ||
+                        (req.RequestedByTeamId.HasValue && teamIds.Contains(req.RequestedByTeamId.Value));
+                    result.Add(new PendingActionDTO
+                    {
+                        MatchId = req.MatchId, LeagueName = req.Match.League.Name,
+                        RoundName = req.Match.RoundName ?? $"Round {req.Match.Round}",
+                        HomeTeamName = req.Match.HomeTeam.Name, AwayTeamName = req.Match.AwayTeam.Name,
+                        ScheduledDate = req.Match.ActualScheduledDate,
+                        ActionType = isProposer ? PendingActionType.ProposalPending : PendingActionType.RespondToProposal
+                    });
+                }
+
+                return result.OrderBy(a => a.ScheduledDate).ToList();
             }
 
             if (clubId == null) return result;

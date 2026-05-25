@@ -533,6 +533,42 @@ namespace HRKošarka.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<TeamRepMembershipDTOListQueryResponse> GetMyRepresentativeshipsAsync();
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<TeamRepMembershipDTOListQueryResponse> GetMyRepresentativeshipsAsync(System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<TeamRepresentativeDTOListQueryResponse> GetTeamRepresentativesAsync(System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<TeamRepresentativeDTOListQueryResponse> GetTeamRepresentativesAsync(System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<GuidCommandResponse> AssignTeamRepresentativeAsync(System.Guid id, AssignTeamRepresentativeCommand body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<GuidCommandResponse> AssignTeamRepresentativeAsync(System.Guid id, AssignTeamRepresentativeCommand body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task RevokeTeamRepresentativeAsync(System.Guid id, System.Guid repId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task RevokeTeamRepresentativeAsync(System.Guid id, System.Guid repId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(System.Guid? ageCategoryId, Gender? gender, bool? isActive, int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -6951,6 +6987,421 @@ namespace HRKošarka.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<TeamRepMembershipDTOListQueryResponse> GetMyRepresentativeshipsAsync()
+        {
+            return GetMyRepresentativeshipsAsync(System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<TeamRepMembershipDTOListQueryResponse> GetMyRepresentativeshipsAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/teams/my-representativeships"
+                    urlBuilder_.Append("api/teams/my-representativeships");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<TeamRepMembershipDTOListQueryResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<TeamRepresentativeDTOListQueryResponse> GetTeamRepresentativesAsync(System.Guid id)
+        {
+            return GetTeamRepresentativesAsync(id, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<TeamRepresentativeDTOListQueryResponse> GetTeamRepresentativesAsync(System.Guid id, System.Threading.CancellationToken cancellationToken)
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/teams/{id}/representatives"
+                    urlBuilder_.Append("api/teams/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/representatives");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<TeamRepresentativeDTOListQueryResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<GuidCommandResponse> AssignTeamRepresentativeAsync(System.Guid id, AssignTeamRepresentativeCommand body)
+        {
+            return AssignTeamRepresentativeAsync(id, body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<GuidCommandResponse> AssignTeamRepresentativeAsync(System.Guid id, AssignTeamRepresentativeCommand body, System.Threading.CancellationToken cancellationToken)
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/teams/{id}/representatives"
+                    urlBuilder_.Append("api/teams/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/representatives");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 201)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<GuidCommandResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CustomProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<CustomProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Unauthorized", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Forbidden", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task RevokeTeamRepresentativeAsync(System.Guid id, System.Guid repId)
+        {
+            return RevokeTeamRepresentativeAsync(id, repId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task RevokeTeamRepresentativeAsync(System.Guid id, System.Guid repId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            if (repId == null)
+                throw new System.ArgumentNullException("repId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("DELETE");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/teams/{id}/representatives/{repId}"
+                    urlBuilder_.Append("api/teams/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/representatives/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(repId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 204)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CustomProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<CustomProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Unauthorized", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Forbidden", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CustomProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<CustomProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<TeamDTOPaginatedResponse> GetAllTeamsAsync(System.Guid? ageCategoryId, Gender? gender, bool? isActive, int? page, int? pageSize, string sortBy, string sortDirection, string searchTerm, System.Collections.Generic.IEnumerable<string> searchableProperties, System.Collections.Generic.IEnumerable<string> sortableProperties)
         {
             return GetAllTeamsAsync(ageCategoryId, gender, isActive, page, pageSize, sortBy, sortDirection, searchTerm, searchableProperties, sortableProperties, System.Threading.CancellationToken.None);
@@ -9317,6 +9768,24 @@ namespace HRKošarka.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("jerseyNumber")]
         public int? JerseyNumber { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requesterClubId")]
+        public string RequesterClubId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requesterUserId")]
+        public string RequesterUserId { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class AssignTeamRepresentativeCommand
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("teamId")]
+        public System.Guid TeamId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userId")]
+        public string UserId { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -9881,6 +10350,9 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("disputerClubId")]
         public string DisputerClubId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("disputerUserId")]
+        public string DisputerUserId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("reason")]
         public string Reason { get; set; }
@@ -10494,6 +10966,9 @@ namespace HRKošarka.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("disputeReason")]
         public string DisputeReason { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("leagueBreaks")]
+        public System.Collections.Generic.ICollection<LeagueBreakDTO> LeagueBreaks { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("pendingReschedule")]
         public RescheduleRequestDTO PendingReschedule { get; set; }
 
@@ -10973,7 +11448,7 @@ namespace HRKošarka.UI.Services.Base
         public string Reason { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("proposerClubId")]
-        public System.Guid ProposerClubId { get; set; }
+        public System.Guid? ProposerClubId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("proposerUserId")]
         public string ProposerUserId { get; set; }
@@ -11082,7 +11557,7 @@ namespace HRKošarka.UI.Services.Base
         public bool Accept { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("responderClubId")]
-        public System.Guid ResponderClubId { get; set; }
+        public System.Guid? ResponderClubId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("responderUserId")]
         public string ResponderUserId { get; set; }
@@ -11124,6 +11599,9 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("submitterClubId")]
         public string SubmitterClubId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("submitterUserId")]
+        public string SubmitterUserId { get; set; }
 
     }
 
@@ -11488,6 +11966,81 @@ namespace HRKošarka.UI.Services.Base
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TeamRepMembershipDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("teamId")]
+        public System.Guid TeamId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("teamName")]
+        public string TeamName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("clubName")]
+        public string ClubName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("teamIsActive")]
+        public bool TeamIsActive { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TeamRepMembershipDTOListQueryResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("isSuccess")]
+        public bool IsSuccess { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string Message { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("errors")]
+        public System.Collections.Generic.ICollection<string> Errors { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.ICollection<TeamRepMembershipDTO> Data { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TeamRepresentativeDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public System.Guid Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userId")]
+        public string UserId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userEmail")]
+        public string UserEmail { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assignedDate")]
+        public System.DateTime AssignedDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isActive")]
+        public bool IsActive { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TeamRepresentativeDTOListQueryResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("isSuccess")]
+        public bool IsSuccess { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string Message { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("errors")]
+        public System.Collections.Generic.ICollection<string> Errors { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.ICollection<TeamRepresentativeDTO> Data { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class TeamRosterPlayerDTO
     {
 
@@ -11659,6 +12212,9 @@ namespace HRKošarka.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("requesterClubId")]
         public string RequesterClubId { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requesterUserId")]
+        public string RequesterUserId { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -11673,6 +12229,12 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("jerseyNumber")]
         public int? JerseyNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requesterClubId")]
+        public string RequesterClubId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requesterUserId")]
+        public string RequesterUserId { get; set; }
 
     }
 
@@ -11745,6 +12307,12 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requesterClubId")]
+        public string RequesterClubId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requesterUserId")]
+        public string RequesterUserId { get; set; }
 
     }
 

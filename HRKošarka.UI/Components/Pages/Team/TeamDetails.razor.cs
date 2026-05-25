@@ -18,10 +18,13 @@ namespace HRKošarka.UI.Components.Pages.Team
         private List<TeamRosterPlayerDTO> _roster = new();
         private List<TeamLeagueDTO> _leagues = new();
         private List<TeamMatchHistoryItemDTO> _matchHistory = new();
+        private List<TeamRepresentativeDTO> _representatives = new();
+        private bool _isRepForThisTeam = false;
         private bool _isLoading = true;
         private bool _isLoadingRoster = false;
         private bool _isLoadingLeagues = false;
         private bool _isLoadingMatchHistory = false;
+        private bool _isLoadingReps = false;
         private bool _isProcessing = false;
         private bool _showDeactivateDialog = false;
         private bool _showActivateDialog = false;
@@ -73,7 +76,17 @@ namespace HRKošarka.UI.Components.Pages.Team
                     _newTeamName = _team.Name;
 
                     await SetClubPermissions(_team.ClubId);
-                    await Task.WhenAll(LoadRoster(), LoadLeagues(), LoadMatchHistory());
+
+                    bool isAdmin = CurrentUser?.IsInRole("Administrator") == true;
+                    bool isClubManager = CurrentUser?.IsInRole("ClubManager") == true;
+                    if (!isAdmin && !isClubManager)
+                    {
+                        var repResponse = await TeamService.GetMyRepresentativeships();
+                        if (repResponse.IsSuccess && repResponse.Data != null)
+                            _isRepForThisTeam = repResponse.Data.Any(r => r.TeamId == Id);
+                    }
+
+                    await Task.WhenAll(LoadRoster(), LoadLeagues(), LoadMatchHistory(), LoadRepresentatives());
                 }
                 else
                 {
@@ -166,6 +179,59 @@ namespace HRKošarka.UI.Components.Pages.Team
             }
         }
 
+        private async Task LoadRepresentatives()
+        {
+            _isLoadingReps = true;
+            try
+            {
+                var response = await TeamService.GetTeamRepresentatives(Id);
+                _representatives = response.IsSuccess ? response.Data ?? new() : new();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading representatives: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingReps = false;
+            }
+        }
+
+        private async Task OpenAssignRepDialog()
+        {
+            var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+            var parameters = new DialogParameters { ["TeamId"] = Id };
+            var dialog = await DialogService.ShowAsync<AssignTeamRepresentative>("Assign Representative", parameters, options);
+            var result = await dialog.Result;
+            if (result is { Canceled: false })
+            {
+                Snackbar.Add("Representative assigned successfully!", Severity.Success);
+                await LoadRepresentatives();
+            }
+        }
+
+        private async Task RevokeRep(TeamRepresentativeDTO rep)
+        {
+            _isProcessing = true;
+            try
+            {
+                var response = await TeamService.RevokeTeamRepresentative(Id, rep.Id);
+                if (response.IsSuccess)
+                {
+                    Snackbar.Add("Representative revoked.", Severity.Success);
+                    await LoadRepresentatives();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to revoke.", Severity.Error);
+                }
+            }
+            finally
+            {
+                _isProcessing = false;
+            }
+        }
+
         private async Task OpenAssignPlayerDialog()
         {
             var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true };
@@ -185,41 +251,15 @@ namespace HRKošarka.UI.Components.Pages.Team
         {
             var parameters = new DialogParameters
             {
-                ["Player"] = player
+                ["Player"] = player,
+                ["TeamId"] = Id
             };
 
             var dialog = await DialogService.ShowAsync<EditTeamPlayerAssignment>("Edit Assignment", parameters, _dialogOptions);
             var result = await dialog.Result;
 
-            if (result?.Canceled != false || result.Data is not UpdatePlayerAssignmentInTeamCommand command)
-            {
-                return;
-            }
-
-            _isProcessing = true;
-
-            try
-            {
-                var response = await TeamService.UpdatePlayerAssignmentInTeam(Id, player.PlayerId, command);
-                if (response.IsSuccess)
-                {
-                    Snackbar.Add("Player assignment updated successfully.", Severity.Success);
-                    await LoadRoster();
-                }
-                else
-                {
-                    foreach (var error in response.Errors?.Any() == true
-                        ? response.Errors
-                        : new List<string> { response.Message ?? "Failed to update player assignment." })
-                    {
-                        Snackbar.Add(error, Severity.Error);
-                    }
-                }
-            }
-            finally
-            {
-                _isProcessing = false;
-            }
+            if (result is { Canceled: false })
+                await LoadRoster();
         }
 
         private void RemovePlayer(TeamRosterPlayerDTO player)

@@ -482,7 +482,9 @@
                                                     <div class="match-col-sep">
                                                         @if (matchCtx.HomeScore.HasValue && matchCtx.AwayScore.HasValue)
                                                         {
-                                                            <span class="match-score">@matchCtx.HomeScore : @matchCtx.AwayScore</span>
+                                                            <span class="match-score @(matchCtx.HomeScore > matchCtx.AwayScore ? "match-score-win" : matchCtx.HomeScore < matchCtx.AwayScore ? "match-score-loss" : "")">@matchCtx.HomeScore</span>
+                                                            <span class="match-score-colon"> : </span>
+                                                            <span class="match-score @(matchCtx.AwayScore > matchCtx.HomeScore ? "match-score-win" : matchCtx.AwayScore < matchCtx.HomeScore ? "match-score-loss" : "")">@matchCtx.AwayScore</span>
                                                         }
                                                         else
                                                         {

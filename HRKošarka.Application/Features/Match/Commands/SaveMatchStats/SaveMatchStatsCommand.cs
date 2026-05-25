@@ -11,6 +11,7 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
         public int? AwayScore { get; set; }
         public List<PlayerStatEntry> PlayerStats { get; set; } = new();
         public string? SubmitterClubId { get; set; }
+        public string? SubmitterUserId { get; set; }
     }
 
     public class PlayerStatEntry

@@ -10,5 +10,7 @@ namespace HRKošarka.Application.Features.Team.Commands.AssignPlayerToTeam
         public Guid SeasonId { get; set; }
         public DateTime JoinDate { get; set; }
         public int? JerseyNumber { get; set; }
+        public string? RequesterClubId { get; set; }
+        public string? RequesterUserId { get; set; }
     }
 }

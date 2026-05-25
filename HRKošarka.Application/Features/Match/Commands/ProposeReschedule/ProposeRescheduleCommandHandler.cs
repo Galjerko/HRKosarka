@@ -11,13 +11,16 @@ namespace HRKošarka.Application.Features.Match.Commands.ProposeReschedule
     {
         private readonly IMatchRepository _matchRepository;
         private readonly IMatchReschedulingRequestRepository _reschedulingRepository;
+        private readonly ITeamRepresentativeRepository _repRepository;
 
         public ProposeRescheduleCommandHandler(
             IMatchRepository matchRepository,
-            IMatchReschedulingRequestRepository reschedulingRepository)
+            IMatchReschedulingRequestRepository reschedulingRepository,
+            ITeamRepresentativeRepository repRepository)
         {
             _matchRepository = matchRepository;
             _reschedulingRepository = reschedulingRepository;
+            _repRepository = repRepository;
         }
 
         public async Task<CommandResponse<bool>> Handle(ProposeRescheduleCommand request, CancellationToken ct)
@@ -40,8 +43,27 @@ namespace HRKošarka.Application.Features.Match.Commands.ProposeReschedule
                 throw new BadRequestException(
                     $"The proposed date must be within the league period ({match.League.StartDate:dd.MM.yyyy} – {match.League.EndDate:dd.MM.yyyy}).");
 
-            if (match.HomeTeam.ClubId != request.ProposerClubId && match.AwayTeam.ClubId != request.ProposerClubId)
-                throw new BadRequestException("Only a club manager from one of the match teams can propose a reschedule.");
+            Guid proposerTeamId;
+            if (request.ProposerClubId.HasValue && request.ProposerClubId != Guid.Empty)
+            {
+                bool isHomeClub = match.HomeTeam.ClubId == request.ProposerClubId;
+                bool isAwayClub = match.AwayTeam.ClubId == request.ProposerClubId;
+                if (!isHomeClub && !isAwayClub)
+                    throw new BadRequestException("Only a manager or representative of one of the match teams can propose a reschedule.");
+                proposerTeamId = isHomeClub ? match.HomeTeamId : match.AwayTeamId;
+            }
+            else if (!string.IsNullOrEmpty(request.ProposerUserId))
+            {
+                bool isHomeRep = await _repRepository.IsActiveRepForTeamAsync(request.ProposerUserId, match.HomeTeamId, ct);
+                bool isAwayRep = !isHomeRep && await _repRepository.IsActiveRepForTeamAsync(request.ProposerUserId, match.AwayTeamId, ct);
+                if (!isHomeRep && !isAwayRep)
+                    throw new BadRequestException("Only a manager or representative of one of the match teams can propose a reschedule.");
+                proposerTeamId = isHomeRep ? match.HomeTeamId : match.AwayTeamId;
+            }
+            else
+            {
+                throw new BadRequestException("Only a manager or representative of one of the match teams can propose a reschedule.");
+            }
 
             await _reschedulingRepository.ExpireStaleForMatchAsync(request.MatchId, ct);
 
@@ -49,11 +71,14 @@ namespace HRKošarka.Application.Features.Match.Commands.ProposeReschedule
             if (existing != null)
                 throw new BadRequestException("There is already a pending reschedule proposal for this match. The other team must respond first.");
 
+            var proposerClubId = proposerTeamId == match.HomeTeamId ? match.HomeTeam.ClubId : match.AwayTeam.ClubId;
+
             var reschedulingRequest = new MatchReschedulingRequest
             {
                 MatchId = request.MatchId,
                 RequestedByUserId = request.ProposerUserId,
-                RequestedByClubId = request.ProposerClubId,
+                RequestedByClubId = proposerClubId,
+                RequestedByTeamId = proposerTeamId,
                 ProposedDate = request.ProposedDate,
                 Reason = request.Reason,
                 Status = RequestStatus.Pending,

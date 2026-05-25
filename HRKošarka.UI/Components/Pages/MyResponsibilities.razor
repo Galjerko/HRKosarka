@@ -19,6 +19,39 @@
     }
     else
     {
+        <!-- My Teams as Representative (regular users who are TeamReps) -->
+        @if (_isTeamRep && !_isClubManager)
+        {
+            <div class="resp-group-panel mb-5">
+                <button class="resp-group-header-btn" @onclick="@(() => _repTeamsExpanded = !_repTeamsExpanded)">
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Info" Size="Size.Small" Class="mr-2" />
+                    <span class="resp-group-title-text">My Teams as Representative</span>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="ml-2 flex-shrink-0">
+                        @_myRepTeams.Count
+                    </MudChip>
+                    <MudIcon Icon="@(_repTeamsExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                             Size="Size.Small" Class="ml-auto" Color="Color.Secondary" />
+                </button>
+                @if (_repTeamsExpanded)
+                {
+                    @foreach (var team in _myRepTeams.OrderBy(t => t.TeamName))
+                    {
+                        <a href="@($"/teams/{team.TeamId}")" class="resp-row">
+                            <MudIcon Icon="@Icons.Material.Filled.Groups"
+                                     Size="Size.Small" Color="Color.Info" Class="mr-3 flex-shrink-0" />
+                            <div class="resp-row-main">
+                                <div class="resp-match">@team.TeamName</div>
+                                <div class="resp-meta">@team.ClubName · @(team.TeamIsActive ? "Active" : "Inactive")</div>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.ChevronRight"
+                                     Color="Color.Secondary" Size="Size.Small" />
+                        </a>
+                    }
+                }
+            </div>
+            <MudDivider Class="mb-5" />
+        }
+
         <!-- My Club + Teams (ClubManager only) -->
         @if (_isClubManager && _myClub != null)
         {

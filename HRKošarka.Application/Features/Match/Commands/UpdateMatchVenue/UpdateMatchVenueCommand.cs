@@ -8,5 +8,6 @@ namespace HRKošarka.Application.Features.Match.Commands.UpdateMatchVenue
         public Guid MatchId { get; set; }
         public string? Venue { get; set; }
         public string? RequesterClubId { get; set; }
+        public string? RequesterUserId { get; set; }
     }
 }

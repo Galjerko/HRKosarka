@@ -3,14 +3,17 @@
 
 <MudNavMenu Class="enhanced-nav-menu">
 
-    <!-- My Responsibilities (ClubManager / Administrator only) -->
-    <AuthorizeView Roles="Administrator,ClubManager">
-        <Authorized>
-            <MudNavLink Href="/my-responsibilities"
-                        Icon="@Icons.Material.Filled.AssignmentLate"
-                        Class="nav-item">
-                <MudText Typo="Typo.body2">My Responsibilities</MudText>
-            </MudNavLink>
+    <!-- My Responsibilities (Admin, ClubManager, or TeamRep only) -->
+    <AuthorizeView>
+        <Authorized Context="authCtx">
+            @if (authCtx.User.IsInRole("Administrator") || authCtx.User.IsInRole("ClubManager") || _isTeamRep)
+            {
+                <MudNavLink Href="/my-responsibilities"
+                            Icon="@Icons.Material.Filled.AssignmentLate"
+                            Class="nav-item">
+                    <MudText Typo="Typo.body2">My Responsibilities</MudText>
+                </MudNavLink>
+            }
         </Authorized>
     </AuthorizeView>
 

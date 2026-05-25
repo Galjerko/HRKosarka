@@ -8,5 +8,7 @@ namespace HRKošarka.Application.Features.Team.Commands.UpdatePlayerAssignmentIn
         public Guid TeamId { get; set; }
         public Guid PlayerId { get; set; }
         public int? JerseyNumber { get; set; }
+        public string? RequesterClubId { get; set; }
+        public string? RequesterUserId { get; set; }
     }
 }

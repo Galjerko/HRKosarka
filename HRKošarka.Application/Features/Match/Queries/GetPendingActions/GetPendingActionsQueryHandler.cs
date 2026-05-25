@@ -17,7 +17,8 @@ namespace HRKošarka.Application.Features.Match.Queries.GetPendingActions
         public async Task<QueryResponse<List<PendingActionDTO>>> Handle(
             GetPendingActionsQuery request, CancellationToken ct)
         {
-            var items = await _matchRepository.GetPendingActionsAsync(request.ClubId, request.IsAdmin, ct);
+            var items = await _matchRepository.GetPendingActionsAsync(
+                request.ClubId, request.IsAdmin, request.TeamRepUserId, ct);
             return QueryResponse<List<PendingActionDTO>>.Success(items);
         }
     }

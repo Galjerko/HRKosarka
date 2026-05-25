@@ -7,7 +7,7 @@ namespace HRKošarka.Application.Features.Match.Commands.RespondToReschedule
     {
         public Guid MatchId { get; set; }
         public bool Accept { get; set; }
-        public Guid ResponderClubId { get; set; }
-        public string ResponderUserId { get; set; } = string.Empty;
+        public Guid? ResponderClubId { get; set; }
+        public string? ResponderUserId { get; set; }
     }
 }

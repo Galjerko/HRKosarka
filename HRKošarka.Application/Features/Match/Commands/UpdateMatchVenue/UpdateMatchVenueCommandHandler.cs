@@ -8,10 +8,14 @@ namespace HRKošarka.Application.Features.Match.Commands.UpdateMatchVenue
     public class UpdateMatchVenueCommandHandler : IRequestHandler<UpdateMatchVenueCommand, CommandResponse<bool>>
     {
         private readonly IMatchRepository _matchRepository;
+        private readonly ITeamRepresentativeRepository _repRepository;
 
-        public UpdateMatchVenueCommandHandler(IMatchRepository matchRepository)
+        public UpdateMatchVenueCommandHandler(
+            IMatchRepository matchRepository,
+            ITeamRepresentativeRepository repRepository)
         {
             _matchRepository = matchRepository;
+            _repRepository = repRepository;
         }
 
         public async Task<CommandResponse<bool>> Handle(UpdateMatchVenueCommand request, CancellationToken ct)
@@ -22,9 +26,17 @@ namespace HRKošarka.Application.Features.Match.Commands.UpdateMatchVenue
             if (match.IsResultConfirmed)
                 throw new BadRequestException("Cannot change venue of a confirmed match.");
 
-            if (!string.IsNullOrEmpty(request.RequesterClubId) &&
-                match.HomeTeam.ClubId.ToString() != request.RequesterClubId)
-                throw new BadRequestException("Only the home team's club manager can set the venue.");
+            bool isAdmin = string.IsNullOrEmpty(request.RequesterClubId) && string.IsNullOrEmpty(request.RequesterUserId);
+            if (!isAdmin)
+            {
+                bool authorized = false;
+                if (!string.IsNullOrEmpty(request.RequesterClubId))
+                    authorized = match.HomeTeam.ClubId.ToString() == request.RequesterClubId;
+                if (!authorized && !string.IsNullOrEmpty(request.RequesterUserId))
+                    authorized = await _repRepository.IsActiveRepForTeamAsync(request.RequesterUserId, match.HomeTeamId, ct);
+                if (!authorized)
+                    throw new BadRequestException("Only the home team's manager or representative can set the venue.");
+            }
 
             match.VenueOverride = string.IsNullOrWhiteSpace(request.Venue) ? null : request.Venue.Trim();
             await _matchRepository.UpdateAsync(match, ct);

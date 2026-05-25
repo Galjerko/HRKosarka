@@ -9,10 +9,14 @@ namespace HRKošarka.Application.Features.Match.Commands.DisputeMatchResult
     public class DisputeMatchResultCommandHandler : IRequestHandler<DisputeMatchResultCommand, CommandResponse<bool>>
     {
         private readonly IMatchRepository _matchRepository;
+        private readonly ITeamRepresentativeRepository _repRepository;
 
-        public DisputeMatchResultCommandHandler(IMatchRepository matchRepository)
+        public DisputeMatchResultCommandHandler(
+            IMatchRepository matchRepository,
+            ITeamRepresentativeRepository repRepository)
         {
             _matchRepository = matchRepository;
+            _repRepository = repRepository;
         }
 
         public async Task<CommandResponse<bool>> Handle(DisputeMatchResultCommand request, CancellationToken ct)
@@ -26,9 +30,17 @@ namespace HRKošarka.Application.Features.Match.Commands.DisputeMatchResult
             if (match.ResultSubmissionStatus != ResultSubmissionStatus.HomeSubmitted)
                 throw new BadRequestException("There is no submitted result to dispute.");
 
-            if (!string.IsNullOrEmpty(request.DisputerClubId) &&
-                match.AwayTeam.ClubId.ToString() != request.DisputerClubId)
-                throw new BadRequestException("Only the away team's club manager can dispute the result.");
+            bool isAdmin = string.IsNullOrEmpty(request.DisputerClubId) && string.IsNullOrEmpty(request.DisputerUserId);
+            if (!isAdmin)
+            {
+                bool authorized = false;
+                if (!string.IsNullOrEmpty(request.DisputerClubId))
+                    authorized = match.AwayTeam.ClubId.ToString() == request.DisputerClubId;
+                if (!authorized && !string.IsNullOrEmpty(request.DisputerUserId))
+                    authorized = await _repRepository.IsActiveRepForTeamAsync(request.DisputerUserId, match.AwayTeamId, ct);
+                if (!authorized)
+                    throw new BadRequestException("Only the away team's manager or representative can dispute the result.");
+            }
 
             if (string.IsNullOrWhiteSpace(request.Reason))
                 throw new BadRequestException("A reason must be provided when disputing a result.");

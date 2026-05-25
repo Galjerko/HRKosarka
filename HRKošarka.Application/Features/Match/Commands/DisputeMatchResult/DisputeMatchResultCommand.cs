@@ -7,6 +7,7 @@ namespace HRKošarka.Application.Features.Match.Commands.DisputeMatchResult
     {
         public Guid MatchId { get; set; }
         public string? DisputerClubId { get; set; }
+        public string? DisputerUserId { get; set; }
         public string Reason { get; set; } = string.Empty;
     }
 }

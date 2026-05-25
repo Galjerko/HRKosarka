@@ -9,13 +9,17 @@ namespace HRKošarka.UI.Components.Pages
     {
         [Inject] private IMatchService MatchService { get; set; } = default!;
         [Inject] private IClubService ClubService { get; set; } = default!;
+        [Inject] private ITeamService TeamService { get; set; } = default!;
 
         private List<PendingActionDTO> _actions = new();
         private ClubDetailsDTO? _myClub;
+        private List<TeamRepMembershipDTO> _myRepTeams = new();
         private bool _isLoading = true;
         private bool _isClubManager = false;
+        private bool _isTeamRep = false;
         private readonly HashSet<int> _collapsedGroups = new();
         private bool _teamsExpanded = true;
+        private bool _repTeamsExpanded = true;
 
         private void ToggleGroup(int key)
         {
@@ -27,10 +31,13 @@ namespace HRKošarka.UI.Components.Pages
         {
             await base.OnInitializedAsync();
             _isClubManager = CurrentUser?.IsInRole("ClubManager") == true;
+            bool isAdmin = CurrentUser?.IsInRole("Administrator") == true;
 
             var tasks = new List<Task> { LoadActions() };
             if (_isClubManager)
                 tasks.Add(LoadMyClub());
+            else if (!isAdmin)
+                tasks.Add(LoadMyRepTeams());
 
             await Task.WhenAll(tasks);
             _isLoading = false;
@@ -60,6 +67,20 @@ namespace HRKošarka.UI.Components.Pages
                 }
             }
             catch (Exception ex) { Console.WriteLine($"Error loading club: {ex.Message}"); }
+        }
+
+        private async Task LoadMyRepTeams()
+        {
+            try
+            {
+                var response = await TeamService.GetMyRepresentativeships();
+                if (response.IsSuccess)
+                {
+                    _myRepTeams = response.Data ?? new();
+                    _isTeamRep = _myRepTeams.Any();
+                }
+            }
+            catch (Exception ex) { Console.WriteLine($"Error loading rep teams: {ex.Message}"); }
         }
 
         private string? GetClubLogo() =>

@@ -28,5 +28,11 @@ namespace HRKošarka.Persistence.Repositories
                 .Where(s => s.MatchId == matchId)
                 .ExecuteDeleteAsync(ct);
         }
+
+        public async Task<int> CountByMatchAndTeamAsync(Guid matchId, Guid teamId, CancellationToken ct = default)
+        {
+            return await _context.PlayerMatchStats
+                .CountAsync(s => s.MatchId == matchId && s.TeamId == teamId, ct);
+        }
     }
 }

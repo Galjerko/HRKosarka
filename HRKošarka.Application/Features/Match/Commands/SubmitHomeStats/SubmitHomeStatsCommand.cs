@@ -7,5 +7,6 @@ namespace HRKošarka.Application.Features.Match.Commands.SubmitHomeStats
     {
         public Guid MatchId { get; set; }
         public string? SubmitterClubId { get; set; }
+        public string? SubmitterUserId { get; set; }
     }
 }

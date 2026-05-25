@@ -1,0 +1,73 @@
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Contracts
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">Assign Team Representative</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudText Class="assign-rep-section-label mb-2">Select User</MudText>
+
+        <MudTextField @bind-Value="_searchTerm"
+                      Placeholder="Search by email or name..."
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      DebounceInterval="300"
+                      OnDebounceIntervalElapsed="SearchUsers"
+                      Class="mb-0" />
+
+        <div class="assign-rep-list">
+            @if (_loading)
+            {
+                <div class="d-flex justify-center pa-4">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                </div>
+            }
+            else if (_users.Any())
+            {
+                @foreach (var user in _users)
+                {
+                    <div class="assign-rep-list-item @(_selectedUser?.Id == user.Id ? "assign-rep-list-item--selected" : "")"
+                         @onclick="@(() => SelectUser(user))">
+                        <div class="assign-rep-list-item-email">@user.Email</div>
+                        @if (!string.IsNullOrEmpty(user.FullName))
+                        {
+                            <div class="assign-rep-list-item-name">@user.FullName</div>
+                        }
+                        @if (_selectedUser?.Id == user.Id)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle"
+                                     Color="Color.Primary"
+                                     Size="Size.Small"
+                                     Class="assign-rep-check" />
+                        }
+                    </div>
+                }
+            }
+            else if (!_loading)
+            {
+                <div class="assign-rep-empty">No available users found.</div>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="Save"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(_selectedUser == null || _saving)"
+                   StartIcon="@Icons.Material.Filled.PersonAdd">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Assign
+        </MudButton>
+    </DialogActions>
+</MudDialog>

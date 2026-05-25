@@ -12,15 +12,18 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
         private readonly IMatchRepository _matchRepository;
         private readonly ITeamRepository _teamRepository;
         private readonly IPlayerMatchStatsRepository _statsRepository;
+        private readonly ITeamRepresentativeRepository _repRepository;
 
         public SaveMatchStatsCommandHandler(
             IMatchRepository matchRepository,
             ITeamRepository teamRepository,
-            IPlayerMatchStatsRepository statsRepository)
+            IPlayerMatchStatsRepository statsRepository,
+            ITeamRepresentativeRepository repRepository)
         {
             _matchRepository = matchRepository;
             _teamRepository = teamRepository;
             _statsRepository = statsRepository;
+            _repRepository = repRepository;
         }
 
         public async Task<CommandResponse<bool>> Handle(SaveMatchStatsCommand request, CancellationToken ct)
@@ -41,16 +44,26 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
             if (match.HomeTeamId != request.TeamId && match.AwayTeamId != request.TeamId)
                 throw new BadRequestException("This team is not playing in this match.");
 
-            if (!string.IsNullOrEmpty(request.SubmitterClubId))
+            if (request.PlayerStats.Count < 5)
+                throw new BadRequestException("A team must have at least 5 players on the roster before stats can be saved.");
+
+            bool isAdmin = string.IsNullOrEmpty(request.SubmitterClubId) && string.IsNullOrEmpty(request.SubmitterUserId);
+            if (!isAdmin)
             {
-                var team = await _teamRepository.GetByIdAsync(request.TeamId, ct)
-                    ?? throw new NotFoundException("Team", request.TeamId);
-                if (team.ClubId.ToString() != request.SubmitterClubId)
+                bool authorized = false;
+                if (!string.IsNullOrEmpty(request.SubmitterClubId))
+                {
+                    var team = await _teamRepository.GetByIdAsync(request.TeamId, ct)
+                        ?? throw new NotFoundException("Team", request.TeamId);
+                    authorized = team.ClubId.ToString() == request.SubmitterClubId;
+                }
+                if (!authorized && !string.IsNullOrEmpty(request.SubmitterUserId))
+                    authorized = await _repRepository.IsActiveRepForTeamAsync(request.SubmitterUserId, request.TeamId, ct);
+                if (!authorized)
                     throw new BadRequestException("You can only submit stats for your own team.");
             }
 
             bool isHomeTeam = match.HomeTeamId == request.TeamId;
-            bool isAdmin = string.IsNullOrEmpty(request.SubmitterClubId);
 
             if (isHomeTeam || isAdmin)
             {

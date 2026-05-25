@@ -106,10 +106,14 @@ namespace HRKošarka.UI.Components.Pages.Dialogs
         private void OnSeasonChanged(SeasonDTO? season)
         {
             _selectedSeason = season;
-            if (_joinDate.HasValue && season != null &&
-                (_joinDate.Value.Date < season.StartDate.Date || _joinDate.Value.Date > season.EndDate.Date))
+            if (season == null)
             {
                 _joinDate = null;
+            }
+            else
+            {
+                // Auto-set to season start; user can still change it manually
+                _joinDate = season.StartDate;
             }
         }
 

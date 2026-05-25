@@ -1,3 +1,4 @@
+using HRKošarka.Application.Features.League.Queries.GetLeagueBreaks;
 using HRKošarka.Domain.Common;
 
 namespace HRKošarka.Application.Features.Match.Queries.GetMatchWithStats
@@ -25,6 +26,7 @@ namespace HRKošarka.Application.Features.Match.Queries.GetMatchWithStats
         public DateTime LeagueStartDate { get; set; }
         public DateTime LeagueEndDate { get; set; }
         public string? DisputeReason { get; set; }
+        public List<LeagueBreakDTO> LeagueBreaks { get; set; } = new();
         public RescheduleRequestDTO? PendingReschedule { get; set; }
         public List<PlayerMatchStatDTO> HomeTeamStats { get; set; } = new();
         public List<PlayerMatchStatDTO> AwayTeamStats { get; set; } = new();

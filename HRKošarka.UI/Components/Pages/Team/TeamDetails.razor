@@ -26,7 +26,7 @@
                                   ModifiedBy="@_team.ModifiedBy"
                                   DeletedBy="@_team.DeletedBy" />
 
-                    @if (CurrentPermissions.CanEdit)
+                    @if (CurrentPermissions.CanEdit || _isRepForThisTeam)
                     {
                         <MudButton Variant="Variant.Outlined"
                                    Color="Color.Primary"
@@ -151,7 +151,7 @@
                     </TitleContent>
                     <ChildContent>
                         <div class="d-flex justify-space-between align-center mb-3">
-                            @if (CurrentPermissions.CanEdit)
+                            @if (CurrentPermissions.CanEdit || _isRepForThisTeam)
                             {
                                 <MudButton Variant="Variant.Filled"
                                            Color="Color.Primary"
@@ -186,7 +186,7 @@
                                     <MudTh>Position</MudTh>
                                     <MudTh>Season</MudTh>
                                     <MudTh>Join Date</MudTh>
-                                    @if (CurrentPermissions.CanEdit)
+                                    @if (CurrentPermissions.CanEdit || _isRepForThisTeam)
                                     {
                                         <MudTh>Actions</MudTh>
                                     }
@@ -206,7 +206,7 @@
                                     <MudTd DataLabel="Position">@GetPositionLabel(context.Position)</MudTd>
                                     <MudTd DataLabel="Season">@context.SeasonName</MudTd>
                                     <MudTd DataLabel="Join Date">@context.JoinDate.ToString("dd.MM.yyyy.")</MudTd>
-                                    @if (CurrentPermissions.CanEdit)
+                                    @if (CurrentPermissions.CanEdit || _isRepForThisTeam)
                                     {
                                         <MudTd DataLabel="Actions">
                                             <MudTooltip Text="Edit jersey number">
@@ -306,6 +306,83 @@
                         }
                     </ChildContent>
                 </MudExpansionPanel>
+
+                <AuthorizeView Roles="Administrator">
+                    <Authorized>
+                        <MudExpansionPanel Class="expansion-panel">
+                            <TitleContent>
+                                <div class="panel-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Class="panel-icon" />
+                                    <MudText Typo="Typo.h6">Representatives (@_representatives.Count active)</MudText>
+                                </div>
+                            </TitleContent>
+                            <ChildContent>
+                                <div class="d-flex justify-space-between align-center mb-3">
+                                    @if (CurrentPermissions.CanEdit)
+                                    {
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   StartIcon="@Icons.Material.Filled.PersonAdd"
+                                                   OnClick="OpenAssignRepDialog"
+                                                   Size="Size.Small">
+                                            Assign Representative
+                                        </MudButton>
+                                    }
+                                </div>
+                                @if (_isLoadingReps)
+                                {
+                                    <div class="d-flex justify-center pa-4">
+                                        <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                                    </div>
+                                }
+                                else if (!_representatives.Any())
+                                {
+                                    <MudText Typo="Typo.body2" Class="pa-4" Color="Color.Secondary">
+                                        No representatives assigned to this team.
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudTable Items="_representatives" Hover="true" Dense="true" Elevation="0">
+                                        <HeaderContent>
+                                            <MudTh>User</MudTh>
+                                            <MudTh>Assigned</MudTh>
+                                            <MudTh>Status</MudTh>
+                                            @if (CurrentPermissions.CanEdit)
+                                            {
+                                                <MudTh>Actions</MudTh>
+                                            }
+                                        </HeaderContent>
+                                        <RowTemplate Context="rep">
+                                            <MudTd DataLabel="User">@rep.UserEmail</MudTd>
+                                            <MudTd DataLabel="Assigned">@rep.AssignedDate.ToString("dd.MM.yyyy.")</MudTd>
+                                            <MudTd DataLabel="Status">
+                                                <MudChip T="string" Size="Size.Small"
+                                                         Color="@(rep.IsActive ? Color.Success : Color.Default)">
+                                                    @(rep.IsActive ? "Active" : "Revoked")
+                                                </MudChip>
+                                            </MudTd>
+                                            @if (CurrentPermissions.CanEdit)
+                                            {
+                                                <MudTd>
+                                                    @if (rep.IsActive)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.PersonOff"
+                                                                       Color="Color.Error"
+                                                                       Size="Size.Small"
+                                                                       Title="Revoke"
+                                                                       OnClick="@(() => RevokeRep(rep))"
+                                                                       Disabled="_isProcessing" />
+                                                    }
+                                                </MudTd>
+                                            }
+                                        </RowTemplate>
+                                    </MudTable>
+                                }
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    </Authorized>
+                </AuthorizeView>
 
                 <MudExpansionPanel Class="expansion-panel">
                     <TitleContent>

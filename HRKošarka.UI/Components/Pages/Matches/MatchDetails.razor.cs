@@ -10,8 +10,10 @@ namespace HRKošarka.UI.Components.Pages.Matches
     {
         [Parameter] public Guid Id { get; set; }
         [Inject] private IMatchService MatchService { get; set; } = default!;
+        [Inject] private ITeamService TeamService { get; set; } = default!;
 
         private MatchWithStatsDTO? _match;
+        private List<TeamRepMembershipDTO> _myRepMemberships = new();
         private List<PlayerStatViewModel> _homeStats = new();
         private List<PlayerStatViewModel> _awayStats = new();
         private int _homeScore;
@@ -36,10 +38,6 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private DateTime? _proposedDate;
         private TimeSpan? _proposedTime = TimeSpan.FromHours(19);
         private string _proposeReason = string.Empty;
-        private DateTime _rescheduleMinDate => _match == null
-            ? DateTime.Today.AddDays(1)
-            : new DateTime(Math.Max(DateTime.Today.AddDays(1).Ticks, _match.LeagueStartDate.Ticks));
-        private DateTime _rescheduleMaxDate => _match?.LeagueEndDate ?? DateTime.Today.AddYears(1);
 
         // Reset confirm dialog
         private bool _showResetDialog = false;
@@ -90,6 +88,14 @@ namespace HRKošarka.UI.Components.Pages.Matches
         {
             await base.OnInitializedAsync();
             _isAdmin = CurrentUser?.IsInRole("Administrator") ?? false;
+
+            if (!_isAdmin && CurrentUser != null)
+            {
+                var repResponse = await TeamService.GetMyRepresentativeships();
+                if (repResponse.IsSuccess)
+                    _myRepMemberships = repResponse.Data ?? new();
+            }
+
             await LoadMatch();
             _isLoading = false;
         }
@@ -104,10 +110,14 @@ namespace HRKošarka.UI.Components.Pages.Matches
             _awayScore = _match.AwayScore ?? 0;
 
             await SetClubPermissions(_match.HomeTeamClubId);
-            _isHomeManager = !_isAdmin && (CurrentPermissions.CanEdit || CurrentPermissions.ManagedClubId == _match.HomeTeamClubId);
+            _isHomeManager = !_isAdmin && (CurrentPermissions.CanEdit ||
+                CurrentPermissions.ManagedClubId == _match.HomeTeamClubId ||
+                _myRepMemberships.Any(m => m.TeamId == _match.HomeTeamId));
 
             await SetClubPermissions(_match.AwayTeamClubId);
-            _isAwayManager = !_isAdmin && (CurrentPermissions.CanEdit || CurrentPermissions.ManagedClubId == _match.AwayTeamClubId);
+            _isAwayManager = !_isAdmin && (CurrentPermissions.CanEdit ||
+                CurrentPermissions.ManagedClubId == _match.AwayTeamClubId ||
+                _myRepMemberships.Any(m => m.TeamId == _match.AwayTeamId));
 
             _homeStats = _match.HomeTeamStats?.Select(s => new PlayerStatViewModel(s)).ToList() ?? new();
             _awayStats = _match.AwayTeamStats?.Select(s => new PlayerStatViewModel(s)).ToList() ?? new();
@@ -331,7 +341,11 @@ namespace HRKošarka.UI.Components.Pages.Matches
             }
             else
             {
-                Snackbar.Add(response.Message ?? "Failed to send proposal.", Severity.Error);
+                var errors = response.Errors?.Any() == true
+                    ? response.Errors
+                    : new List<string> { response.Message ?? "Failed to send proposal." };
+                foreach (var error in errors)
+                    Snackbar.Add(error, Severity.Error);
             }
         }
 

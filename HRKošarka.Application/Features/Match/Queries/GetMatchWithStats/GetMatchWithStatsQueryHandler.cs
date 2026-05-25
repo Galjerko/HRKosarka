@@ -11,15 +11,18 @@ namespace HRKošarka.Application.Features.Match.Queries.GetMatchWithStats
         private readonly IMatchRepository _matchRepository;
         private readonly IPlayerTeamHistoryRepository _historyRepository;
         private readonly IMatchReschedulingRequestRepository _reschedulingRepository;
+        private readonly ILeagueRepository _leagueRepository;
 
         public GetMatchWithStatsQueryHandler(
             IMatchRepository matchRepository,
             IPlayerTeamHistoryRepository historyRepository,
-            IMatchReschedulingRequestRepository reschedulingRepository)
+            IMatchReschedulingRequestRepository reschedulingRepository,
+            ILeagueRepository leagueRepository)
         {
             _matchRepository = matchRepository;
             _historyRepository = historyRepository;
             _reschedulingRepository = reschedulingRepository;
+            _leagueRepository = leagueRepository;
         }
 
         public async Task<QueryResponse<MatchWithStatsDTO>> Handle(GetMatchWithStatsQuery request, CancellationToken ct)
@@ -36,6 +39,7 @@ namespace HRKošarka.Application.Features.Match.Queries.GetMatchWithStats
                 .ToDictionary(s => s.PlayerId);
 
             var pendingReschedule = await _reschedulingRepository.GetActiveForMatchAsync(match.Id, ct);
+            var leagueBreaks = await _leagueRepository.GetLeagueBreaksAsync(match.LeagueId, ct);
 
             var dto = new MatchWithStatsDTO
             {
@@ -59,6 +63,7 @@ namespace HRKošarka.Application.Features.Match.Queries.GetMatchWithStats
                 Venue = match.VenueOverride ?? match.HomeTeam.Club?.VenueName,
                 LeagueStartDate = match.League.StartDate,
                 LeagueEndDate = match.League.EndDate,
+                LeagueBreaks = leagueBreaks,
                 DisputeReason = match.DisputeReason,
                 PendingReschedule = pendingReschedule == null ? null : new RescheduleRequestDTO
                 {

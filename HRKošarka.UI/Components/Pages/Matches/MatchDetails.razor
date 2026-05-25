@@ -164,7 +164,7 @@
             <div class="mt-2 mb-1">
                 <MudButton Variant="Variant.Text" Color="Color.Default" Size="Size.Small"
                            StartIcon="@Icons.Material.Filled.EditCalendar"
-                           OnClick="@(() => _showProposeForm = true)">
+                           OnClick="@(() => { _showProposeForm = true; _proposedDate = _match.ActualScheduledDate; _proposedTime = _match.ActualScheduledDate.TimeOfDay; })">
                     Propose new time
                 </MudButton>
             </div>
@@ -180,13 +180,16 @@
                                    Label="Date"
                                    Variant="Variant.Outlined"
                                    DateFormat="dd.MM.yyyy."
-                                   MinDate="_rescheduleMinDate"
-                                   MaxDate="_rescheduleMaxDate"
+                                   Editable="true"
+                                   MinDate="@_match.LeagueStartDate"
+                                   MaxDate="@_match.LeagueEndDate"
+                                   IsDateDisabledFunc="@(date => _match.LeagueBreaks.Any(b => date.Date >= b.StartDate.Date && date.Date <= b.EndDate.Date))"
                                    Class="md-propose-field" />
                     <MudTimePicker @bind-Time="_proposedTime"
                                    Label="Time"
                                    Variant="Variant.Outlined"
                                    AmPm="false"
+                                   Editable="true"
                                    Class="md-propose-field" />
                     <MudTextField @bind-Value="_proposeReason"
                                   Label="Reason"
@@ -240,10 +243,17 @@
                     }
                     else
                     {
+                        @if (_homeStats.Count < 5 && _canEditScore)
+                        {
+                            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-2">
+                                At least 5 players must be rostered before stats can be saved or submitted.
+                            </MudAlert>
+                        }
                         <table class="md-stats-table">
                             <thead>
                                 <tr>
-                                    <th class="mds-th-player">#&nbsp;&nbsp;Player</th>
+                                    <th class="mds-th-jersey">#</th>
+                                    <th class="mds-th-player">Player</th>
                                     <th class="mds-th-num">PTS</th>
                                     <th class="mds-th-num">3PT</th>
                                     <th class="mds-th-num">PF</th>
@@ -255,15 +265,10 @@
                                 {
                                     var rowInvalid = !PlayerValid(stat);
                                     <tr class="mds-row @(stat.DidNotPlay ? "mds-dnp" : "") @(rowInvalid ? "mds-invalid" : "")">
+                                        <td class="mds-td-jersey">
+                                            @(stat.JerseyNumber.HasValue ? stat.JerseyNumber.ToString() : "–")
+                                        </td>
                                         <td class="mds-td-player">
-                                            @if (stat.JerseyNumber.HasValue)
-                                            {
-                                                <span class="mds-jersey">@stat.JerseyNumber</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="mds-jersey mds-jersey-empty">–</span>
-                                            }
                                             <MudLink Href="@($"/players/{stat.PlayerId}")" Class="mds-player-name mds-player-link">@stat.PlayerName</MudLink>
                                             @if (rowInvalid && _canEditScore)
                                             {
@@ -306,6 +311,7 @@
                             </tbody>
                             <tfoot>
                                 <tr class="mds-total-row">
+                                    <td class="mds-td-jersey"></td>
                                     <td class="mds-td-player mds-total-label">Total</td>
                                     <td class="mds-td-num @(HomeTotalPts == _homeScore && _homeScore > 0 ? "mds-total-match" : HomeTotalPts != _homeScore && _homeScore > 0 ? "mds-total-mismatch" : "")">
                                         @HomeTotalPts
@@ -321,7 +327,8 @@
                         {
                             <div class="d-flex gap-2 mt-3">
                                 <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Medium"
-                                           StartIcon="@Icons.Material.Filled.Save" Disabled="_isSaving"
+                                           StartIcon="@Icons.Material.Filled.Save"
+                                           Disabled="@(_isSaving || _homeStats.Count < 5)"
                                            OnClick="@(() => SaveStats(_match.HomeTeamId, _homeStats))">
                                     @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
                                     Save Draft
@@ -329,7 +336,8 @@
                                 @if (_isHomeManager)
                                 {
                                     <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Medium"
-                                               StartIcon="@Icons.Material.Filled.Send" Disabled="@(_isSaving || !_canSubmitHome)"
+                                               StartIcon="@Icons.Material.Filled.Send"
+                                               Disabled="@(_isSaving || !_canSubmitHome || _homeStats.Count < 5)"
                                                OnClick="SubmitHome" Class="md-submit-btn">
                                         <span class="md-submit-label-full">Submit to Away Team</span>
                                         <span class="md-submit-label-short">Submit</span>
@@ -358,10 +366,17 @@
                     }
                     else
                     {
+                        @if (_awayStats.Count < 5 && _canEditAwayStats)
+                        {
+                            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-2">
+                                At least 5 players must be rostered before stats can be saved or submitted.
+                            </MudAlert>
+                        }
                         <table class="md-stats-table">
                             <thead>
                                 <tr>
-                                    <th class="mds-th-player">#&nbsp;&nbsp;Player</th>
+                                    <th class="mds-th-jersey">#</th>
+                                    <th class="mds-th-player">Player</th>
                                     <th class="mds-th-num">PTS</th>
                                     <th class="mds-th-num">3PT</th>
                                     <th class="mds-th-num">PF</th>
@@ -373,15 +388,10 @@
                                 {
                                     var rowInvalid = !PlayerValid(stat);
                                     <tr class="mds-row @(stat.DidNotPlay ? "mds-dnp" : "") @(rowInvalid ? "mds-invalid" : "")">
+                                        <td class="mds-td-jersey">
+                                            @(stat.JerseyNumber.HasValue ? stat.JerseyNumber.ToString() : "–")
+                                        </td>
                                         <td class="mds-td-player">
-                                            @if (stat.JerseyNumber.HasValue)
-                                            {
-                                                <span class="mds-jersey">@stat.JerseyNumber</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="mds-jersey mds-jersey-empty">–</span>
-                                            }
                                             <MudLink Href="@($"/players/{stat.PlayerId}")" Class="mds-player-name mds-player-link">@stat.PlayerName</MudLink>
                                             @if (rowInvalid && _canEditAwayStats)
                                             {
@@ -424,6 +434,7 @@
                             </tbody>
                             <tfoot>
                                 <tr class="mds-total-row">
+                                    <td class="mds-td-jersey"></td>
                                     <td class="mds-td-player mds-total-label">Total</td>
                                     <td class="mds-td-num @(AwayTotalPts == _awayScore && _awayScore > 0 ? "mds-total-match" : AwayTotalPts != _awayScore && _awayScore > 0 ? "mds-total-mismatch" : "")">
                                         @AwayTotalPts
@@ -439,7 +450,8 @@
                         {
                             <div class="mt-3">
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium"
-                                           StartIcon="@Icons.Material.Filled.Save" Disabled="_isSaving"
+                                           StartIcon="@Icons.Material.Filled.Save"
+                                           Disabled="@(_isSaving || _awayStats.Count < 5)"
                                            OnClick="@(() => SaveStats(_match.AwayTeamId, _awayStats))">
                                     @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
                                     Save Away Stats

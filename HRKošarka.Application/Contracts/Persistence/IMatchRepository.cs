@@ -9,6 +9,6 @@ namespace HRKošarka.Application.Contracts.Persistence
         Task<Match?> GetByIdWithIncludesAsync(Guid id, CancellationToken ct = default);
         Task<Match?> GetMatchWithFullDetailsAsync(Guid id, CancellationToken ct = default);
         Task<List<TeamMatchHistoryItemDTO>> GetTeamMatchHistoryAsync(Guid teamId, CancellationToken ct = default);
-        Task<List<PendingActionDTO>> GetPendingActionsAsync(Guid? clubId, bool isAdmin, CancellationToken ct = default);
+        Task<List<PendingActionDTO>> GetPendingActionsAsync(Guid? clubId, bool isAdmin, string? teamRepUserId = null, CancellationToken ct = default);
     }
 }

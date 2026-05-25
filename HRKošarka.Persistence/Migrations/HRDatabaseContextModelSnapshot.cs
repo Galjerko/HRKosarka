@@ -678,6 +678,9 @@ namespace HRKošarka.Persistence.Migrations
                     b.Property<Guid>("RequestedByClubId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("RequestedByTeamId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("RequestedByUserId")
                         .IsRequired()
                         .HasColumnType("varchar(450)");

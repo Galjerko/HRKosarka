@@ -7,5 +7,6 @@ namespace HRKošarka.Application.Contracts.Persistence
         Task<PlayerMatchStats?> GetByMatchAndPlayerAsync(Guid matchId, Guid playerId, CancellationToken ct = default);
         Task<List<PlayerMatchStats>> GetPlayedStatsForMatchAsync(Guid matchId, CancellationToken ct = default);
         Task DeleteAllForMatchAsync(Guid matchId, CancellationToken ct = default);
+        Task<int> CountByMatchAndTeamAsync(Guid matchId, Guid teamId, CancellationToken ct = default);
     }
 }
