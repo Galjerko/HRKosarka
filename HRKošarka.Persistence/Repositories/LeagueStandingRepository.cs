@@ -15,6 +15,12 @@ namespace HRKošarka.Persistence.Repositories
                 .FirstOrDefaultAsync(s => s.TeamId == teamId && s.LeagueId == leagueId && s.SeasonId == seasonId, ct);
         }
 
+        public async Task<LeagueStanding?> GetByTeamAndLeagueAsync(Guid teamId, Guid leagueId, CancellationToken ct = default)
+        {
+            return await _context.LeagueStandings
+                .FirstOrDefaultAsync(s => s.TeamId == teamId && s.LeagueId == leagueId, ct);
+        }
+
         public async Task<List<LeagueStanding>> GetByLeagueAsync(Guid leagueId, CancellationToken ct = default)
         {
             return await _context.LeagueStandings

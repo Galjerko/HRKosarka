@@ -19,12 +19,17 @@ namespace HRKošarka.UI.Components.Pages.Team
         private List<TeamLeagueDTO> _leagues = new();
         private List<TeamMatchHistoryItemDTO> _matchHistory = new();
         private List<TeamRepresentativeDTO> _representatives = new();
+        private List<TeamPlayerStatDTO> _playerStats = new();
+        private TeamLeagueStandingDTO? _teamStanding;
+        private string? _statsSelectedSeason;
+        private Guid? _statsSelectedLeagueId;
         private bool _isRepForThisTeam = false;
         private bool _isLoading = true;
         private bool _isLoadingRoster = false;
         private bool _isLoadingLeagues = false;
         private bool _isLoadingMatchHistory = false;
         private bool _isLoadingReps = false;
+        private bool _isLoadingPlayerStats = false;
         private bool _isProcessing = false;
         private bool _showDeactivateDialog = false;
         private bool _showActivateDialog = false;
@@ -150,6 +155,23 @@ namespace HRKošarka.UI.Components.Pages.Team
             {
                 var response = await TeamService.GetTeamLeagues(Id);
                 _leagues = response.IsSuccess ? response.Data ?? new List<TeamLeagueDTO>() : new List<TeamLeagueDTO>();
+
+                if (_leagues.Any())
+                {
+                    _statsSelectedSeason = _leagues
+                        .Select(l => l.SeasonName)
+                        .Distinct()
+                        .OrderByDescending(s => s)
+                        .First();
+
+                    _statsSelectedLeagueId = _leagues
+                        .Where(l => l.SeasonName == _statsSelectedSeason)
+                        .Select(l => l.LeagueId)
+                        .FirstOrDefault();
+
+                    if (_statsSelectedLeagueId.HasValue)
+                        await LoadPlayerStats();
+                }
             }
             catch (Exception ex)
             {
@@ -159,6 +181,52 @@ namespace HRKošarka.UI.Components.Pages.Team
             {
                 _isLoadingLeagues = false;
             }
+        }
+
+        private async Task LoadPlayerStats()
+        {
+            if (_statsSelectedLeagueId == null) return;
+
+            _isLoadingPlayerStats = true;
+            try
+            {
+                var statsTask = TeamService.GetTeamLeaguePlayerStats(Id, _statsSelectedLeagueId.Value);
+                var standingTask = TeamService.GetTeamLeagueStanding(Id, _statsSelectedLeagueId.Value);
+                await Task.WhenAll(statsTask, standingTask);
+
+                _playerStats = statsTask.Result.IsSuccess ? statsTask.Result.Data ?? new() : new();
+                _teamStanding = standingTask.Result.IsSuccess ? standingTask.Result.Data : null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading player stats: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingPlayerStats = false;
+            }
+        }
+
+        private async Task OnSeasonChanged(string? season)
+        {
+            _statsSelectedSeason = season;
+            _statsSelectedLeagueId = _leagues
+                .Where(l => l.SeasonName == season)
+                .Select(l => l.LeagueId)
+                .FirstOrDefault();
+            _playerStats = new();
+            _teamStanding = null;
+            if (_statsSelectedLeagueId.HasValue)
+                await LoadPlayerStats();
+        }
+
+        private async Task OnLeagueChanged(Guid? leagueId)
+        {
+            _statsSelectedLeagueId = leagueId;
+            _playerStats = new();
+            _teamStanding = null;
+            if (_statsSelectedLeagueId.HasValue)
+                await LoadPlayerStats();
         }
 
         private async Task LoadMatchHistory()

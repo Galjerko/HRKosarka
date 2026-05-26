@@ -23,5 +23,7 @@ namespace HRKošarka.UI.Contracts
         Task<CommandResponse<Guid>> AssignTeamRepresentative(Guid teamId, AssignTeamRepresentativeCommand command);
         Task<CommandResponse<bool>> RevokeTeamRepresentative(Guid teamId, Guid repId);
         Task<QueryResponse<List<TeamRepMembershipDTO>>> GetMyRepresentativeships();
+        Task<QueryResponse<List<TeamPlayerStatDTO>>> GetTeamLeaguePlayerStats(Guid teamId, Guid leagueId);
+        Task<QueryResponse<TeamLeagueStandingDTO?>> GetTeamLeagueStanding(Guid teamId, Guid leagueId);
     }
 }

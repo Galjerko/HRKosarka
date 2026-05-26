@@ -12,6 +12,8 @@ using HRKošarka.Application.Features.Team.Commands.UpdateTeam;
 using HRKošarka.Application.Features.Team.Queries.GetAllTeams;
 using HRKošarka.Application.Features.Team.Queries.GetMyRepresentativeships;
 using HRKošarka.Application.Features.Team.Queries.GetTeamDetails;
+using HRKošarka.Application.Features.Team.Queries.GetTeamLeaguePlayerStats;
+using HRKošarka.Application.Features.Team.Queries.GetTeamLeagueStanding;
 using HRKošarka.Application.Features.Team.Queries.GetTeamLeagues;
 using HRKošarka.Application.Features.Team.Queries.GetTeamMatchHistory;
 using HRKošarka.Application.Features.Team.Queries.GetTeamRepresentatives;
@@ -165,6 +167,18 @@ namespace HRKošarka.API.Controllers
         [ProducesDefaultResponseType]
         public async Task<ActionResult<QueryResponse<List<TeamRosterPlayerDTO>>>> GetRoster(Guid id)
             => Ok(await _mediator.Send(new GetTeamRosterQuery(id)));
+
+        [HttpGet("{id}/player-stats", Name = "GetTeamLeaguePlayerStats")]
+        [ProducesResponseType(typeof(QueryResponse<List<TeamPlayerStatDTO>>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<TeamPlayerStatDTO>>>> GetPlayerStats(Guid id, [FromQuery] Guid leagueId)
+            => Ok(await _mediator.Send(new GetTeamLeaguePlayerStatsQuery { TeamId = id, LeagueId = leagueId }));
+
+        [HttpGet("{id}/league-standing", Name = "GetTeamLeagueStanding")]
+        [ProducesResponseType(typeof(QueryResponse<TeamLeagueStandingDTO?>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<TeamLeagueStandingDTO?>>> GetLeagueStanding(Guid id, [FromQuery] Guid leagueId)
+            => Ok(await _mediator.Send(new GetTeamLeagueStandingQuery { TeamId = id, LeagueId = leagueId }));
 
         [HttpGet("{id}/leagues", Name = "GetTeamLeagues")]
         [ProducesResponseType(typeof(QueryResponse<List<TeamLeagueDTO>>), StatusCodes.Status200OK)]

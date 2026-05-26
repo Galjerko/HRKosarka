@@ -307,6 +307,137 @@
                     </ChildContent>
                 </MudExpansionPanel>
 
+                <MudExpansionPanel Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">Player Statistics</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        @if (!_leagues.Any())
+                        {
+                            <MudText Typo="Typo.body2" Class="pa-4" Color="Color.Secondary">
+                                This team has no competition registrations yet.
+                            </MudText>
+                        }
+                        else
+                        {
+                            var seasons = _leagues.Select(l => l.SeasonName).Distinct().OrderByDescending(s => s).ToList();
+                            var leaguesForSeason = _leagues.Where(l => l.SeasonName == _statsSelectedSeason).ToList();
+
+                            <div class="d-flex align-center gap-3 mb-4" style="flex-wrap:wrap;width:fit-content">
+                                <MudSelect T="string"
+                                           Label="Season"
+                                           Value="_statsSelectedSeason"
+                                           ValueChanged="OnSeasonChanged"
+                                           Variant="Variant.Outlined"
+                                           Dense="true"
+                                           Style="min-width:160px;max-width:220px">
+                                    @foreach (var s in seasons)
+                                    {
+                                        <MudSelectItem Value="@s">@s</MudSelectItem>
+                                    }
+                                </MudSelect>
+
+                                <MudSelect T="Guid?"
+                                           Label="Competition"
+                                           Value="_statsSelectedLeagueId"
+                                           ValueChanged="OnLeagueChanged"
+                                           Variant="Variant.Outlined"
+                                           Dense="true"
+                                           Style="min-width:200px;max-width:320px">
+                                    @foreach (var l in leaguesForSeason)
+                                    {
+                                        <MudSelectItem Value="@((Guid?)l.LeagueId)">@l.LeagueName</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
+
+                            @if (_teamStanding != null)
+                            {
+                                <div class="season-combined-card pa-3 mb-3">
+                                    <div class="season-combined-label mb-2">TEAM RECORD</div>
+                                    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                                        <div class="stat-chip">
+                                            <span class="stat-value">@_teamStanding.GamesPlayed</span>
+                                            <span class="stat-label">GP</span>
+                                        </div>
+                                        <div class="stat-chip">
+                                            <span class="stat-value" style="color:var(--mud-palette-success)">@_teamStanding.Wins</span>
+                                            <span class="stat-label">W</span>
+                                        </div>
+                                        <div class="stat-chip">
+                                            <span class="stat-value" style="color:var(--mud-palette-error)">@_teamStanding.Losses</span>
+                                            <span class="stat-label">L</span>
+                                        </div>
+                                        <div class="stat-chip">
+                                            <span class="stat-value">@_teamStanding.LeaguePoints</span>
+                                            <span class="stat-label">PTS</span>
+                                        </div>
+                                    </div>
+                                    <div class="season-total-pts mt-2">
+                                        @_teamStanding.PointsFor scored · @_teamStanding.PointsAgainst conceded ·
+                                        <span style="color:@(_teamStanding.PointsDifference >= 0 ? "var(--mud-palette-success)" : "var(--mud-palette-error)")">
+                                            @(_teamStanding.PointsDifference >= 0 ? "+" : "")@_teamStanding.PointsDifference
+                                        </span>
+                                    </div>
+                                    <div class="season-total-pts">
+                                        <strong>#@_teamStanding.Position</strong> in standings
+                                    </div>
+                                </div>
+                            }
+
+                            @if (_isLoadingPlayerStats)
+                            {
+                                <div class="d-flex justify-center pa-4">
+                                    <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                                </div>
+                            }
+                            else if (!_playerStats.Any())
+                            {
+                                <MudText Typo="Typo.body2" Class="pa-4" Color="Color.Secondary">
+                                    No stats recorded for this competition yet.
+                                </MudText>
+                            }
+                            else
+                            {
+                                <div class="player-stats-list">
+                                    @foreach (var p in _playerStats)
+                                    {
+                                        <div class="season-league-card pa-3 mb-2">
+                                            <MudLink Href="@($"/players/{p.PlayerId}")" Typo="Typo.subtitle2" Class="d-block mb-2" Style="font-weight:700">
+                                                @p.PlayerName
+                                            </MudLink>
+                                            <div class="stats-grid four-cols">
+                                                <div class="stat-chip">
+                                                    <span class="stat-value">@p.GamesPlayed</span>
+                                                    <span class="stat-label">GP</span>
+                                                </div>
+                                                <div class="stat-chip">
+                                                    <span class="stat-value">@p.Ppg.ToString("F1")</span>
+                                                    <span class="stat-label">PPG</span>
+                                                </div>
+                                                <div class="stat-chip">
+                                                    <span class="stat-value">@p.ThreePG.ToString("F1")</span>
+                                                    <span class="stat-label">3PG</span>
+                                                </div>
+                                                <div class="stat-chip">
+                                                    <span class="stat-value">@p.Fpg.ToString("F1")</span>
+                                                    <span class="stat-label">FPG</span>
+                                                </div>
+                                            </div>
+                                            <div class="season-total-pts mt-1">
+                                                @p.TotalPoints pts · @p.TotalThreePointers 3PT · @p.TotalFouls fouls in @p.GamesPlayed GP
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
+                    </ChildContent>
+                </MudExpansionPanel>
+
                 <AuthorizeView Roles="Administrator">
                     <Authorized>
                         <MudExpansionPanel Class="expansion-panel">

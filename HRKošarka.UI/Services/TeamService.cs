@@ -365,4 +365,44 @@ public class TeamService : BaseHttpService, ITeamService
             return ConvertApiExceptionsToQuery<List<TeamRepMembershipDTO>>(ex);
         }
     }
+
+    public async Task<QueryResponse<List<TeamPlayerStatDTO>>> GetTeamLeaguePlayerStats(Guid teamId, Guid leagueId)
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.GetTeamLeaguePlayerStatsAsync(teamId, leagueId);
+            return new QueryResponse<List<TeamPlayerStatDTO>>
+            {
+                Data = response.Data?.ToList() ?? new List<TeamPlayerStatDTO>(),
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptionsToQuery<List<TeamPlayerStatDTO>>(ex);
+        }
+    }
+
+    public async Task<QueryResponse<TeamLeagueStandingDTO?>> GetTeamLeagueStanding(Guid teamId, Guid leagueId)
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.GetTeamLeagueStandingAsync(teamId, leagueId);
+            return new QueryResponse<TeamLeagueStandingDTO?>
+            {
+                Data = response.Data,
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptionsToQuery<TeamLeagueStandingDTO?>(ex);
+        }
+    }
 }

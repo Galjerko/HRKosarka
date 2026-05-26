@@ -1,3 +1,4 @@
+using HRKošarka.Application.Features.Team.Queries.GetTeamLeaguePlayerStats;
 using HRKošarka.Domain;
 
 namespace HRKošarka.Application.Contracts.Persistence
@@ -6,5 +7,6 @@ namespace HRKošarka.Application.Contracts.Persistence
     {
         Task<PlayerSeasonStats?> GetByPlayerAndLeagueAsync(Guid playerId, Guid leagueId, Guid seasonId, CancellationToken ct = default);
         Task<List<PlayerSeasonStats>> GetAllByPlayerAsync(Guid playerId, CancellationToken ct = default);
+        Task<List<TeamPlayerStatDTO>> GetByTeamAndLeagueAsync(Guid teamId, Guid leagueId, CancellationToken ct = default);
     }
 }
