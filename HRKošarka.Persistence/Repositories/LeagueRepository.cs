@@ -364,9 +364,20 @@ namespace HRKošarka.Persistence.Repositories
                     .FirstOrDefault(r => r.Round == displayRound)?.RoundName
                     ?? $"Round {displayRound}";
 
-                var matches = await _context.Matches
+                // Get the scheduled date of the display round so we can pull in
+                // all rounds on the same day (e.g. Final + 3rd Place in a cup).
+                var displayDate = await _context.Matches
                     .Where(m => m.LeagueId == league.Id && m.Round == displayRound)
-                    .OrderBy(m => m.ActualScheduledDate)
+                    .Select(m => (DateTime?)m.DefaultScheduledDate)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                var matches = await _context.Matches
+                    .Where(m => m.LeagueId == league.Id
+                             && (m.Round == displayRound
+                                 || (displayDate.HasValue
+                                     && m.DefaultScheduledDate.Date == displayDate.Value.Date)))
+                    .OrderBy(m => m.Round)
+                    .ThenBy(m => m.ActualScheduledDate)
                     .Select(m => new FeaturedMatchDTO
                     {
                         Id = m.Id,
@@ -398,7 +409,9 @@ namespace HRKošarka.Persistence.Repositories
                 });
             }
 
-            return result;
+            return result
+                .OrderBy(r => r.Matches.FirstOrDefault()?.ActualScheduledDate ?? DateTime.MaxValue)
+                .ToList();
         }
     }
 }

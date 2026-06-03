@@ -417,9 +417,20 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
 
         private LeagueTeamDTO? GetByeTeam(LeagueRoundDTO round)
         {
+            // Byes in cups only happen in round 1 (when team count is not a power of 2).
+            // All later rounds have no byes — absent teams are eliminated, not waiting.
+            if (_league?.CompetitionType == CompetitionType._1 && round.Round != 1)
+                return null;
+
             var playingIds = new HashSet<Guid>();
             foreach (var m in round.Matches) { playingIds.Add(m.HomeTeamId); playingIds.Add(m.AwayTeamId); }
             return _leagueTeams.FirstOrDefault(t => !playingIds.Contains(t.TeamId));
         }
+
+        private bool IsTournamentFinished =>
+            _league?.ScheduleGenerated == true
+            && _schedule.Any()
+            && _schedule.All(r => r.Matches.All(m =>
+                m.Status == MatchStatus._2 || m.Status == MatchStatus._3));
     }
 }

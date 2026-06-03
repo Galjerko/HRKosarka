@@ -129,9 +129,9 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                 return;
             }
 
-            if (_endDate <= _startDate)
+            if (_endDate < _startDate)
             {
-                Snackbar.Add("End date must be after start date.", Severity.Warning);
+                Snackbar.Add("End date must be on or after start date.", Severity.Warning);
                 return;
             }
 

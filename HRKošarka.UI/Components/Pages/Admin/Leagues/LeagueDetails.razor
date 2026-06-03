@@ -110,12 +110,24 @@
                     </MudChip>
                     @if (_league.ScheduleGenerated)
                     {
-                        <MudChip T="string"
-                                 Color="Color.Info"
-                                 Size="Size.Small"
-                                 Icon="@Icons.Material.Filled.Lock">
-                            Schedule Generated
-                        </MudChip>
+                        @if (IsTournamentFinished)
+                        {
+                            <MudChip T="string"
+                                     Color="Color.Success"
+                                     Size="Size.Small"
+                                     Icon="@Icons.Material.Filled.EmojiEvents">
+                                Finished
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string"
+                                     Color="Color.Info"
+                                     Size="Size.Small"
+                                     Icon="@Icons.Material.Filled.Lock">
+                                Schedule Generated
+                            </MudChip>
+                        }
                     }
                 </div>
             </div>

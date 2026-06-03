@@ -153,6 +153,11 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             var lastRoundDate = roundMatches.Max(m => m.DefaultScheduledDate);
             var nextDate = CupBracketScheduler.FindNextValidSaturday(lastRoundDate.AddDays(1), breakRanges);
 
+            // Cap within the league period for short-window cups
+            var leagueEndAt19 = confirmedMatch.League.EndDate.Date.AddHours(19);
+            if (nextDate > leagueEndAt19)
+                nextDate = leagueEndAt19;
+
             var newMatches = new List<DomainMatch>();
             for (int i = 0; i < nextRoundTeams.Count; i += 2)
             {
@@ -169,6 +174,33 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
                     SchedulingStatus = SchedulingStatus.Default,
                     LastSchedulingUpdate = DateTime.Now
                 });
+            }
+
+            // 3rd place match: created alongside the Final when this round's losers number exactly 2
+            if (nextRoundTeams.Count == 2)
+            {
+                var losers = roundMatches
+                    .OrderBy(m => m.DateCreated)
+                    .ThenBy(m => m.HomeTeamId)
+                    .Select(m => m.HomeScore!.Value > m.AwayScore!.Value ? m.AwayTeamId : m.HomeTeamId)
+                    .ToList();
+
+                if (losers.Count == 2)
+                {
+                    newMatches.Add(new DomainMatch
+                    {
+                        LeagueId = confirmedMatch.LeagueId,
+                        HomeTeamId = losers[0],
+                        AwayTeamId = losers[1],
+                        Round = nextRound + 1, // separate round so termination logic works cleanly
+                        RoundName = "3rd Place",
+                        DefaultScheduledDate = nextDate,
+                        ActualScheduledDate = nextDate,
+                        Status = MatchStatus.Scheduled,
+                        SchedulingStatus = SchedulingStatus.Default,
+                        LastSchedulingUpdate = DateTime.Now
+                    });
+                }
             }
 
             await _matchRepository.CreateRangeAsync(newMatches, ct);

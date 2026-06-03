@@ -24,8 +24,8 @@ namespace HRKošarka.Application.Features.League.Commands.UpdateLeague
 
             RuleFor(x => x.EndDate)
                 .NotEmpty().WithMessage("End date is required.")
-                .GreaterThan(x => x.StartDate)
-                .WithMessage("End date must be after start date.");
+                .GreaterThanOrEqualTo(x => x.StartDate)
+                .WithMessage("End date must be on or after start date.");
 
             RuleFor(x => x.NumberOfRounds)
                 .GreaterThanOrEqualTo(1).WithMessage("Number of rounds must be at least 1.");

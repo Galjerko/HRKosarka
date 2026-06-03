@@ -101,7 +101,7 @@
                                     <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Small" />
                                 </div>
                             }
-                            <MudText Typo="Typo.h6" Class="featured-league-name">@league.LeagueName</MudText>
+                            <a href="/leagues/@league.LeagueId" class="featured-league-name">@league.LeagueName</a>
                             <span class="featured-round-badge">@league.RoundName</span>
                         </div>
                         <a href="/leagues/@league.LeagueId/schedule" class="featured-view-all">
