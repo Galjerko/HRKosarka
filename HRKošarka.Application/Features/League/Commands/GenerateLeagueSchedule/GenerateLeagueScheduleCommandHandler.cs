@@ -37,11 +37,6 @@ namespace HRKošarka.Application.Features.League.Commands.GenerateLeagueSchedule
                 throw new BadRequestException("Cannot generate a schedule for an inactive league.");
             if (league.ScheduleGenerated)
                 throw new BadRequestException("Schedule has already been generated for this league.");
-            if (league.CompetitionType == CompetitionType.Cup)
-                throw new BadRequestException(
-                    "Cup bracket generation is not yet supported. " +
-                    "Create the league as Competition Type 'League' to use round-robin scheduling.");
-
             var registeredTeams = await _leagueRepository.GetLeagueTeamsAsync(request.LeagueId, cancellationToken);
             if (registeredTeams.Count < 2)
                 throw new BadRequestException("At least 2 teams must be registered before generating a schedule.");
@@ -49,6 +44,33 @@ namespace HRKošarka.Application.Features.League.Commands.GenerateLeagueSchedule
             var breaks = await _leagueRepository.GetLeagueBreaksAsync(request.LeagueId, cancellationToken);
             var breakRanges = breaks.Select(b => (b.StartDate, b.EndDate)).ToList();
             var teamIds = registeredTeams.Select(t => t.TeamId).ToList();
+
+            if (league.CompetitionType == CompetitionType.Cup)
+            {
+                var cupSlots = CupBracketScheduler.GenerateRound1(teamIds, league.StartDate, breakRanges);
+                var cupMatches = cupSlots.Select(s => new DomainMatch
+                {
+                    LeagueId = request.LeagueId,
+                    HomeTeamId = s.HomeTeamId,
+                    AwayTeamId = s.AwayTeamId,
+                    Round = s.Round,
+                    RoundName = s.RoundName,
+                    DefaultScheduledDate = s.Date,
+                    ActualScheduledDate = s.Date,
+                    Status = MatchStatus.Scheduled,
+                    SchedulingStatus = SchedulingStatus.Default,
+                    LastSchedulingUpdate = DateTime.Now
+                }).ToList();
+
+                await _matchRepository.CreateRangeAsync(cupMatches, cancellationToken);
+                league.ScheduleGenerated = true;
+                await _leagueRepository.UpdateAsync(league, cancellationToken);
+
+                _logger.LogInformation("Generated cup draw: {Count} round 1 matches for league {LeagueId}",
+                    cupMatches.Count, request.LeagueId);
+                return CommandResponse<int>.Success(cupMatches.Count,
+                    $"Cup draw generated: {cupMatches.Count} match(es) in round 1.");
+            }
 
             var slots = RoundRobinScheduler.Generate(teamIds, league.StartDate, league.NumberOfRounds, breakRanges);
 

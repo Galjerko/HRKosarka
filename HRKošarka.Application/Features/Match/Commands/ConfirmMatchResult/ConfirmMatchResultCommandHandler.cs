@@ -3,7 +3,9 @@ using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Models.Responses;
 using HRKošarka.Domain;
 using HRKošarka.Domain.Common;
+using HRKošarka.Domain.Helpers;
 using MediatR;
+using DomainMatch = HRKošarka.Domain.Match;
 
 namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
 {
@@ -14,19 +16,22 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
         private readonly ILeagueStandingRepository _standingRepository;
         private readonly IPlayerSeasonStatsRepository _seasonStatsRepository;
         private readonly ITeamRepresentativeRepository _repRepository;
+        private readonly ILeagueRepository _leagueRepository;
 
         public ConfirmMatchResultCommandHandler(
             IMatchRepository matchRepository,
             IPlayerMatchStatsRepository statsRepository,
             ILeagueStandingRepository standingRepository,
             IPlayerSeasonStatsRepository seasonStatsRepository,
-            ITeamRepresentativeRepository repRepository)
+            ITeamRepresentativeRepository repRepository,
+            ILeagueRepository leagueRepository)
         {
             _matchRepository = matchRepository;
             _statsRepository = statsRepository;
             _standingRepository = standingRepository;
             _seasonStatsRepository = seasonStatsRepository;
             _repRepository = repRepository;
+            _leagueRepository = leagueRepository;
         }
 
         public async Task<CommandResponse<bool>> Handle(ConfirmMatchResultCommand request, CancellationToken ct)
@@ -91,7 +96,82 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             foreach (var stat in allStats)
                 await UpdatePlayerSeasonStats(stat, match.LeagueId, seasonId, ct);
 
+            if (match.League.CompetitionType == CompetitionType.Cup)
+                await AdvanceCupBracketIfRoundComplete(match, ct);
+
             return CommandResponse<bool>.Success(true, "Match result confirmed.");
+        }
+
+        private async Task AdvanceCupBracketIfRoundComplete(DomainMatch confirmedMatch, CancellationToken ct)
+        {
+            var roundMatches = await _matchRepository.GetRoundMatchesAsync(
+                confirmedMatch.LeagueId, confirmedMatch.Round, ct);
+
+            if (roundMatches.Any(m => !m.IsResultConfirmed))
+                return;
+
+            var orderedWinners = roundMatches
+                .OrderBy(m => m.DateCreated)
+                .ThenBy(m => m.HomeTeamId)
+                .Select(m => m.HomeScore!.Value > m.AwayScore!.Value ? m.HomeTeamId : m.AwayTeamId)
+                .ToList();
+
+            List<Guid> nextRoundTeams;
+            if (confirmedMatch.Round == 1)
+            {
+                // Identify bye teams: registered in league but absent from all round 1 matches
+                var teamsInRound1 = roundMatches
+                    .SelectMany(m => new[] { m.HomeTeamId, m.AwayTeamId })
+                    .ToHashSet();
+                var allLeagueTeams = await _leagueRepository.GetLeagueTeamsAsync(confirmedMatch.LeagueId, ct);
+                var byeTeams = allLeagueTeams
+                    .Where(t => !teamsInRound1.Contains(t.TeamId))
+                    .Select(t => t.TeamId)
+                    .ToList();
+
+                // Interleave: [bye0, winner0, bye1, winner1, ...] to maintain bracket structure
+                nextRoundTeams = new List<Guid>();
+                for (int i = 0; i < Math.Max(byeTeams.Count, orderedWinners.Count); i++)
+                {
+                    if (i < byeTeams.Count) nextRoundTeams.Add(byeTeams[i]);
+                    if (i < orderedWinners.Count) nextRoundTeams.Add(orderedWinners[i]);
+                }
+            }
+            else
+            {
+                nextRoundTeams = orderedWinners;
+            }
+
+            if (nextRoundTeams.Count <= 1)
+                return; // Final was just played — tournament complete
+
+            var nextRound = confirmedMatch.Round + 1;
+            var nextRoundName = CupBracketScheduler.GetCupRoundName(nextRoundTeams.Count);
+
+            var breaks = await _leagueRepository.GetLeagueBreaksAsync(confirmedMatch.LeagueId, ct);
+            var breakRanges = breaks.Select(b => (b.StartDate, b.EndDate)).ToList();
+            var lastRoundDate = roundMatches.Max(m => m.DefaultScheduledDate);
+            var nextDate = CupBracketScheduler.FindNextValidSaturday(lastRoundDate.AddDays(1), breakRanges);
+
+            var newMatches = new List<DomainMatch>();
+            for (int i = 0; i < nextRoundTeams.Count; i += 2)
+            {
+                newMatches.Add(new DomainMatch
+                {
+                    LeagueId = confirmedMatch.LeagueId,
+                    HomeTeamId = nextRoundTeams[i],
+                    AwayTeamId = nextRoundTeams[i + 1],
+                    Round = nextRound,
+                    RoundName = nextRoundName,
+                    DefaultScheduledDate = nextDate,
+                    ActualScheduledDate = nextDate,
+                    Status = MatchStatus.Scheduled,
+                    SchedulingStatus = SchedulingStatus.Default,
+                    LastSchedulingUpdate = DateTime.Now
+                });
+            }
+
+            await _matchRepository.CreateRangeAsync(newMatches, ct);
         }
 
         private static void ValidateQuarterResults(string? raw, int homeScore, int awayScore)

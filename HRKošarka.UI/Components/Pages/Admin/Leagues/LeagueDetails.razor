@@ -122,7 +122,7 @@
 
             <MudDivider Class="my-4" />
 
-            <MudExpansionPanels Elevation="0" Class="expansion-panels">
+            <MudExpansionPanels Elevation="0" Class="expansion-panels" MultiExpansion="true">
 
                 <!-- Basic Information -->
                 <MudExpansionPanel IsInitiallyExpanded="true" Class="expansion-panel">
@@ -406,14 +406,17 @@
 
                                     <MudDivider Class="my-4" />
 
-                                    <!-- Generate Schedule button -->
+                                    <!-- Generate Schedule / Cup Draw button -->
                                     @if (_leagueTeams.Count >= 2)
                                     {
+                                        var isCup = _league.CompetitionType == CompetitionType._1;
                                         <div class="d-flex flex-column gap-2">
                                             <MudText Typo="Typo.body2" Color="Color.Secondary">
                                                 Ready to generate: <strong>@_leagueTeams.Count teams</strong>,
                                                 <strong>@_breaks.Count break(s)</strong> defined.
-                                                Matches will be scheduled every Saturday at 19:00, skipping break weeks.
+                                                @(isCup
+                                                    ? "Round 1 matches will be drawn randomly. Subsequent rounds are created automatically after each round is confirmed."
+                                                    : "Matches will be scheduled every Saturday at 19:00, skipping break weeks.")
                                             </MudText>
                                             <MudAlert Severity="Severity.Warning" Dense="true">
                                                 Once generated, team registration will be locked and cannot be undone.
@@ -424,7 +427,7 @@
                                                            StartIcon="@Icons.Material.Filled.CalendarMonth"
                                                            OnClick="@(() => _showGenerateScheduleDialog = true)"
                                                            Disabled="_isProcessing">
-                                                    Generate Schedule
+                                                    @(isCup ? "Generate Cup Draw" : "Generate Schedule")
                                                 </MudButton>
                                             </div>
                                         </div>
@@ -774,11 +777,15 @@
                      Options="_dialogOptions" />
 
 <ConfirmActionDialog @bind-Visible="_showGenerateScheduleDialog"
-                     Title="Generate Schedule"
+                     Title="@(_league?.CompetitionType == CompetitionType._1 ? "Generate Cup Draw" : "Generate Schedule")"
                      TitleIcon="@Icons.Material.Filled.CalendarMonth"
                      TitleIconColor="Color.Success"
-                     Message="@($"Generate the match schedule for <strong>{_league?.Name}</strong>?")"
-                     SecondaryMessage="This will lock team registration and cannot be undone."
+                     Message="@(_league?.CompetitionType == CompetitionType._1
+                         ? $"Generate the cup draw for <strong>{_league?.Name}</strong>?"
+                         : $"Generate the match schedule for <strong>{_league?.Name}</strong>?")"
+                     SecondaryMessage="@(_league?.CompetitionType == CompetitionType._1
+                         ? "This will generate Round 1 matches and lock team registration. Subsequent rounds are created automatically."
+                         : "This will lock team registration and cannot be undone.")"
                      SecondaryMessageColor="Color.Warning"
                      CancelText="CANCEL" CancelVariant="Variant.Outlined"
                      ConfirmText="GENERATE" ConfirmIcon="@Icons.Material.Filled.CalendarMonth"

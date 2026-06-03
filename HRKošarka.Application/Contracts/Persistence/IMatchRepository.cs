@@ -12,5 +12,6 @@ namespace HRKošarka.Application.Contracts.Persistence
         Task<List<TeamMatchHistoryItemDTO>> GetTeamMatchHistoryAsync(Guid teamId, CancellationToken ct = default);
         Task<List<PendingActionDTO>> GetPendingActionsAsync(Guid? clubId, bool isAdmin, string? teamRepUserId = null, CancellationToken ct = default);
         Task<List<CompletedMatchSlimDTO>> GetCompletedMatchesByLeagueAsync(Guid leagueId, CancellationToken ct = default);
+        Task<List<Match>> GetRoundMatchesAsync(Guid leagueId, int round, CancellationToken ct = default);
     }
 }

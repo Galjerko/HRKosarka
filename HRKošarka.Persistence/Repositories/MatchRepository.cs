@@ -243,6 +243,15 @@ namespace HRKošarka.Persistence.Repositories
                 .ToListAsync(ct);
         }
 
+        public async Task<List<Match>> GetRoundMatchesAsync(Guid leagueId, int round, CancellationToken ct = default)
+        {
+            return await _context.Matches
+                .Where(m => m.LeagueId == leagueId && m.Round == round)
+                .OrderBy(m => m.DateCreated)
+                .ThenBy(m => m.HomeTeamId)
+                .ToListAsync(ct);
+        }
+
         public async Task<List<TeamMatchHistoryItemDTO>> GetTeamMatchHistoryAsync(
             Guid teamId, CancellationToken ct = default)
         {
