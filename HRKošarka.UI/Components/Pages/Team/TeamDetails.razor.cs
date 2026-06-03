@@ -24,6 +24,8 @@ namespace HRKošarka.UI.Components.Pages.Team
         private string? _statsSelectedSeason;
         private Guid? _statsSelectedLeagueId;
         private bool _isRepForThisTeam = false;
+        private bool _isFavorited = false;
+        private bool _isTogglingFavorite = false;
         private bool _isLoading = true;
         private bool _isLoadingRoster = false;
         private bool _isLoadingLeagues = false;
@@ -84,11 +86,20 @@ namespace HRKošarka.UI.Components.Pages.Team
 
                     bool isAdmin = CurrentUser?.IsInRole("Administrator") == true;
                     bool isClubManager = CurrentUser?.IsInRole("ClubManager") == true;
+                    bool isUser = CurrentUser?.IsInRole("RegularUser") == true;
+
                     if (!isAdmin && !isClubManager)
                     {
                         var repResponse = await TeamService.GetMyRepresentativeships();
                         if (repResponse.IsSuccess && repResponse.Data != null)
                             _isRepForThisTeam = repResponse.Data.Any(r => r.TeamId == Id);
+                    }
+
+                    if (isUser)
+                    {
+                        var favResponse = await TeamService.GetFavoriteStatus(Id);
+                        if (favResponse.IsSuccess)
+                            _isFavorited = favResponse.Data;
                     }
 
                     await Task.WhenAll(LoadRoster(), LoadLeagues(), LoadMatchHistory(), LoadRepresentatives());
@@ -580,6 +591,28 @@ namespace HRKošarka.UI.Components.Pages.Team
             finally
             {
                 _isProcessing = false;
+            }
+        }
+
+        private async Task ToggleFavorite()
+        {
+            _isTogglingFavorite = true;
+            try
+            {
+                var response = await TeamService.ToggleFavoriteTeam(Id);
+                if (response.IsSuccess)
+                {
+                    _isFavorited = response.Data;
+                    Snackbar.Add(_isFavorited ? "Team followed!" : "Team unfollowed.", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to update follow status.", Severity.Error);
+                }
+            }
+            finally
+            {
+                _isTogglingFavorite = false;
             }
         }
 

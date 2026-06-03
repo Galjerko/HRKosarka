@@ -1,0 +1,78 @@
+@page "/my-favorites"
+@using HRKošarka.UI.Services.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<PageTitle>My Favorite Teams</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+
+    <MudText Typo="Typo.h5" Class="mb-1">My Favorite Teams</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">
+        Teams you follow. You will receive email notifications for results, reschedules and cup advances.
+    </MudText>
+
+    @if (_isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="height:200px;">
+            <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else if (!_favorites.Any())
+    {
+        <div class="fav-empty-state">
+            <MudIcon Icon="@Icons.Material.Outlined.FavoriteBorder" Size="Size.Large" Color="Color.Secondary" Class="mb-3" />
+            <MudText Typo="Typo.h6" Class="mb-1">No favorite teams yet</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                Browse teams and click <strong>Follow</strong> on any team page to add it here.
+            </MudText>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/teams">
+                Browse Teams
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <MudGrid Spacing="3">
+            @foreach (var team in _favorites)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <div class="fav-card">
+                        <!-- Card header strip -->
+                        <div class="fav-card-header">
+                            <div class="fav-card-avatar">
+                                <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Medium" />
+                            </div>
+                            <MudChip T="string"
+                                     Color="@(team.TeamIsActive ? Color.Success : Color.Error)"
+                                     Size="Size.Small"
+                                     Class="fav-card-status">
+                                @(team.TeamIsActive ? "Active" : "Inactive")
+                            </MudChip>
+                        </div>
+
+                        <!-- Card body -->
+                        <div class="fav-card-body">
+                            <div class="fav-card-name">@team.TeamName</div>
+                            <div class="fav-card-club">@team.ClubName</div>
+                        </div>
+
+                        <!-- Card footer -->
+                        <div class="fav-card-footer">
+                            <a href="/teams/@team.TeamId" class="fav-card-btn fav-card-btn-view">
+                                <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" />
+                                View Team
+                            </a>
+                            <button class="fav-card-btn fav-card-btn-unfollow"
+                                    @onclick="@(() => Unfollow(team))"
+                                    disabled="@_isProcessing">
+                                <MudIcon Icon="@Icons.Material.Filled.HeartBroken" Size="Size.Small" />
+                                Unfollow
+                            </button>
+                        </div>
+                    </div>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+</MudContainer>

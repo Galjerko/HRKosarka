@@ -6,6 +6,9 @@ using HRKošarka.Application.Features.Team.Commands.CreateTeam;
 using HRKošarka.Application.Features.Team.Commands.DeactivateTeam;
 using HRKošarka.Application.Features.Team.Commands.DeleteTeam;
 using HRKošarka.Application.Features.Team.Commands.RemovePlayerFromTeam;
+using HRKošarka.Application.Features.UserFavoriteTeam.Commands.ToggleFavoriteTeam;
+using HRKošarka.Application.Features.UserFavoriteTeam.Queries.GetFavoriteStatus;
+using HRKošarka.Application.Features.UserFavoriteTeam.Queries.GetMyFavoriteTeams;
 using HRKošarka.Application.Features.Team.Commands.RevokeTeamRepresentative;
 using HRKošarka.Application.Features.Team.Commands.UpdatePlayerAssignmentInTeam;
 using HRKošarka.Application.Features.Team.Commands.UpdateTeam;
@@ -224,6 +227,32 @@ namespace HRKošarka.API.Controllers
             command.RequesterUserId = CallerUserId;
             await _mediator.Send(command);
             return NoContent();
+        }
+
+        [HttpGet("my-favorites", Name = "GetMyFavoriteTeams")]
+        [Authorize]
+        [ProducesResponseType(typeof(QueryResponse<List<FavoriteTeamDTO>>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<FavoriteTeamDTO>>>> GetMyFavorites()
+            => Ok(await _mediator.Send(new GetMyFavoriteTeamsQuery(CurrentUserId)));
+
+        [HttpGet("{id}/favorite-status", Name = "GetFavoriteStatus")]
+        [Authorize]
+        [ProducesResponseType(typeof(QueryResponse<bool>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<bool>>> GetFavoriteStatus(Guid id)
+            => Ok(await _mediator.Send(new GetFavoriteStatusQuery(id, CurrentUserId)));
+
+        [HttpPost("{id}/favorite", Name = "ToggleFavoriteTeam")]
+        [Authorize]
+        [ProducesResponseType(typeof(CommandResponse<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<CommandResponse<bool>>> ToggleFavorite(Guid id)
+        {
+            var response = await _mediator.Send(new ToggleFavoriteTeamCommand { TeamId = id, UserId = CurrentUserId });
+            return Ok(response);
         }
 
         [HttpDelete("{id}/players/{playerId}", Name = "RemovePlayerFromTeam")]

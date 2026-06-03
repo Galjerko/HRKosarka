@@ -24,6 +24,16 @@
         <MudText Typo="Typo.body2">Dashboard</MudText>
     </MudNavLink>
 
+    <AuthorizeView Roles="RegularUser" Context="favCtx">
+        <Authorized>
+            <MudNavLink Href="/my-favorites"
+                        Icon="@Icons.Material.Filled.Favorite"
+                        Class="nav-item">
+                <MudText Typo="Typo.body2">My Favorite Teams</MudText>
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+
     <AuthorizeView Roles="Administrator" Context="adminCtx">
         <Authorized>
             <MudNavGroup Icon="@Icons.Material.Filled.AdminPanelSettings"

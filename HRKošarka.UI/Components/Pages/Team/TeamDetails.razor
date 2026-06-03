@@ -83,6 +83,19 @@
                                Class="action-btn details-action-btn back-action-btn">
                         Back
                     </MudButton>
+
+                    <AuthorizeView Roles="RegularUser" Context="favCtx">
+                        <Authorized>
+                            <MudButton Variant="@(_isFavorited ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Primary"
+                                       StartIcon="@(_isFavorited ? Icons.Material.Filled.Favorite : Icons.Material.Outlined.FavoriteBorder)"
+                                       OnClick="ToggleFavorite"
+                                       Disabled="@_isTogglingFavorite"
+                                       Class="action-btn details-action-btn">
+                                @(_isFavorited ? "Following" : "Follow")
+                            </MudButton>
+                        </Authorized>
+                    </AuthorizeView>
                 </div>
             </div>
 

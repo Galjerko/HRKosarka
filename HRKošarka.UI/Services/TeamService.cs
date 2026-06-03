@@ -405,4 +405,68 @@ public class TeamService : BaseHttpService, ITeamService
             return ConvertApiExceptionsToQuery<TeamLeagueStandingDTO?>(ex);
         }
     }
+
+    public async Task<QueryResponse<bool>> GetFavoriteStatus(Guid teamId)
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.GetFavoriteStatusAsync(teamId);
+            return new QueryResponse<bool>
+            {
+                Data = response.Data,
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptionsToQuery<bool>(ex);
+        }
+    }
+
+    public async Task<CommandResponse<bool>> ToggleFavoriteTeam(Guid teamId)
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.ToggleFavoriteTeamAsync(teamId);
+            return new CommandResponse<bool>
+            {
+                Data = response.Data,
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException<CustomProblemDetails> ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<bool>(ex);
+        }
+    }
+
+    public async Task<QueryResponse<List<FavoriteTeamDTO>>> GetMyFavoriteTeams()
+    {
+        try
+        {
+            await AddBearerToken();
+            var response = await _client.GetMyFavoriteTeamsAsync();
+            return new QueryResponse<List<FavoriteTeamDTO>>
+            {
+                Data = response.Data?.ToList() ?? new List<FavoriteTeamDTO>(),
+                IsSuccess = response.IsSuccess,
+                Message = response.Message,
+                Errors = response.Errors?.ToList() ?? new List<string>()
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptionsToQuery<List<FavoriteTeamDTO>>(ex);
+        }
+    }
 }

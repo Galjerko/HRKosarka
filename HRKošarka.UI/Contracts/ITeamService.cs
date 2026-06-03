@@ -25,5 +25,8 @@ namespace HRKošarka.UI.Contracts
         Task<QueryResponse<List<TeamRepMembershipDTO>>> GetMyRepresentativeships();
         Task<QueryResponse<List<TeamPlayerStatDTO>>> GetTeamLeaguePlayerStats(Guid teamId, Guid leagueId);
         Task<QueryResponse<TeamLeagueStandingDTO?>> GetTeamLeagueStanding(Guid teamId, Guid leagueId);
+        Task<QueryResponse<bool>> GetFavoriteStatus(Guid teamId);
+        Task<CommandResponse<bool>> ToggleFavoriteTeam(Guid teamId);
+        Task<QueryResponse<List<FavoriteTeamDTO>>> GetMyFavoriteTeams();
     }
 }
