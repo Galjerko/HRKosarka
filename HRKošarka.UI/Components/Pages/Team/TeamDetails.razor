@@ -177,56 +177,56 @@
                         }
                         else
                         {
-                            <MudTable Items="_roster" Hover="true" Dense="true" Elevation="0" Breakpoint="Breakpoint.Md">
-                                <HeaderContent>
-                                    <MudTh>#</MudTh>
-                                    <MudTh>Player</MudTh>
-                                    <MudTh>Reg. Number</MudTh>
-                                    <MudTh>DOB</MudTh>
-                                    <MudTh>Position</MudTh>
-                                    <MudTh>Season</MudTh>
-                                    <MudTh>Join Date</MudTh>
-                                    @if (CurrentPermissions.CanEdit || _isRepForThisTeam)
-                                    {
-                                        <MudTh>Actions</MudTh>
-                                    }
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="#">@(context.JerseyNumber?.ToString() ?? "-")</MudTd>
-                                    <MudTd DataLabel="Player">
-                                        <div class="d-flex flex-column">
-                                            <MudLink Href="@($"/players/{context.PlayerId}")" Typo="Typo.body1">@context.PlayerFirstName @context.PlayerLastName</MudLink>
-                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                @GetPositionLabel(context.Position)
-                                            </MudText>
-                                        </div>
-                                    </MudTd>
-                                    <MudTd DataLabel="Reg. Number">@context.RegistrationNumber</MudTd>
-                                    <MudTd DataLabel="DOB">@context.DateOfBirth.ToString("dd.MM.yyyy.")</MudTd>
-                                    <MudTd DataLabel="Position">@GetPositionLabel(context.Position)</MudTd>
-                                    <MudTd DataLabel="Season">@context.SeasonName</MudTd>
-                                    <MudTd DataLabel="Join Date">@context.JoinDate.ToString("dd.MM.yyyy.")</MudTd>
-                                    @if (CurrentPermissions.CanEdit || _isRepForThisTeam)
-                                    {
-                                        <MudTd DataLabel="Actions">
-                                            <MudTooltip Text="Edit jersey number">
-                                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                               Color="Color.Primary"
-                                                               Size="Size.Small"
-                                                               Title="Edit assignment"
-                                                               OnClick="@(() => EditPlayerAssignment(context))" />
-                                            </MudTooltip>
-                                            <MudTooltip Text="Remove from team">
-                                                <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
-                                                               Color="Color.Error"
-                                                               Size="Size.Small"
-                                                               Title="Remove from team"
-                                                               OnClick="@(() => RemovePlayer(context))" />
-                                            </MudTooltip>
-                                        </MudTd>
-                                    }
-                                </RowTemplate>
-                            </MudTable>
+                            <div class="details-scroll-xy">
+                                <table class="details-table" style="min-width: 580px">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 34px">#</th>
+                                            <th>Player</th>
+                                            <th style="width: 82px">Reg. #</th>
+                                            <th style="width: 84px">DOB</th>
+                                            <th style="width: 82px">Position</th>
+                                            <th style="width: 70px">Season</th>
+                                            <th style="width: 84px">Joined</th>
+                                            @if (CurrentPermissions.CanEdit || _isRepForThisTeam)
+                                            {
+                                                <th style="width: 72px">Actions</th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var player in _roster)
+                                        {
+                                            <tr>
+                                                <td style="text-align: center">@(player.JerseyNumber?.ToString() ?? "-")</td>
+                                                <td><MudLink Href="@($"/players/{player.PlayerId}")">@player.PlayerFirstName @player.PlayerLastName</MudLink></td>
+                                                <td>@player.RegistrationNumber</td>
+                                                <td>@player.DateOfBirth.ToString("dd.MM.yyyy.")</td>
+                                                <td>@GetPositionLabel(player.Position)</td>
+                                                <td>@player.SeasonName</td>
+                                                <td>@player.JoinDate.ToString("dd.MM.yyyy.")</td>
+                                                @if (CurrentPermissions.CanEdit || _isRepForThisTeam)
+                                                {
+                                                    <td>
+                                                        <MudTooltip Text="Edit jersey number">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                                           Color="Color.Primary"
+                                                                           Size="Size.Small"
+                                                                           OnClick="@(() => EditPlayerAssignment(player))" />
+                                                        </MudTooltip>
+                                                        <MudTooltip Text="Remove from team">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
+                                                                           Color="Color.Error"
+                                                                           Size="Size.Small"
+                                                                           OnClick="@(() => RemovePlayer(player))" />
+                                                        </MudTooltip>
+                                                    </td>
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
                     </ChildContent>
                 </MudExpansionPanel>
@@ -269,17 +269,33 @@
                                     }
                                     else
                                     {
-                                        <MudTable Items="leagueOnly" Hover="true" Dense="true" Elevation="0" Breakpoint="Breakpoint.Sm">
-                                            <HeaderContent>
-                                                <MudTh>League</MudTh><MudTh>Season</MudTh><MudTh>Registered</MudTh><MudTh>Status</MudTh>
-                                            </HeaderContent>
-                                            <RowTemplate>
-                                                <MudTd><MudLink Href="@($"/leagues/{context.LeagueId}")">@context.LeagueName</MudLink></MudTd>
-                                                <MudTd>@context.SeasonName</MudTd>
-                                                <MudTd>@context.RegistrationDate.ToString("dd.MM.yyyy.")</MudTd>
-                                                <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.IsLeagueActive ? Color.Success : Color.Default)">@(context.IsLeagueActive ? "Active" : "Inactive")</MudChip></MudTd>
-                                            </RowTemplate>
-                                        </MudTable>
+                                        <div class="details-scroll-x">
+                                            <table class="details-table" style="min-width: 360px">
+                                                <thead>
+                                                    <tr>
+                                                        <th>League</th>
+                                                        <th style="width: 74px">Season</th>
+                                                        <th style="width: 88px">Registered</th>
+                                                        <th style="width: 70px">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in leagueOnly)
+                                                    {
+                                                        <tr>
+                                                            <td><MudLink Href="@($"/leagues/{item.LeagueId}")">@item.LeagueName</MudLink></td>
+                                                            <td>@item.SeasonName</td>
+                                                            <td>@item.RegistrationDate.ToString("dd.MM.yyyy.")</td>
+                                                            <td>
+                                                                <MudChip T="string" Size="Size.Small" Color="@(item.IsLeagueActive ? Color.Success : Color.Default)">
+                                                                    @(item.IsLeagueActive ? "Active" : "Inactive")
+                                                                </MudChip>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     }
                                 </MudTabPanel>
                                 <MudTabPanel Text="@($"Cups ({cupOnly.Count})")" Icon="@Icons.Material.Filled.WorkspacePremium">
@@ -289,17 +305,33 @@
                                     }
                                     else
                                     {
-                                        <MudTable Items="cupOnly" Hover="true" Dense="true" Elevation="0" Breakpoint="Breakpoint.Sm">
-                                            <HeaderContent>
-                                                <MudTh>Cup</MudTh><MudTh>Season</MudTh><MudTh>Registered</MudTh><MudTh>Status</MudTh>
-                                            </HeaderContent>
-                                            <RowTemplate>
-                                                <MudTd><MudLink Href="@($"/leagues/{context.LeagueId}")">@context.LeagueName</MudLink></MudTd>
-                                                <MudTd>@context.SeasonName</MudTd>
-                                                <MudTd>@context.RegistrationDate.ToString("dd.MM.yyyy.")</MudTd>
-                                                <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.IsLeagueActive ? Color.Success : Color.Default)">@(context.IsLeagueActive ? "Active" : "Inactive")</MudChip></MudTd>
-                                            </RowTemplate>
-                                        </MudTable>
+                                        <div class="details-scroll-x">
+                                            <table class="details-table" style="min-width: 360px">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Cup</th>
+                                                        <th style="width: 74px">Season</th>
+                                                        <th style="width: 88px">Registered</th>
+                                                        <th style="width: 70px">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in cupOnly)
+                                                    {
+                                                        <tr>
+                                                            <td><MudLink Href="@($"/leagues/{item.LeagueId}")">@item.LeagueName</MudLink></td>
+                                                            <td>@item.SeasonName</td>
+                                                            <td>@item.RegistrationDate.ToString("dd.MM.yyyy.")</td>
+                                                            <td>
+                                                                <MudChip T="string" Size="Size.Small" Color="@(item.IsLeagueActive ? Color.Success : Color.Default)">
+                                                                    @(item.IsLeagueActive ? "Active" : "Inactive")
+                                                                </MudChip>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     }
                                 </MudTabPanel>
                             </MudTabs>
@@ -474,41 +506,50 @@
                                 }
                                 else
                                 {
-                                    <MudTable Items="_representatives" Hover="true" Dense="true" Elevation="0">
-                                        <HeaderContent>
-                                            <MudTh>User</MudTh>
-                                            <MudTh>Assigned</MudTh>
-                                            <MudTh>Status</MudTh>
-                                            @if (CurrentPermissions.CanEdit)
-                                            {
-                                                <MudTh>Actions</MudTh>
-                                            }
-                                        </HeaderContent>
-                                        <RowTemplate Context="rep">
-                                            <MudTd DataLabel="User">@rep.UserEmail</MudTd>
-                                            <MudTd DataLabel="Assigned">@rep.AssignedDate.ToString("dd.MM.yyyy.")</MudTd>
-                                            <MudTd DataLabel="Status">
-                                                <MudChip T="string" Size="Size.Small"
-                                                         Color="@(rep.IsActive ? Color.Success : Color.Default)">
-                                                    @(rep.IsActive ? "Active" : "Revoked")
-                                                </MudChip>
-                                            </MudTd>
-                                            @if (CurrentPermissions.CanEdit)
-                                            {
-                                                <MudTd>
-                                                    @if (rep.IsActive)
+                                    <div class="details-scroll-x">
+                                        <table class="details-table" style="min-width: 320px">
+                                            <thead>
+                                                <tr>
+                                                    <th>User</th>
+                                                    <th style="width: 88px">Assigned</th>
+                                                    <th style="width: 70px">Status</th>
+                                                    @if (CurrentPermissions.CanEdit)
                                                     {
-                                                        <MudIconButton Icon="@Icons.Material.Filled.PersonOff"
-                                                                       Color="Color.Error"
-                                                                       Size="Size.Small"
-                                                                       Title="Revoke"
-                                                                       OnClick="@(() => RevokeRep(rep))"
-                                                                       Disabled="_isProcessing" />
+                                                        <th style="width: 44px"></th>
                                                     }
-                                                </MudTd>
-                                            }
-                                        </RowTemplate>
-                                    </MudTable>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var rep in _representatives)
+                                                {
+                                                    <tr>
+                                                        <td>@rep.UserEmail</td>
+                                                        <td>@rep.AssignedDate.ToString("dd.MM.yyyy.")</td>
+                                                        <td>
+                                                            <MudChip T="string" Size="Size.Small"
+                                                                     Color="@(rep.IsActive ? Color.Success : Color.Default)">
+                                                                @(rep.IsActive ? "Active" : "Revoked")
+                                                            </MudChip>
+                                                        </td>
+                                                        @if (CurrentPermissions.CanEdit)
+                                                        {
+                                                            <td>
+                                                                @if (rep.IsActive)
+                                                                {
+                                                                    <MudIconButton Icon="@Icons.Material.Filled.PersonOff"
+                                                                                   Color="Color.Error"
+                                                                                   Size="Size.Small"
+                                                                                   Title="Revoke"
+                                                                                   OnClick="@(() => RevokeRep(rep))"
+                                                                                   Disabled="_isProcessing" />
+                                                                }
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 }
                             </ChildContent>
                         </MudExpansionPanel>
@@ -554,75 +595,82 @@
                                             @(league.First().CompetitionType == CompetitionType._0 ? "League" : "Cup")
                                         </MudChip>
                                     </div>
-                                    <MudTable Items="@league.OrderByDescending(m => m.ScheduledDate).ToList()"
-                                              Hover="true" Dense="true" Elevation="0"
-                                              Breakpoint="Breakpoint.Sm"
-                                              RowClass="cursor-pointer"
-                                              OnRowClick="@((TableRowClickEventArgs<TeamMatchHistoryItemDTO> e) => NavigationManager.NavigateTo($"/matches/{e.Item.MatchId}"))">
-                                        <HeaderContent>
-                                            <MudTh>Date</MudTh>
-                                            <MudTh>Round</MudTh>
-                                            <MudTh>H/A</MudTh>
-                                            <MudTh>Opponent</MudTh>
-                                            <MudTh Style="color:var(--mud-palette-text-secondary)">Venue</MudTh>
-                                            <MudTh Style="text-align:center">Score</MudTh>
-                                            <MudTh Style="text-align:center">Status</MudTh>
-                                        </HeaderContent>
-                                        <RowTemplate>
-                                            @{
-                                                var won      = context.TeamScore > context.OpponentScore;
-                                                var lost     = context.TeamScore < context.OpponentScore;
-                                                var hasScore = context.TeamScore.HasValue && context.OpponentScore.HasValue;
-                                                var isFinished = context.Status == MatchStatus._2 || context.Status == MatchStatus._3;
-                                                var (statusLabel, statusColor) = (isFinished, won, lost) switch
+                                    <div class="details-scroll-xy">
+                                        <table class="details-table" style="min-width: 520px">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 88px">Date</th>
+                                                    <th style="width: 70px">Round</th>
+                                                    <th style="width: 32px">H/A</th>
+                                                    <th>Opponent</th>
+                                                    <th style="width: 90px">Venue</th>
+                                                    <th style="width: 62px; text-align: center">Score</th>
+                                                    <th style="width: 74px; text-align: center">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var match in league.OrderByDescending(m => m.ScheduledDate).ToList())
                                                 {
-                                                    (true, true, _)   => ("W", Color.Success),
-                                                    (true, _, true)   => ("L", Color.Error),
-                                                    (true, false, false) => ("D", Color.Default),
-                                                    _ when context.Status == MatchStatus._1 => ("Rescheduled", Color.Warning),
-                                                    _ => ("Upcoming", Color.Default)
-                                                };
-                                            }
-                                            <MudTd>@context.ScheduledDate.ToString("dd.MM.yyyy.")</MudTd>
-                                            <MudTd Style="color:var(--mud-palette-text-secondary);font-size:0.82rem">@context.RoundName</MudTd>
-                                            <MudTd>
-                                                <span class="tmh-ha @(context.IsHome ? "tmh-ha-home" : "tmh-ha-away")">
-                                                    @(context.IsHome ? "H" : "A")
-                                                </span>
-                                            </MudTd>
-                                            <MudTd>
-                                                <MudLink Href="@($"/teams/{context.OpponentTeamId}")"
-                                                         @onclick:stopPropagation="true">
-                                                    @context.OpponentTeamName
-                                                </MudLink>
-                                            </MudTd>
-                                            <MudTd Style="color:var(--mud-palette-text-secondary);font-size:0.8rem">
-                                                @if (!string.IsNullOrEmpty(context.Venue))
-                                                {
-                                                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" Style="vertical-align:middle;font-size:0.85rem" />@context.Venue
+                                                    var won        = match.TeamScore > match.OpponentScore;
+                                                    var lost       = match.TeamScore < match.OpponentScore;
+                                                    var hasScore   = match.TeamScore.HasValue && match.OpponentScore.HasValue;
+                                                    var isFinished = match.Status == MatchStatus._2 || match.Status == MatchStatus._3;
+                                                    var (statusLabel, statusColor) = (isFinished, won, lost) switch
+                                                    {
+                                                        (true, true, _)      => ("W", Color.Success),
+                                                        (true, _, true)      => ("L", Color.Error),
+                                                        (true, false, false) => ("D", Color.Default),
+                                                        _ when match.Status == MatchStatus._1 => ("Rescheduled", Color.Warning),
+                                                        _ => ("Upcoming", Color.Default)
+                                                    };
+                                                    <tr class="clickable-row"
+                                                        @onclick="@(() => NavigationManager.NavigateTo($"/matches/{match.MatchId}"))">
+                                                        <td>@match.ScheduledDate.ToString("dd.MM.yyyy.")</td>
+                                                        <td style="color:var(--mud-palette-text-secondary);font-size:0.82rem">@match.RoundName</td>
+                                                        <td style="text-align:center">
+                                                            <span class="tmh-ha @(match.IsHome ? "tmh-ha-home" : "tmh-ha-away")">
+                                                                @(match.IsHome ? "H" : "A")
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <MudLink Href="@($"/teams/{match.OpponentTeamId}")"
+                                                                     @onclick:stopPropagation="true">
+                                                                @match.OpponentTeamName
+                                                            </MudLink>
+                                                        </td>
+                                                        <td style="color:var(--mud-palette-text-secondary);font-size:0.8rem">
+                                                            @if (!string.IsNullOrEmpty(match.Venue))
+                                                            {
+                                                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" Style="vertical-align:middle;font-size:0.85rem" />@match.Venue
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>–</span>
+                                                            }
+                                                        </td>
+                                                        <td style="text-align:center;font-weight:700;font-variant-numeric:tabular-nums">
+                                                            @if (hasScore)
+                                                            {
+                                                                <span class="@(won ? "tmh-score-win" : lost ? "tmh-score-loss" : "")">@match.TeamScore</span>
+                                                                <span class="tmh-score-sep mx-1">:</span>
+                                                                <span class="@(lost ? "tmh-score-win" : won ? "tmh-score-loss" : "")">@match.OpponentScore</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span style="color:var(--mud-palette-text-secondary)">–</span>
+                                                            }
+                                                        </td>
+                                                        <td style="text-align:center">
+                                                            <MudChip T="string" Size="Size.Small" Color="@statusColor"
+                                                                     Variant="@(isFinished ? Variant.Filled : Variant.Outlined)">
+                                                                @statusLabel
+                                                            </MudChip>
+                                                        </td>
+                                                    </tr>
                                                 }
-                                                else { <span>–</span> }
-                                            </MudTd>
-                                            <MudTd Style="text-align:center;font-weight:700;font-variant-numeric:tabular-nums">
-                                                @if (hasScore)
-                                                {
-                                                    <span class="@(won ? "tmh-score-win" : lost ? "tmh-score-loss" : "")">@context.TeamScore</span>
-                                                    <span class="tmh-score-sep mx-1">:</span>
-                                                    <span class="@(lost ? "tmh-score-win" : won ? "tmh-score-loss" : "")">@context.OpponentScore</span>
-                                                }
-                                                else
-                                                {
-                                                    <span style="color:var(--mud-palette-text-secondary)">–</span>
-                                                }
-                                            </MudTd>
-                                            <MudTd Style="text-align:center">
-                                                <MudChip T="string" Size="Size.Small" Color="@statusColor"
-                                                         Variant="@(isFinished ? Variant.Filled : Variant.Outlined)">
-                                                    @statusLabel
-                                                </MudChip>
-                                            </MudTd>
-                                        </RowTemplate>
-                                    </MudTable>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 }
                             }
                         }

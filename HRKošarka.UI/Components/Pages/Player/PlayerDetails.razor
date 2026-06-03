@@ -230,50 +230,57 @@
                         }
                         else
                         {
-                            <MudTable Items="_assignments" Dense="true" Hover="true" Striped="true" Elevation="0">
-                                <HeaderContent>
-                                    <MudTh>Status</MudTh>
-                                    <MudTh>Team</MudTh>
-                                    <MudTh>Club</MudTh>
-                                    <MudTh>Season</MudTh>
-                                    <MudTh>Jersey #</MudTh>
-                                    <MudTh>From</MudTh>
-                                    <MudTh>To</MudTh>
-                                    @if (_isAdmin)
-                                    {
-                                        <MudTh></MudTh>
-                                    }
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd>
-                                        <MudChip T="string" Size="Size.Small"
-                                                 Color="@(context.IsActive ? Color.Success : Color.Default)">
-                                            @(context.IsActive ? "Active" : "Past")
-                                        </MudChip>
-                                    </MudTd>
-                                    <MudTd>
-                                        <MudLink Href="@($"/teams/{context.TeamId}")">@context.TeamName</MudLink>
-                                    </MudTd>
-                                    <MudTd>@context.ClubName</MudTd>
-                                    <MudTd>@context.SeasonName</MudTd>
-                                    <MudTd>@(context.JerseyNumber.HasValue ? $"#{context.JerseyNumber}" : "-")</MudTd>
-                                    <MudTd>@context.JoinDate.ToString("dd.MM.yyyy.")</MudTd>
-                                    <MudTd>@(context.LeaveDate.HasValue ? context.LeaveDate.Value.ToString("dd.MM.yyyy.") : "—")</MudTd>
-                                    @if (_isAdmin)
-                                    {
-                                        <MudTd>
-                                            @if (context.IsActive)
+                            <div class="details-scroll-xy">
+                                <table class="details-table" style="min-width: 560px">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 68px">Status</th>
+                                            <th>Team</th>
+                                            <th style="width: 108px">Club</th>
+                                            <th style="width: 74px">Season</th>
+                                            <th style="width: 60px">Jersey #</th>
+                                            <th style="width: 88px">From</th>
+                                            <th style="width: 88px">To</th>
+                                            @if (_isAdmin)
                                             {
-                                                <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
-                                                               Color="Color.Error"
-                                                               Size="Size.Small"
-                                                               OnClick="@(() => RemoveAssignment(context))"
-                                                               Disabled="_isProcessing" />
+                                                <th style="width: 46px"></th>
                                             }
-                                        </MudTd>
-                                    }
-                                </RowTemplate>
-                            </MudTable>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in _assignments)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <MudChip T="string" Size="Size.Small"
+                                                             Color="@(item.IsActive ? Color.Success : Color.Default)">
+                                                        @(item.IsActive ? "Active" : "Past")
+                                                    </MudChip>
+                                                </td>
+                                                <td><MudLink Href="@($"/teams/{item.TeamId}")">@item.TeamName</MudLink></td>
+                                                <td>@item.ClubName</td>
+                                                <td>@item.SeasonName</td>
+                                                <td>@(item.JerseyNumber.HasValue ? $"#{item.JerseyNumber}" : "-")</td>
+                                                <td>@item.JoinDate.ToString("dd.MM.yyyy.")</td>
+                                                <td>@(item.LeaveDate.HasValue ? item.LeaveDate.Value.ToString("dd.MM.yyyy.") : "—")</td>
+                                                @if (_isAdmin)
+                                                {
+                                                    <td>
+                                                        @if (item.IsActive)
+                                                        {
+                                                            <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
+                                                                           Color="Color.Error"
+                                                                           Size="Size.Small"
+                                                                           OnClick="@(() => RemoveAssignment(item))"
+                                                                           Disabled="_isProcessing" />
+                                                        }
+                                                    </td>
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
                     </ChildContent>
                 </MudExpansionPanel>

@@ -15,6 +15,7 @@ using HRKošarka.Application.Features.League.Queries.GetFeaturedLeagueMatches;
 using HRKošarka.Application.Features.League.Queries.GetLeagueBreaks;
 using HRKošarka.Application.Features.League.Queries.GetLeagueDetails;
 using HRKošarka.Application.Features.League.Queries.GetLeagueSchedule;
+using HRKošarka.Application.Features.League.Queries.GetLeagueStandings;
 using HRKošarka.Application.Features.League.Queries.GetLeagueTeams;
 using HRKošarka.Application.Models.Responses;
 using MediatR;
@@ -218,6 +219,15 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<QueryResponse<List<LeagueRoundDTO>>>> GetSchedule(Guid id)
         {
             var response = await _mediator.Send(new GetLeagueScheduleQuery(id));
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/standings", Name = "GetLeagueStandings")]
+        [ProducesResponseType(typeof(QueryResponse<LeagueStandingsDTO>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<LeagueStandingsDTO>>> GetStandings(Guid id)
+        {
+            var response = await _mediator.Send(new GetLeagueStandingsQuery(id));
             return Ok(response);
         }
 

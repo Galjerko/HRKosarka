@@ -379,5 +379,25 @@ namespace HRKošarka.UI.Services
                 return ConvertApiExceptionsToQuery<List<FeaturedLeagueRoundDTO>>(ex);
             }
         }
+
+        public async Task<QueryResponse<LeagueStandingsDTO>> GetLeagueStandings(Guid leagueId)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetLeagueStandingsAsync(leagueId);
+                return new QueryResponse<LeagueStandingsDTO>
+                {
+                    Data = response.Data,
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<LeagueStandingsDTO>(ex);
+            }
+        }
     }
 }

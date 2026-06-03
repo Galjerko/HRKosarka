@@ -16,11 +16,13 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
         private List<LeagueTeamDTO> _leagueTeams = new();
         private List<LeagueBreakDTO> _breaks = new();
         private List<LeagueRoundDTO> _schedule = new();
+        private LeagueStandingsDTO? _standings;
 
         private bool _isLoading = true;
         private bool _isLoadingTeams = false;
         private bool _isLoadingBreaks = false;
         private bool _isLoadingSchedule = false;
+        private bool _isLoadingStandings = false;
         private bool _isProcessing = false;
 
         private bool _showDeactivateDialog = false;
@@ -73,7 +75,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                 {
                     _league = response.Data;
                     if (_league.ScheduleGenerated)
-                        await LoadSchedule();
+                        await Task.WhenAll(LoadSchedule(), LoadStandings());
                 }
                 else
                 {
@@ -148,6 +150,25 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
             finally
             {
                 _isLoadingSchedule = false;
+            }
+        }
+
+        private async Task LoadStandings()
+        {
+            _isLoadingStandings = true;
+            try
+            {
+                var response = await LeagueService.GetLeagueStandings(Id);
+                if (response.IsSuccess)
+                    _standings = response.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading standings: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingStandings = false;
             }
         }
 

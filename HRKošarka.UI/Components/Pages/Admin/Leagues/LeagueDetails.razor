@@ -250,40 +250,49 @@
                         }
                         else
                         {
-                            <MudTable Items="_leagueTeams" Dense="true" Hover="true" Striped="true" Elevation="0">
-                                <HeaderContent>
-                                    <MudTh>Team</MudTh>
-                                    <MudTh>Club</MudTh>
-                                    <MudTh>Age Category</MudTh>
-                                    <MudTh>Registration Date</MudTh>
-                                    @if (!_league.ScheduleGenerated)
-                                    {
-                                        <AuthorizeView Roles="Administrator" Context="hdrCtx">
-                                            <Authorized><MudTh></MudTh></Authorized>
-                                        </AuthorizeView>
-                                    }
-                                </HeaderContent>
-                                <RowTemplate Context="teamCtx">
-                                    <MudTd><MudLink Href="@($"/teams/{teamCtx.TeamId}")">@teamCtx.TeamName</MudLink></MudTd>
-                                    <MudTd>@teamCtx.ClubName</MudTd>
-                                    <MudTd>@teamCtx.AgeCategoryName</MudTd>
-                                    <MudTd>@teamCtx.RegistrationDate.ToString("dd.MM.yyyy.")</MudTd>
-                                    @if (!_league.ScheduleGenerated)
-                                    {
-                                        <AuthorizeView Roles="Administrator" Context="authCtx">
-                                            <Authorized>
-                                                <MudTd>
-                                                    <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
-                                                                   Color="Color.Error"
-                                                                   Size="Size.Small"
-                                                                   OnClick="@(() => RemoveTeam(teamCtx))"
-                                                                   Disabled="_isProcessing" />
-                                                </MudTd>
-                                            </Authorized>
-                                        </AuthorizeView>
-                                    }
-                                </RowTemplate>
-                            </MudTable>
+                            <div class="teams-scroll-wrapper">
+                                <table class="teams-native-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Team</th>
+                                            <th>Club</th>
+                                            <th>Age Category</th>
+                                            <th>Registration Date</th>
+                                            @if (!_league.ScheduleGenerated)
+                                            {
+                                                <AuthorizeView Roles="Administrator" Context="hdrCtx">
+                                                    <Authorized><th></th></Authorized>
+                                                </AuthorizeView>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var team in _leagueTeams)
+                                        {
+                                            <tr>
+                                                <td><MudLink Href="@($"/teams/{team.TeamId}")">@team.TeamName</MudLink></td>
+                                                <td>@team.ClubName</td>
+                                                <td>@team.AgeCategoryName</td>
+                                                <td>@team.RegistrationDate.ToString("dd.MM.yyyy.")</td>
+                                                @if (!_league.ScheduleGenerated)
+                                                {
+                                                    <AuthorizeView Roles="Administrator" Context="authCtx">
+                                                        <Authorized>
+                                                            <td>
+                                                                <MudIconButton Icon="@Icons.Material.Filled.PersonRemove"
+                                                                               Color="Color.Error"
+                                                                               Size="Size.Small"
+                                                                               OnClick="@(() => RemoveTeam(team))"
+                                                                               Disabled="_isProcessing" />
+                                                            </td>
+                                                        </Authorized>
+                                                    </AuthorizeView>
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
                     </ChildContent>
                 </MudExpansionPanel>
@@ -315,25 +324,34 @@
                                     {
                                         @if (_breaks.Any())
                                         {
-                                            <MudTable Items="_breaks" Dense="true" Hover="true" Elevation="0" Class="mb-4">
-                                                <HeaderContent>
-                                                    <MudTh>Name</MudTh>
-                                                    <MudTh>Start</MudTh>
-                                                    <MudTh>End</MudTh>
-                                                    <MudTh></MudTh>
-                                                </HeaderContent>
-                                                <RowTemplate Context="breakCtx">
-                                                    <MudTd>@breakCtx.Name</MudTd>
-                                                    <MudTd>@breakCtx.StartDate.ToString("dd.MM.yyyy.")</MudTd>
-                                                    <MudTd>@breakCtx.EndDate.ToString("dd.MM.yyyy.")</MudTd>
-                                                    <MudTd>
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                                       Color="Color.Error"
-                                                                       Size="Size.Small"
-                                                                       OnClick="@(() => RemoveBreak(breakCtx))" />
-                                                    </MudTd>
-                                                </RowTemplate>
-                                            </MudTable>
+                                            <div class="details-scroll-x mb-4">
+                                                <table class="details-table" style="min-width: 320px">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Name</th>
+                                                            <th style="width: 90px">Start</th>
+                                                            <th style="width: 90px">End</th>
+                                                            <th style="width: 44px"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var b in _breaks)
+                                                        {
+                                                            <tr>
+                                                                <td>@b.Name</td>
+                                                                <td>@b.StartDate.ToString("dd.MM.yyyy.")</td>
+                                                                <td>@b.EndDate.ToString("dd.MM.yyyy.")</td>
+                                                                <td>
+                                                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                                                   Color="Color.Error"
+                                                                                   Size="Size.Small"
+                                                                                   OnClick="@(() => RemoveBreak(b))" />
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         }
                                         else
                                         {
@@ -454,6 +472,7 @@
                             }
                             else
                             {
+                                <div class="schedule-scroll">
                                 @foreach (var round in _schedule)
                                 {
                                     <div class="mb-4">
@@ -514,9 +533,200 @@
                                     </div>
                                     <MudDivider Class="mb-3" />
                                 }
+                                </div>
                             }
                         </ChildContent>
                     </MudExpansionPanel>
+                }
+
+                <!-- Standings (post-generation) -->
+                @if (_league.ScheduleGenerated)
+                {
+                    <MudExpansionPanel IsInitiallyExpanded="true" Class="expansion-panel">
+                        <TitleContent>
+                            <div class="panel-title">
+                                <MudIcon Icon="@Icons.Material.Filled.Leaderboard" Class="panel-icon" />
+                                <MudText Typo="Typo.h6">Standings</MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            @if (_isLoadingStandings)
+                            {
+                                <div class="d-flex justify-center pa-4">
+                                    <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                                </div>
+                            }
+                            else if (_standings == null || !_standings.Standings.Any())
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">No standings data yet.</MudText>
+                            }
+                            else
+                            {
+                                <div class="standings-scroll-wrapper">
+                                    <table class="standings-native-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="standings-col-pos">#</th>
+                                                <th class="standings-col-team">Team</th>
+                                                <th class="standings-col-stat">GP</th>
+                                                <th class="standings-col-stat">W</th>
+                                                <th class="standings-col-stat">L</th>
+                                                <th class="standings-col-stat">PF</th>
+                                                <th class="standings-col-stat">PA</th>
+                                                <th class="standings-col-stat">+/-</th>
+                                                <th class="standings-col-stat">Pts</th>
+                                                <th class="standings-col-last5">Last 5</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var row in _standings.Standings)
+                                            {
+                                                <tr class="standings-row">
+                                                    <td class="standings-col-pos">@row.Position</td>
+                                                    <td class="standings-col-team">
+                                                        <MudLink Href="@($"/teams/{row.TeamId}")">@row.TeamName</MudLink>
+                                                    </td>
+                                                    @if (row.HasPlayed)
+                                                    {
+                                                        <td class="standings-col-stat">@row.GamesPlayed</td>
+                                                        <td class="standings-col-stat">@row.Wins</td>
+                                                        <td class="standings-col-stat">@row.Losses</td>
+                                                        <td class="standings-col-stat">@row.PointsFor</td>
+                                                        <td class="standings-col-stat">@row.PointsAgainst</td>
+                                                        <td class="standings-col-stat @(row.PointsDifference > 0 ? "standings-positive" : row.PointsDifference < 0 ? "standings-negative" : "")">
+                                                            @(row.PointsDifference > 0 ? $"+{row.PointsDifference}" : row.PointsDifference.ToString())
+                                                        </td>
+                                                        <td class="standings-col-stat standings-pts">@row.LeaguePoints</td>
+                                                        <td class="standings-col-last5">
+                                                            <div class="d-flex gap-1 flex-nowrap">
+                                                                @foreach (var result in row.Last5)
+                                                                {
+                                                                    <MudChip T="string" Size="Size.Small"
+                                                                             Color="@(result == "W" ? Color.Success : Color.Error)"
+                                                                             Class="last5-chip">
+                                                                        @result
+                                                                    </MudChip>
+                                                                }
+                                                            </div>
+                                                        </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td class="standings-col-stat standings-no-games" colspan="8">No games played</td>
+                                                    }
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            }
+                        </ChildContent>
+                    </MudExpansionPanel>
+
+                    @if (_standings?.Leaders != null)
+                    {
+                        <MudExpansionPanel IsInitiallyExpanded="true" Class="expansion-panel">
+                            <TitleContent>
+                                <div class="panel-title">
+                                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Class="panel-icon" />
+                                    <MudText Typo="Typo.h6">League Leaders</MudText>
+                                </div>
+                            </TitleContent>
+                            <ChildContent>
+                                <div class="leaders-grid">
+
+                                    <div class="leaders-card">
+                                        <div class="leaders-card-header leaders-header-scorers">
+                                            <MudIcon Icon="@Icons.Material.Filled.SportsSoccer" Size="Size.Small" />
+                                            <MudText Typo="Typo.subtitle2"><strong>Top Scorers</strong></MudText>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-auto">PPG</MudChip>
+                                        </div>
+                                        <div class="leaders-table-scroll"><table class="leaders-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="ldr-th-player">Player</th>
+                                                    <th class="ldr-th-team">Team</th>
+                                                    <th class="ldr-th-gp">GP</th>
+                                                    <th class="ldr-th-val">PPG</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var entry in _standings.Leaders.TopScorers)
+                                                {
+                                                    <tr class="ldr-row">
+                                                        <td class="ldr-td-player"><MudLink Href="@($"/players/{entry.PlayerId}")">@entry.PlayerName</MudLink></td>
+                                                        <td class="ldr-td-team">@entry.TeamName</td>
+                                                        <td class="ldr-td-gp">@entry.GamesPlayed</td>
+                                                        <td class="ldr-td-val">@entry.Value.ToString("F1")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table></div>
+                                    </div>
+
+                                    <div class="leaders-card">
+                                        <div class="leaders-card-header leaders-header-threes">
+                                            <MudIcon Icon="@Icons.Material.Filled.Looks3" Size="Size.Small" />
+                                            <MudText Typo="Typo.subtitle2"><strong>Three-Pointers</strong></MudText>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="ml-auto">3PG</MudChip>
+                                        </div>
+                                        <div class="leaders-table-scroll"><table class="leaders-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="ldr-th-player">Player</th>
+                                                    <th class="ldr-th-team">Team</th>
+                                                    <th class="ldr-th-gp">GP</th>
+                                                    <th class="ldr-th-val">3PG</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var entry in _standings.Leaders.TopThreePointers)
+                                                {
+                                                    <tr class="ldr-row">
+                                                        <td class="ldr-td-player"><MudLink Href="@($"/players/{entry.PlayerId}")">@entry.PlayerName</MudLink></td>
+                                                        <td class="ldr-td-team">@entry.TeamName</td>
+                                                        <td class="ldr-td-gp">@entry.GamesPlayed</td>
+                                                        <td class="ldr-td-val">@entry.Value.ToString("F1")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table></div>
+                                    </div>
+
+                                    <div class="leaders-card">
+                                        <div class="leaders-card-header leaders-header-fouls">
+                                            <MudIcon Icon="@Icons.Material.Filled.PanTool" Size="Size.Small" />
+                                            <MudText Typo="Typo.subtitle2"><strong>Foul Leaders</strong></MudText>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="ml-auto">FPG</MudChip>
+                                        </div>
+                                        <div class="leaders-table-scroll"><table class="leaders-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="ldr-th-player">Player</th>
+                                                    <th class="ldr-th-team">Team</th>
+                                                    <th class="ldr-th-gp">GP</th>
+                                                    <th class="ldr-th-val">FPG</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var entry in _standings.Leaders.TopFoulMakers)
+                                                {
+                                                    <tr class="ldr-row">
+                                                        <td class="ldr-td-player"><MudLink Href="@($"/players/{entry.PlayerId}")">@entry.PlayerName</MudLink></td>
+                                                        <td class="ldr-td-team">@entry.TeamName</td>
+                                                        <td class="ldr-td-gp">@entry.GamesPlayed</td>
+                                                        <td class="ldr-td-val">@entry.Value.ToString("F1")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table></div>
+                                    </div>
+
+                                </div>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    }
                 }
 
             </MudExpansionPanels>

@@ -290,6 +290,15 @@ namespace HRKošarka.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<LeagueStandingsDTOQueryResponse> GetLeagueStandingsAsync(System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<LeagueStandingsDTOQueryResponse> GetLeagueStandingsAsync(System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<Int32CommandResponse> GenerateLeagueScheduleAsync(System.Guid id);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -3864,6 +3873,93 @@ namespace HRKošarka.UI.Services.Base
                         if (status_ == 200)
                         {
                             var objectResponse_ = await ReadObjectResponseAsync<LeagueRoundDTOListQueryResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<LeagueStandingsDTOQueryResponse> GetLeagueStandingsAsync(System.Guid id)
+        {
+            return GetLeagueStandingsAsync(id, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<LeagueStandingsDTOQueryResponse> GetLeagueStandingsAsync(System.Guid id, System.Threading.CancellationToken cancellationToken)
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/leagues/{id}/standings"
+                    urlBuilder_.Append("api/leagues/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/standings");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<LeagueStandingsDTOQueryResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -10852,6 +10948,27 @@ namespace HRKošarka.UI.Services.Base
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LeaderEntryDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("playerId")]
+        public System.Guid PlayerId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playerName")]
+        public string PlayerName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("teamName")]
+        public string TeamName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("value")]
+        public double Value { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gamesPlayed")]
+        public int GamesPlayed { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class LeagueBreakDTO
     {
 
@@ -11050,6 +11167,21 @@ namespace HRKošarka.UI.Services.Base
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LeagueLeadersDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("topScorers")]
+        public System.Collections.Generic.ICollection<LeaderEntryDTO> TopScorers { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("topThreePointers")]
+        public System.Collections.Generic.ICollection<LeaderEntryDTO> TopThreePointers { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("topFoulMakers")]
+        public System.Collections.Generic.ICollection<LeaderEntryDTO> TopFoulMakers { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class LeagueMatchDTO
     {
 
@@ -11121,6 +11253,36 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public System.Collections.Generic.ICollection<LeagueRoundDTO> Data { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LeagueStandingsDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("standings")]
+        public System.Collections.Generic.ICollection<TeamStandingRowDTO> Standings { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("leaders")]
+        public LeagueLeadersDTO Leaders { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LeagueStandingsDTOQueryResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("isSuccess")]
+        public bool IsSuccess { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string Message { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("errors")]
+        public System.Collections.Generic.ICollection<string> Errors { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public LeagueStandingsDTO Data { get; set; }
 
     }
 
@@ -12594,6 +12756,51 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public System.Collections.Generic.ICollection<TeamRosterPlayerDTO> Data { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TeamStandingRowDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("position")]
+        public int Position { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("teamId")]
+        public System.Guid TeamId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("teamName")]
+        public string TeamName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("clubName")]
+        public string ClubName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gamesPlayed")]
+        public int GamesPlayed { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("wins")]
+        public int Wins { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("losses")]
+        public int Losses { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("pointsFor")]
+        public int PointsFor { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("pointsAgainst")]
+        public int PointsAgainst { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("pointsDifference")]
+        public int PointsDifference { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("leaguePoints")]
+        public int LeaguePoints { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("last5")]
+        public System.Collections.Generic.ICollection<string> Last5 { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("hasPlayed")]
+        public bool HasPlayed { get; set; }
 
     }
 

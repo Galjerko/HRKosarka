@@ -1,7 +1,9 @@
 using HRKošarka.Application.Contracts.Persistence;
+using HRKošarka.Application.Features.League.Queries.GetLeagueStandings;
 using HRKošarka.Application.Features.Match.Queries.GetPendingActions;
 using HRKošarka.Application.Features.Team.Queries.GetTeamMatchHistory;
 using HRKošarka.Domain;
+using HRKošarka.Domain.Common;
 using HRKošarka.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -222,6 +224,23 @@ namespace HRKošarka.Persistence.Repositories
             }
 
             return result.OrderBy(a => a.ScheduledDate).ToList();
+        }
+
+        public async Task<List<CompletedMatchSlimDTO>> GetCompletedMatchesByLeagueAsync(
+            Guid leagueId, CancellationToken ct = default)
+        {
+            return await _context.Matches
+                .Where(m => m.LeagueId == leagueId && m.Status == MatchStatus.Completed)
+                .OrderByDescending(m => m.ActualScheduledDate)
+                .Select(m => new CompletedMatchSlimDTO
+                {
+                    HomeTeamId = m.HomeTeamId,
+                    AwayTeamId = m.AwayTeamId,
+                    HomeScore = m.HomeScore,
+                    AwayScore = m.AwayScore
+                })
+                .AsNoTracking()
+                .ToListAsync(ct);
         }
 
         public async Task<List<TeamMatchHistoryItemDTO>> GetTeamMatchHistoryAsync(
