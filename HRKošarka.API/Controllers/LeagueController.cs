@@ -14,6 +14,7 @@ using HRKošarka.Application.Features.League.Queries.GetAvailableTeamsForLeague;
 using HRKošarka.Application.Features.League.Queries.GetFeaturedLeagueMatches;
 using HRKošarka.Application.Features.League.Queries.GetLeagueBreaks;
 using HRKošarka.Application.Features.League.Queries.GetLeagueDetails;
+using HRKošarka.Application.Features.League.Queries.GetLeagueLeaderboard;
 using HRKošarka.Application.Features.League.Queries.GetLeagueSchedule;
 using HRKošarka.Application.Features.League.Queries.GetLeagueStandings;
 using HRKošarka.Application.Features.League.Queries.GetLeagueTeams;
@@ -228,6 +229,16 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<QueryResponse<LeagueStandingsDTO>>> GetStandings(Guid id)
         {
             var response = await _mediator.Send(new GetLeagueStandingsQuery(id));
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/leaderboard", Name = "GetLeagueLeaderboard")]
+        [ProducesResponseType(typeof(QueryResponse<List<LeaguePlayerStatDTO>>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<LeaguePlayerStatDTO>>>> GetLeaderboard(
+            Guid id, [FromQuery] string? sortBy = null, [FromQuery] string? sortDirection = null)
+        {
+            var response = await _mediator.Send(new GetLeagueLeaderboardQuery(id, sortBy, sortDirection));
             return Ok(response);
         }
 

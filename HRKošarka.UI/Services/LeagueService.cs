@@ -399,5 +399,26 @@ namespace HRKošarka.UI.Services
                 return ConvertApiExceptionsToQuery<LeagueStandingsDTO>(ex);
             }
         }
+
+        public async Task<QueryResponse<List<LeaguePlayerStatDTO>>> GetLeagueLeaderboard(
+            Guid leagueId, string? sortBy = null, string? sortDirection = null)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetLeagueLeaderboardAsync(leagueId, sortBy, sortDirection);
+                return new QueryResponse<List<LeaguePlayerStatDTO>>
+                {
+                    Data = response.Data?.ToList() ?? new List<LeaguePlayerStatDTO>(),
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<List<LeaguePlayerStatDTO>>(ex);
+            }
+        }
     }
 }

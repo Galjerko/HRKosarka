@@ -31,5 +31,6 @@ namespace HRKošarka.UI.Contracts
         Task<QueryResponse<List<LeagueRoundDTO>>> GetLeagueSchedule(Guid leagueId);
         Task<QueryResponse<List<FeaturedLeagueRoundDTO>>> GetFeaturedLeagueMatches();
         Task<QueryResponse<LeagueStandingsDTO>> GetLeagueStandings(Guid leagueId);
+        Task<QueryResponse<List<LeaguePlayerStatDTO>>> GetLeagueLeaderboard(Guid leagueId, string? sortBy = null, string? sortDirection = null);
     }
 }

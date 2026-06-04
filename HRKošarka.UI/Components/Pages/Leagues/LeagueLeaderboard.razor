@@ -1,0 +1,106 @@
+@page "/leagues/{Id:guid}/leaderboard"
+@using HRKošarka.UI.Services.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<PageTitle>Player Leaderboard - Basketball Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="details-container">
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.h6">Loading leaderboard...</MudText>
+        </div>
+    }
+    else
+    {
+        <MudPaper Class="details-paper" Elevation="2">
+
+            <div class="details-actions-row">
+                <MudLink Href="@($"/leagues/{Id}")"
+                         Typo="Typo.body2"
+                         Class="d-flex align-center gap-1">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Small" />
+                    Back to League
+                </MudLink>
+            </div>
+
+            <div class="details-header">
+                <MudText Typo="Typo.h4" Class="details-title">
+                    @(_league?.Name ?? "League")
+                </MudText>
+                <MudText Typo="Typo.h6" Color="Color.Secondary">Player Leaderboard</MudText>
+            </div>
+
+            @if (!_players.Any())
+            {
+                <div class="pa-6 text-center">
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">
+                        No player statistics available yet. Stats are recorded once matches are confirmed.
+                    </MudText>
+                </div>
+            }
+            else
+            {
+                <div class="details-scroll-x mt-4">
+                    <table class="details-table" style="min-width: 720px">
+                        <thead>
+                            <tr>
+                                <th style="width: 36px">#</th>
+                                <th class="ldr-sortable" @onclick="@(() => Sort(nameof(LeaguePlayerStatDTO.PlayerName)))">
+                                    Player <MudIcon Icon="@SortIcon(nameof(LeaguePlayerStatDTO.PlayerName))" Size="Size.Small" Class="sort-icon" />
+                                </th>
+                                <th style="width: 46px" class="text-center">POS</th>
+                                <th class="ldr-sortable" @onclick="@(() => Sort(nameof(LeaguePlayerStatDTO.TeamName)))">
+                                    Team <MudIcon Icon="@SortIcon(nameof(LeaguePlayerStatDTO.TeamName))" Size="Size.Small" Class="sort-icon" />
+                                </th>
+                                <th style="width: 52px" class="ldr-sortable text-center" @onclick="@(() => Sort(nameof(LeaguePlayerStatDTO.GamesPlayed)))">
+                                    GP <MudIcon Icon="@SortIcon(nameof(LeaguePlayerStatDTO.GamesPlayed))" Size="Size.Small" Class="sort-icon" />
+                                </th>
+                                <th style="width: 62px" class="ldr-sortable text-center" @onclick="@(() => Sort(nameof(LeaguePlayerStatDTO.Ppg)))">
+                                    PPG <MudIcon Icon="@SortIcon(nameof(LeaguePlayerStatDTO.Ppg))" Size="Size.Small" Class="sort-icon" />
+                                </th>
+                                <th style="width: 62px" class="ldr-sortable text-center" @onclick="@(() => Sort(nameof(LeaguePlayerStatDTO.ThreePointsPerGame)))">
+                                    3PG <MudIcon Icon="@SortIcon(nameof(LeaguePlayerStatDTO.ThreePointsPerGame))" Size="Size.Small" Class="sort-icon" />
+                                </th>
+                                <th style="width: 62px" class="ldr-sortable text-center" @onclick="@(() => Sort(nameof(LeaguePlayerStatDTO.FoulsPerGame)))">
+                                    FPG <MudIcon Icon="@SortIcon(nameof(LeaguePlayerStatDTO.FoulsPerGame))" Size="Size.Small" Class="sort-icon" />
+                                </th>
+                                <th style="width: 56px" class="ldr-sortable text-center" @onclick="@(() => Sort(nameof(LeaguePlayerStatDTO.TotalPoints)))">
+                                    PTS <MudIcon Icon="@SortIcon(nameof(LeaguePlayerStatDTO.TotalPoints))" Size="Size.Small" Class="sort-icon" />
+                                </th>
+                                <th style="width: 56px" class="ldr-sortable text-center" @onclick="@(() => Sort(nameof(LeaguePlayerStatDTO.TotalThreePoints)))">
+                                    3PT <MudIcon Icon="@SortIcon(nameof(LeaguePlayerStatDTO.TotalThreePoints))" Size="Size.Small" Class="sort-icon" />
+                                </th>
+                                <th style="width: 52px" class="ldr-sortable text-center" @onclick="@(() => Sort(nameof(LeaguePlayerStatDTO.TotalFouls)))">
+                                    PF <MudIcon Icon="@SortIcon(nameof(LeaguePlayerStatDTO.TotalFouls))" Size="Size.Small" Class="sort-icon" />
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ int rank = 1; }
+                            @foreach (var p in _players)
+                            {
+                                <tr>
+                                    <td class="text-center" style="color: var(--mud-palette-text-secondary)">@rank</td>
+                                    <td><MudLink Href="@($"/players/{p.PlayerId}")">@p.PlayerName</MudLink></td>
+                                    <td class="text-center" style="color: var(--mud-palette-text-secondary)">@p.PlayerPosition.ToAbbr()</td>
+                                    <td><MudLink Href="@($"/teams/{p.TeamId}")">@p.TeamName</MudLink></td>
+                                    <td class="text-center">@p.GamesPlayed</td>
+                                    <td class="text-center"><strong>@p.Ppg.ToString("F1")</strong></td>
+                                    <td class="text-center">@p.ThreePointsPerGame.ToString("F1")</td>
+                                    <td class="text-center">@p.FoulsPerGame.ToString("F1")</td>
+                                    <td class="text-center">@p.TotalPoints</td>
+                                    <td class="text-center">@p.TotalThreePoints</td>
+                                    <td class="text-center">@p.TotalFouls</td>
+                                </tr>
+                                rank++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+        </MudPaper>
+    }
+</MudContainer>

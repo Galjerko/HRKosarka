@@ -3490,6 +3490,14 @@ html, body {
     padding-right: 12px !important;
 }
 
+.ldr-sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+.ldr-sortable:hover { background: rgba(255, 255, 255, 0.04); }
+.sort-icon { vertical-align: middle; opacity: 0.6; }
+
 .details-scroll-x {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;

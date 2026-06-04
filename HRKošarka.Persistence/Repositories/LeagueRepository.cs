@@ -3,6 +3,7 @@ using HRKošarka.Application.Features.League.Queries.GetAllLeagues;
 using HRKošarka.Application.Features.League.Queries.GetAvailableTeamsForLeague;
 using HRKošarka.Application.Features.League.Queries.GetFeaturedLeagueMatches;
 using HRKošarka.Application.Features.League.Queries.GetLeagueBreaks;
+using HRKošarka.Application.Features.League.Queries.GetLeagueLeaderboard;
 using HRKošarka.Application.Features.League.Queries.GetLeagueSchedule;
 using HRKošarka.Application.Features.League.Queries.GetLeagueTeams;
 using HRKošarka.Application.Features.Team.Queries.GetTeamLeagues;
@@ -412,6 +413,57 @@ namespace HRKošarka.Persistence.Repositories
             return result
                 .OrderBy(r => r.Matches.FirstOrDefault()?.ActualScheduledDate ?? DateTime.MaxValue)
                 .ToList();
+        }
+
+        public async Task<List<LeaguePlayerStatDTO>> GetLeagueLeaderboardAsync(
+            Guid leagueId, string? sortBy, string? sortDirection, CancellationToken cancellationToken = default)
+        {
+            var list = await (
+                from pss in _context.PlayerSeasonStats
+                where pss.LeagueId == leagueId && pss.MatchesPlayed > 0
+                join p in _context.Players on pss.PlayerId equals p.Id
+                join t in _context.Teams on pss.TeamId equals t.Id
+                select new LeaguePlayerStatDTO
+                {
+                    PlayerId = pss.PlayerId,
+                    PlayerName = p.FirstName + " " + p.LastName,
+                    PlayerPosition = p.Position,
+                    TeamId = pss.TeamId,
+                    TeamName = t.Name,
+                    GamesPlayed = pss.MatchesPlayed,
+                    PPG = pss.AveragePoints,
+                    TotalPoints = pss.TotalPoints,
+                    ThreePointsPerGame = pss.AverageThreePointers,
+                    TotalThreePoints = pss.TotalThreePointers,
+                    FoulsPerGame = pss.AverageFouls,
+                    TotalFouls = pss.TotalFouls
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            // TODO: extract a generic ApplySort<T>(list, sortBy, asc, Dictionary<string, Func<T,object>> selectors)
+            //       helper to avoid repeating this if/else pattern for every sorted query.
+            bool asc = string.Equals(sortDirection, "asc", StringComparison.OrdinalIgnoreCase);
+
+            if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.PlayerName), StringComparison.OrdinalIgnoreCase))
+                return asc ? list.OrderBy(x => x.PlayerName).ToList() : list.OrderByDescending(x => x.PlayerName).ToList();
+            if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.TeamName), StringComparison.OrdinalIgnoreCase))
+                return asc ? list.OrderBy(x => x.TeamName).ToList() : list.OrderByDescending(x => x.TeamName).ToList();
+            if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.GamesPlayed), StringComparison.OrdinalIgnoreCase))
+                return asc ? list.OrderBy(x => x.GamesPlayed).ToList() : list.OrderByDescending(x => x.GamesPlayed).ToList();
+            if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.PPG), StringComparison.OrdinalIgnoreCase))
+                return asc ? list.OrderBy(x => x.PPG).ToList() : list.OrderByDescending(x => x.PPG).ToList();
+            if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.TotalPoints), StringComparison.OrdinalIgnoreCase))
+                return asc ? list.OrderBy(x => x.TotalPoints).ToList() : list.OrderByDescending(x => x.TotalPoints).ToList();
+            if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.ThreePointsPerGame), StringComparison.OrdinalIgnoreCase))
+                return asc ? list.OrderBy(x => x.ThreePointsPerGame).ToList() : list.OrderByDescending(x => x.ThreePointsPerGame).ToList();
+            if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.TotalThreePoints), StringComparison.OrdinalIgnoreCase))
+                return asc ? list.OrderBy(x => x.TotalThreePoints).ToList() : list.OrderByDescending(x => x.TotalThreePoints).ToList();
+            if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.FoulsPerGame), StringComparison.OrdinalIgnoreCase))
+                return asc ? list.OrderBy(x => x.FoulsPerGame).ToList() : list.OrderByDescending(x => x.FoulsPerGame).ToList();
+            if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.TotalFouls), StringComparison.OrdinalIgnoreCase))
+                return asc ? list.OrderBy(x => x.TotalFouls).ToList() : list.OrderByDescending(x => x.TotalFouls).ToList();
+            return list.OrderByDescending(x => x.PPG).ToList();
         }
     }
 }

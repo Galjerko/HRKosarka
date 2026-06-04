@@ -51,5 +51,18 @@ namespace HRKošarka.UI.Extensions
             HRKošarka.UI.Services.Base.ResultSubmissionStatus._3 => Color.Error,
             _ => Color.Default
         };
+
+        public static string ToAbbr(this HRKošarka.UI.Services.Base.Position? position) => position switch
+        {
+            HRKošarka.UI.Services.Base.Position._0 => "PG",
+            HRKošarka.UI.Services.Base.Position._1 => "SG",
+            HRKošarka.UI.Services.Base.Position._2 => "SF",
+            HRKošarka.UI.Services.Base.Position._3 => "PF",
+            HRKošarka.UI.Services.Base.Position._4 => "C",
+            _ => "–"
+        };
+
+        public static string ToAbbr(this HRKošarka.UI.Services.Base.Position position)
+            => ((HRKošarka.UI.Services.Base.Position?)position).ToAbbr();
     }
 }
