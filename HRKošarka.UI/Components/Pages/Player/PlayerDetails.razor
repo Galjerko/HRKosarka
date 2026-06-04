@@ -287,6 +287,121 @@
                 <MudExpansionPanel Class="expansion-panel">
                     <TitleContent>
                         <div class="panel-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="panel-icon" />
+                            <MudText Typo="Typo.h6">
+                                Career History
+                                @if (_career.Any())
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2">@_career.Count</MudChip>
+                                }
+                            </MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        @if (_isLoadingCareer)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                        }
+                        else if (!_career.Any())
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">No career history on record.</MudText>
+                        }
+                        else
+                        {
+                            <div class="details-scroll-x">
+                                <table class="details-table no-hover" style="min-width: 820px; table-layout: auto;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 88px">Season</th>
+                                            <th style="width: 140px">Team</th>
+                                            <th style="width: 110px">Club</th>
+                                            <th style="width: 52px">Jersey #</th>
+                                            <th style="width: 82px">From</th>
+                                            <th style="width: 82px">To</th>
+                                            <th>Competition</th>
+                                            <th style="width: 40px">GP</th>
+                                            <th style="width: 48px">PPG</th>
+                                            <th style="width: 48px">3PG</th>
+                                            <th style="width: 48px">FPG</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in _career)
+                                        {
+                                            var compStats = item.CompetitionStats?.ToList() ?? new();
+                                            var rowCount = compStats.Count > 0 ? compStats.Count : 1;
+
+                                            @if (compStats.Count == 0)
+                                            {
+                                                <tr class="career-group-start">
+                                                    <td>@item.SeasonName</td>
+                                                    <td><MudLink Href="@($"/teams/{item.TeamId}")">@item.TeamName</MudLink></td>
+                                                    <td>@item.ClubName</td>
+                                                    <td>@(item.JerseyNumber.HasValue ? $"#{item.JerseyNumber}" : "—")</td>
+                                                    <td>@item.JoinDate.ToString("dd.MM.yyyy.")</td>
+                                                    <td>
+                                                        @if (item.IsActive)
+                                                        {
+                                                            <em style="color: var(--mud-palette-success)">Present</em>
+                                                        }
+                                                        else
+                                                        {
+                                                            @(item.LeaveDate.HasValue ? item.LeaveDate.Value.ToString("dd.MM.yyyy.") : "—")
+                                                        }
+                                                    </td>
+                                                    <td colspan="5" style="color: var(--mud-palette-text-disabled); font-style: italic;">no stats recorded</td>
+                                                </tr>
+                                            }
+                                            else
+                                            {
+                                                @for (int i = 0; i < compStats.Count; i++)
+                                                {
+                                                    var comp = compStats[i];
+                                                    <tr class="@(i == 0 ? "career-group-start" : "")">
+                                                        @if (i == 0)
+                                                        {
+                                                            <td rowspan="@rowCount">@item.SeasonName</td>
+                                                            <td rowspan="@rowCount"><MudLink Href="@($"/teams/{item.TeamId}")">@item.TeamName</MudLink></td>
+                                                            <td rowspan="@rowCount">@item.ClubName</td>
+                                                            <td rowspan="@rowCount">@(item.JerseyNumber.HasValue ? $"#{item.JerseyNumber}" : "—")</td>
+                                                            <td rowspan="@rowCount">@item.JoinDate.ToString("dd.MM.yyyy.")</td>
+                                                            <td rowspan="@rowCount">
+                                                                @if (item.IsActive)
+                                                                {
+                                                                    <em style="color: var(--mud-palette-success)">Present</em>
+                                                                }
+                                                                else
+                                                                {
+                                                                    @(item.LeaveDate.HasValue ? item.LeaveDate.Value.ToString("dd.MM.yyyy.") : "—")
+                                                                }
+                                                            </td>
+                                                        }
+                                                        <td>
+                                                            <MudLink Href="@($"/leagues/{comp.LeagueId}")">@comp.LeagueName</MudLink>
+                                                            <MudChip T="string" Size="Size.Small"
+                                                                     Color="@(comp.CompetitionType == "League" ? Color.Info : Color.Secondary)"
+                                                                     Class="ml-1">
+                                                                @comp.CompetitionType
+                                                            </MudChip>
+                                                        </td>
+                                                        <td>@comp.GamesPlayed</td>
+                                                        <td>@comp.Ppg.ToString("F1")</td>
+                                                        <td>@comp.ThreePG.ToString("F1")</td>
+                                                        <td>@comp.Fpg.ToString("F1")</td>
+                                                    </tr>
+                                                }
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </ChildContent>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Class="expansion-panel">
+                    <TitleContent>
+                        <div class="panel-title">
                             <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="panel-icon" />
                             <MudText Typo="Typo.h6">
                                 Season Statistics

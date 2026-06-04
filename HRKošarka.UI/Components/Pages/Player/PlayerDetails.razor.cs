@@ -18,9 +18,11 @@ namespace HRKošarka.UI.Components.Pages.Player
         private PlayerDetailsDTO? _player;
         private List<PlayerAssignmentDTO> _assignments = new();
         private List<PlayerSeasonGroupDTO> _seasonStats = new();
+        private List<PlayerCareerItemDTO> _career = new();
         private bool _isLoading = true;
         private bool _isLoadingAssignments = false;
         private bool _isLoadingStats = false;
+        private bool _isLoadingCareer = false;
         private bool _isProcessing = false;
         private bool _isAdmin = false;
         private bool _showDeactivateDialog = false;
@@ -139,6 +141,25 @@ namespace HRKošarka.UI.Components.Pages.Player
             }
         }
 
+        private async Task LoadCareer()
+        {
+            _isLoadingCareer = true;
+            try
+            {
+                var response = await PlayerService.GetPlayerCareer(Id);
+                if (response.IsSuccess && response.Data != null)
+                    _career = response.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading player career: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingCareer = false;
+            }
+        }
+
         private async Task LoadSeasonStats()
         {
             _isLoadingStats = true;
@@ -170,7 +191,7 @@ namespace HRKošarka.UI.Components.Pages.Player
                 if (response.IsSuccess && response.Data != null)
                 {
                     _player = response.Data;
-                    await Task.WhenAll(LoadAssignments(), LoadSeasonStats());
+                    await Task.WhenAll(LoadAssignments(), LoadSeasonStats(), LoadCareer());
                 }
                 else
                 {

@@ -3538,3 +3538,16 @@ html, body {
 .details-table tr.clickable-row {
     cursor: pointer;
 }
+
+.details-table.no-hover tbody tr:nth-child(even),
+.details-table.no-hover tbody tr:hover {
+    background: transparent !important;
+}
+
+.details-table tbody tr.career-group-start td {
+    border-top: 2px solid rgba(255,255,255,0.10);
+}
+
+.details-table tbody tr.career-group-start:first-child td {
+    border-top: none;
+}

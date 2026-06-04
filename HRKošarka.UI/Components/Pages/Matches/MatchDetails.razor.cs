@@ -136,36 +136,108 @@ namespace HRKošarka.UI.Components.Pages.Matches
             if (isDnp) { stat.Points = 0; stat.ThreePointers = 0; stat.Fouls = 0; }
         }
 
+        private static List<PlayerStatViewModel> CloneStats(List<PlayerStatViewModel> source) =>
+            source.Select(s => new PlayerStatViewModel
+            {
+                PlayerId = s.PlayerId,
+                PlayerName = s.PlayerName,
+                JerseyNumber = s.JerseyNumber,
+                Points = s.Points,
+                ThreePointers = s.ThreePointers,
+                Fouls = s.Fouls,
+                DidNotPlay = s.DidNotPlay,
+                StatsEntered = s.StatsEntered
+            }).ToList();
+
+        private async Task<bool> SaveStatsCore(Guid teamId, List<PlayerStatViewModel> stats)
+        {
+            if (_match is null) return false;
+            var command = new SaveMatchStatsCommand
+            {
+                TeamId = teamId,
+                HomeScore = _homeScore,
+                AwayScore = _awayScore,
+                QuarterResults = FormatQuarters(_quarters),
+                PlayerStats = stats.Select(s => new PlayerStatEntry
+                {
+                    PlayerId = s.PlayerId,
+                    Points = s.Points,
+                    ThreePointers = s.ThreePointers,
+                    Fouls = s.Fouls,
+                    DidNotPlay = s.DidNotPlay
+                }).ToList()
+            };
+            var response = await MatchService.SaveMatchStats(_match.Id, command);
+            if (!response.IsSuccess)
+                Snackbar.Add(response.Message ?? "Failed to save stats.", Severity.Error);
+            return response.IsSuccess;
+        }
+
+        // Non-admin: save one team, reload both panels
         private async Task SaveStats(Guid teamId, List<PlayerStatViewModel> stats)
         {
             if (_match is null) return;
             _isSaving = true;
             try
             {
-                var command = new SaveMatchStatsCommand
-                {
-                    TeamId = teamId,
-                    HomeScore = _homeScore,
-                    AwayScore = _awayScore,
-                    QuarterResults = FormatQuarters(_quarters),
-                    PlayerStats = stats.Select(s => new PlayerStatEntry
-                    {
-                        PlayerId = s.PlayerId,
-                        Points = s.Points,
-                        ThreePointers = s.ThreePointers,
-                        Fouls = s.Fouls,
-                        DidNotPlay = s.DidNotPlay
-                    }).ToList()
-                };
-                var response = await MatchService.SaveMatchStats(_match.Id, command);
-                if (response.IsSuccess)
+                if (await SaveStatsCore(teamId, stats))
                 {
                     Snackbar.Add("Stats saved.", Severity.Success);
                     await LoadMatch();
                 }
-                else
+            }
+            finally { _isSaving = false; }
+        }
+
+        // Admin: save home stats, preserve away panel's local edits
+        private async Task SaveHomeStatsDraft()
+        {
+            if (_match is null) return;
+            _isSaving = true;
+            try
+            {
+                if (await SaveStatsCore(_match.HomeTeamId, _homeStats))
                 {
-                    Snackbar.Add(response.Message ?? "Failed to save stats.", Severity.Error);
+                    Snackbar.Add("Home stats saved.", Severity.Success);
+                    var awaySnapshot = CloneStats(_awayStats);
+                    await LoadMatch();
+                    _awayStats = awaySnapshot;
+                }
+            }
+            finally { _isSaving = false; }
+        }
+
+        // Admin: save away stats, preserve home panel's local edits
+        private async Task SaveAwayStatsDraft()
+        {
+            if (_match is null) return;
+            _isSaving = true;
+            try
+            {
+                if (await SaveStatsCore(_match.AwayTeamId, _awayStats))
+                {
+                    Snackbar.Add("Away stats saved.", Severity.Success);
+                    var homeSnapshot = CloneStats(_homeStats);
+                    await LoadMatch();
+                    _homeStats = homeSnapshot;
+                }
+            }
+            finally { _isSaving = false; }
+        }
+
+        // Admin: save both panels, then reload
+        private async Task SaveAllDraft()
+        {
+            if (_match is null) return;
+            _isSaving = true;
+            try
+            {
+                var homeOk = await SaveStatsCore(_match.HomeTeamId, _homeStats);
+                var awayOk = await SaveStatsCore(_match.AwayTeamId, _awayStats);
+                if (homeOk || awayOk)
+                {
+                    Snackbar.Add("All stats saved as draft.", Severity.Success);
+                    await LoadMatch();
                 }
             }
             finally { _isSaving = false; }

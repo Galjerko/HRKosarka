@@ -299,10 +299,21 @@
             <MudItem xs="12" md="6">
                 <div class="md-stats-panel">
                     <div class="md-stats-header">
-                        <span class="md-stats-team-name">@_match.HomeTeamName</span>
-                        @if (_isHomeManager)
+                        <div class="d-flex align-center gap-2">
+                            <span class="md-stats-team-name">@_match.HomeTeamName</span>
+                            @if (_isHomeManager)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">Your team</MudChip>
+                            }
+                        </div>
+                        @if (_canEditScore)
                         {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">Your team</MudChip>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Save"
+                                       Disabled="@(_isSaving || _homeStats.Count < 5)"
+                                       OnClick="@(_isAdmin ? SaveHomeStatsDraft : () => SaveStats(_match.HomeTeamId, _homeStats))">
+                                Save Home Stats
+                            </MudButton>
                         }
                     </div>
 
@@ -392,26 +403,16 @@
                             </tfoot>
                         </table>
 
-                        @if (_canEditScore)
+                        @if (_isHomeManager && _canSubmitHome)
                         {
-                            <div class="d-flex gap-2 mt-3">
-                                <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Medium"
-                                           StartIcon="@Icons.Material.Filled.Save"
+                            <div class="mt-3">
+                                <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Medium"
+                                           StartIcon="@Icons.Material.Filled.Send"
                                            Disabled="@(_isSaving || _homeStats.Count < 5)"
-                                           OnClick="@(() => SaveStats(_match.HomeTeamId, _homeStats))">
-                                    @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
-                                    Save Draft
+                                           OnClick="SubmitHome" Class="md-submit-btn">
+                                    <span class="md-submit-label-full">Submit to Away Team</span>
+                                    <span class="md-submit-label-short">Submit</span>
                                 </MudButton>
-                                @if (_isHomeManager)
-                                {
-                                    <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Medium"
-                                               StartIcon="@Icons.Material.Filled.Send"
-                                               Disabled="@(_isSaving || !_canSubmitHome || _homeStats.Count < 5)"
-                                               OnClick="SubmitHome" Class="md-submit-btn">
-                                        <span class="md-submit-label-full">Submit to Away Team</span>
-                                        <span class="md-submit-label-short">Submit</span>
-                                    </MudButton>
-                                }
                             </div>
                         }
                     }
@@ -422,10 +423,21 @@
             <MudItem xs="12" md="6">
                 <div class="md-stats-panel">
                     <div class="md-stats-header">
-                        <span class="md-stats-team-name">@_match.AwayTeamName</span>
-                        @if (_isAwayManager)
+                        <div class="d-flex align-center gap-2">
+                            <span class="md-stats-team-name">@_match.AwayTeamName</span>
+                            @if (_isAwayManager)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">Your team</MudChip>
+                            }
+                        </div>
+                        @if (_canEditAwayStats)
                         {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">Your team</MudChip>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Save"
+                                       Disabled="@(_isSaving || _awayStats.Count < 5)"
+                                       OnClick="@(_isAdmin ? SaveAwayStatsDraft : () => SaveStats(_match.AwayTeamId, _awayStats))">
+                                Save Away Stats
+                            </MudButton>
                         }
                     </div>
 
@@ -515,18 +527,6 @@
                             </tfoot>
                         </table>
 
-                        @if (_canEditAwayStats)
-                        {
-                            <div class="mt-3">
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium"
-                                           StartIcon="@Icons.Material.Filled.Save"
-                                           Disabled="@(_isSaving || _awayStats.Count < 5)"
-                                           OnClick="@(() => SaveStats(_match.AwayTeamId, _awayStats))">
-                                    @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
-                                    Save Away Stats
-                                </MudButton>
-                            </div>
-                        }
                     }
                 </div>
             </MudItem>
@@ -555,6 +555,12 @@
                 }
                 @if (_isAdmin)
                 {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.SaveAlt"
+                               Disabled="@(_isSaving || _homeStats.Count < 5 || _awayStats.Count < 5)" OnClick="SaveAllDraft" Class="md-action-btn">
+                        @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
+                        Save Draft (All)
+                    </MudButton>
                     <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large"
                                StartIcon="@Icons.Material.Filled.AdminPanelSettings"
                                Disabled="_isConfirming" OnClick="ConfirmResult" Class="md-action-btn">

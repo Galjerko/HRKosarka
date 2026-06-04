@@ -9,6 +9,7 @@ using HRKošarka.Application.Features.Player.Queries.GetAvailablePlayers;
 using HRKošarka.Application.Features.Player.Queries.GetPlayerAssignments;
 using HRKošarka.Application.Features.Team.Queries.GetAvailableTeamsForPlayer;
 using HRKošarka.Application.Features.Player.Queries.GetPlayerDetails;
+using HRKošarka.Application.Features.Player.Queries.GetPlayerCareer;
 using HRKošarka.Application.Features.Player.Queries.GetPlayerSeasonStats;
 using HRKošarka.Application.Models.Responses;
 using MediatR;
@@ -62,6 +63,15 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<QueryResponse<List<AvailableTeamDTO>>>> GetAvailableTeams(Guid id, [FromQuery] string? searchTerm)
         {
             var response = await _mediator.Send(new GetAvailableTeamsForPlayerQuery { PlayerId = id, SearchTerm = searchTerm });
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/career", Name = "GetPlayerCareer")]
+        [ProducesResponseType(typeof(QueryResponse<List<PlayerCareerItemDTO>>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<PlayerCareerItemDTO>>>> GetCareer(Guid id)
+        {
+            var response = await _mediator.Send(new GetPlayerCareerQuery(id));
             return Ok(response);
         }
 
