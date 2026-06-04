@@ -504,7 +504,7 @@
                                                 <div class="match-col-home">Home</div>
                                                 <div class="match-col-sep"></div>
                                                 <div class="match-col-away">Away</div>
-                                                <div class="match-col-result">Result</div>
+                                                <div class="match-col-venue">Venue</div>
                                                 <div class="match-col-status">Status</div>
                                             </div>
                                             @foreach (var matchCtx in round.Matches)
@@ -528,6 +528,7 @@
                                                     <div class="match-col-away">
                                                         <span class="match-team-link">@matchCtx.AwayTeamName</span>
                                                     </div>
+                                                    <div class="match-col-venue" title="@matchCtx.Venue">@matchCtx.Venue</div>
                                                     <div class="match-col-status">
                                                         <MudChip T="string" Size="Size.Small" Color="@matchCtx.Status.ToColor()">
                                                             @matchCtx.Status.ToDisplayString()

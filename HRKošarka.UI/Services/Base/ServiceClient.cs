@@ -11026,6 +11026,9 @@ namespace HRKošarka.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("isFeatured")]
         public bool IsFeatured { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("defaultVenue")]
+        public string DefaultVenue { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("imageName")]
         public string ImageName { get; set; }
 
@@ -11584,6 +11587,9 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isFeatured")]
         public bool IsFeatured { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("defaultVenue")]
+        public string DefaultVenue { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("deactivateDate")]
         public System.DateTime? DeactivateDate { get; set; }
@@ -13429,6 +13435,9 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isFeatured")]
         public bool IsFeatured { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("defaultVenue")]
+        public string DefaultVenue { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("imageName")]
         public string ImageName { get; set; }

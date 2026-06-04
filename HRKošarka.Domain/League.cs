@@ -38,6 +38,9 @@ namespace HRKošarka.Domain
         public DateTime? DeactivateDate { get; set; }
 
         [MaxLength(255)]
+        public string? DefaultVenue { get; set; }
+
+        [MaxLength(255)]
         public string? ImageName { get; set; }
 
         [MaxLength(100)]

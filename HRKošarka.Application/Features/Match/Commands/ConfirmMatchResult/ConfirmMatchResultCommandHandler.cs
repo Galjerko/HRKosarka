@@ -158,6 +158,9 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             if (nextDate > leagueEndAt19)
                 nextDate = leagueEndAt19;
 
+            var defaultVenue = !string.IsNullOrEmpty(confirmedMatch.League.DefaultVenue)
+                ? confirmedMatch.League.DefaultVenue : null;
+
             var newMatches = new List<DomainMatch>();
             for (int i = 0; i < nextRoundTeams.Count; i += 2)
             {
@@ -172,7 +175,8 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
                     ActualScheduledDate = nextDate,
                     Status = MatchStatus.Scheduled,
                     SchedulingStatus = SchedulingStatus.Default,
-                    LastSchedulingUpdate = DateTime.Now
+                    LastSchedulingUpdate = DateTime.Now,
+                    VenueOverride = defaultVenue
                 });
             }
 
@@ -198,7 +202,8 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
                         ActualScheduledDate = nextDate,
                         Status = MatchStatus.Scheduled,
                         SchedulingStatus = SchedulingStatus.Default,
-                        LastSchedulingUpdate = DateTime.Now
+                        LastSchedulingUpdate = DateTime.Now,
+                        VenueOverride = defaultVenue
                     });
                 }
             }

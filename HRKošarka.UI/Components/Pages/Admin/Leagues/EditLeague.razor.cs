@@ -80,6 +80,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                         NumberOfRounds = _league.NumberOfRounds,
                         IsActive = _league.IsActive,
                         IsFeatured = _league.IsFeatured,
+                        DefaultVenue = _league.DefaultVenue,
                         StartDate = _league.StartDate,
                         EndDate = _league.EndDate
                     };

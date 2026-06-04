@@ -143,6 +143,28 @@
                                 </MudItem>
                             }
 
+                            @if (_model.CompetitionType == HRKošarka.UI.Services.Base.CompetitionType._1)
+                            {
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.h6" Class="section-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="section-icon" />
+                                        Cup Settings
+                                    </MudText>
+                                    <MudDivider Class="section-divider" />
+                                </MudItem>
+
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="_model.DefaultVenue"
+                                                  Label="Default Venue (optional)"
+                                                  Variant="Variant.Text"
+                                                  Adornment="Adornment.Start"
+                                                  AdornmentIcon="@Icons.Material.Filled.LocationOn"
+                                                  Counter="255" Immediate="true"
+                                                  MaxLength="255"
+                                                  HelperText="Auto-applied to all generated matches. Home team manager or representative can override per match." />
+                                </MudItem>
+                            }
+
                             <MudItem xs="12">
                                 <MudText Typo="Typo.h6" Class="section-title">
                                     <MudIcon Icon="@Icons.Material.Filled.DateRange" Class="section-icon" />

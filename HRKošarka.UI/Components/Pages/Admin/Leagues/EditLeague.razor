@@ -132,27 +132,52 @@
                                 </MudSelect>
                             </MudItem>
 
-                            <MudItem xs="12">
-                                <MudText Typo="Typo.h6" Class="section-title">
-                                    <MudIcon Icon="@Icons.Material.Filled.Repeat" Class="section-icon" />
-                                    Round Robin Format
-                                </MudText>
-                                <MudDivider Class="section-divider" />
-                            </MudItem>
+                            @if (_model.CompetitionType == HRKošarka.UI.Services.Base.CompetitionType._0)
+                            {
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.h6" Class="section-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.Repeat" Class="section-icon" />
+                                        Round Robin Format
+                                    </MudText>
+                                    <MudDivider Class="section-divider" />
+                                </MudItem>
 
-                            <MudItem xs="12">
-                                <MudText Typo="Typo.body2" Class="mb-2" Style="color: var(--mud-palette-text-secondary)">
-                                    Select how many times each team plays against every other team:
-                                </MudText>
-                                <MudRadioGroup T="int" @bind-Value="_model.NumberOfRounds">
-                                    <MudRadio T="int" Value="1" Color="Color.Primary">
-                                        <MudText Typo="Typo.body1"><strong>Single Round Robin</strong> — each team plays every other team once</MudText>
-                                    </MudRadio>
-                                    <MudRadio T="int" Value="2" Color="Color.Primary" Class="mt-2">
-                                        <MudText Typo="Typo.body1"><strong>Double Round Robin</strong> — each team plays every other team twice (home &amp; away)</MudText>
-                                    </MudRadio>
-                                </MudRadioGroup>
-                            </MudItem>
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.body2" Class="mb-2" Style="color: var(--mud-palette-text-secondary)">
+                                        Select how many times each team plays against every other team:
+                                    </MudText>
+                                    <MudRadioGroup T="int" @bind-Value="_model.NumberOfRounds">
+                                        <MudRadio T="int" Value="1" Color="Color.Primary">
+                                            <MudText Typo="Typo.body1"><strong>Single Round Robin</strong> — each team plays every other team once</MudText>
+                                        </MudRadio>
+                                        <MudRadio T="int" Value="2" Color="Color.Primary" Class="mt-2">
+                                            <MudText Typo="Typo.body1"><strong>Double Round Robin</strong> — each team plays every other team twice (home &amp; away)</MudText>
+                                        </MudRadio>
+                                    </MudRadioGroup>
+                                </MudItem>
+                            }
+
+                            @if (_model.CompetitionType == HRKošarka.UI.Services.Base.CompetitionType._1)
+                            {
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.h6" Class="section-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="section-icon" />
+                                        Cup Settings
+                                    </MudText>
+                                    <MudDivider Class="section-divider" />
+                                </MudItem>
+
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="_model.DefaultVenue"
+                                                  Label="Default Venue (optional)"
+                                                  Variant="Variant.Text"
+                                                  Adornment="Adornment.Start"
+                                                  AdornmentIcon="@Icons.Material.Filled.LocationOn"
+                                                  Counter="255" Immediate="true"
+                                                  MaxLength="255"
+                                                  HelperText="Auto-applied to all generated matches. Home team manager or representative can override per match." />
+                                </MudItem>
+                            }
 
                             <MudItem xs="12">
                                 <MudText Typo="Typo.h6" Class="section-title">

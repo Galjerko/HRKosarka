@@ -59,7 +59,8 @@ namespace HRKošarka.Application.Features.League.Commands.GenerateLeagueSchedule
                     ActualScheduledDate = s.Date,
                     Status = MatchStatus.Scheduled,
                     SchedulingStatus = SchedulingStatus.Default,
-                    LastSchedulingUpdate = DateTime.Now
+                    LastSchedulingUpdate = DateTime.Now,
+                    VenueOverride = !string.IsNullOrEmpty(league.DefaultVenue) ? league.DefaultVenue : null
                 }).ToList();
 
                 await _matchRepository.CreateRangeAsync(cupMatches, cancellationToken);

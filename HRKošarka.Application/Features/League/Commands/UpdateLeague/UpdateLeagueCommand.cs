@@ -16,6 +16,7 @@ namespace HRKošarka.Application.Features.League.Commands.UpdateLeague
         public int NumberOfRounds { get; set; } = 1;
         public bool IsActive { get; set; } = true;
         public bool IsFeatured { get; set; } = false;
+        public string? DefaultVenue { get; set; }
         public string? ImageName { get; set; }
         public string? ImageContentType { get; set; }
         public byte[]? ImageBytes { get; set; }
