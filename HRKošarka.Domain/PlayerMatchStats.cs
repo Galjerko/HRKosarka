@@ -19,6 +19,8 @@ namespace HRKošarka.Domain
 
         public bool DidNotPlay { get; set; } = false;
 
+        public bool IsStarter { get; set; } = false;
+
         public Guid? TeamId { get; set; }
 
         public virtual Match Match { get; set; } = null!;

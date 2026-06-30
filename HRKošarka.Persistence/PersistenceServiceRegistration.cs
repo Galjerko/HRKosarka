@@ -31,6 +31,7 @@ namespace HRKošarka.Persistence
             services.AddScoped<IMatchReschedulingRequestRepository, MatchReschedulingRequestRepository>();
             services.AddScoped<ITeamRepresentativeRepository, TeamRepresentativeRepository>();
             services.AddScoped<IUserFavoriteTeamRepository, UserFavoriteTeamRepository>();
+            services.AddScoped<IPlayoffRepository, PlayoffRepository>();
 
             return services;
         }

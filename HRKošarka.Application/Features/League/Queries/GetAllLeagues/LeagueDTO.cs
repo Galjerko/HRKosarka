@@ -17,5 +17,8 @@ namespace HRKošarka.Application.Features.League.Queries.GetAllLeagues
         public DateTime EndDate { get; set; }
         public DateTime? DeactivateDate { get; set; }
         public bool IsActive => DeactivateDate == null;
+        public bool ScheduleGenerated { get; set; }
+        public bool HasPlayoff { get; set; }
+        public bool PlayoffGenerated { get; set; }
     }
 }

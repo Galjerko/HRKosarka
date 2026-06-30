@@ -48,10 +48,12 @@ namespace HRKošarka.Application.Features.Match.Queries.GetMatchWithStats
         public Guid PlayerId { get; set; }
         public string PlayerName { get; set; } = string.Empty;
         public int? JerseyNumber { get; set; }
+        public int Position { get; set; }
         public int Points { get; set; }
         public int ThreePointers { get; set; }
         public int Fouls { get; set; }
         public bool DidNotPlay { get; set; }
+        public bool IsStarter { get; set; }
         public bool StatsEntered { get; set; }
     }
 }

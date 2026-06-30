@@ -25,6 +25,12 @@ namespace HRKošarka.Persistence.Configurations
                    .HasForeignKey(m => m.LeagueId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(m => m.PlayoffSeries)
+                   .WithMany(s => s.Matches)
+                   .HasForeignKey(m => m.PlayoffSeriesId)
+                   .OnDelete(DeleteBehavior.Restrict)
+                   .IsRequired(false);
+
             builder.Property(m => m.QuarterResults).HasMaxLength(500);
             builder.Property(m => m.Notes).HasMaxLength(1000);
             builder.Property(m => m.RoundName).HasMaxLength(100);
@@ -42,6 +48,10 @@ namespace HRKošarka.Persistence.Configurations
 
             builder.HasIndex(e => e.ActualScheduledDate)
                    .HasDatabaseName("IX_Match_ScheduledDate");
+
+            builder.HasIndex(e => e.PlayoffSeriesId)
+                   .HasDatabaseName("IX_Match_PlayoffSeriesId")
+                   .HasFilter("[PlayoffSeriesId] IS NOT NULL");
         }
     }
 }

@@ -333,6 +333,7 @@
                             <thead>
                                 <tr>
                                     <th class="mds-th-jersey">#</th>
+                                    <th class="mds-th-starter">S</th>
                                     <th class="mds-th-player">Player</th>
                                     <th class="mds-th-num">PTS</th>
                                     <th class="mds-th-num">3PT</th>
@@ -341,12 +342,35 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var stat in _homeStats)
+                                @{
+                                    var orderedHome = _homeStats.OrderBy(s => s.IsStarter ? 0 : 1).ThenBy(s => s.Position).ToList();
+                                    var homeStarterCount = _homeStats.Count(s => s.IsStarter);
+                                }
+                                @for (int i = 0; i < orderedHome.Count; i++)
                                 {
+                                    var stat = orderedHome[i];
+                                    @if (i > 0 && !stat.IsStarter && orderedHome[i - 1].IsStarter)
+                                    {
+                                        <tr class="mds-bench-divider"><td colspan="7">bench</td></tr>
+                                    }
                                     var rowInvalid = !PlayerValid(stat);
                                     <tr class="mds-row @(stat.DidNotPlay ? "mds-dnp" : "") @(rowInvalid ? "mds-invalid" : "")">
                                         <td class="mds-td-jersey">
                                             @(stat.JerseyNumber.HasValue ? stat.JerseyNumber.ToString() : "–")
+                                        </td>
+                                        <td class="mds-td-starter">
+                                            @if (_canEditScore)
+                                            {
+                                                <MudIconButton Icon="@(stat.IsStarter ? Icons.Material.Filled.Star : Icons.Material.Outlined.StarBorder)"
+                                                               Size="Size.Small"
+                                                               Color="@(stat.IsStarter ? Color.Warning : Color.Default)"
+                                                               Disabled="@(stat.DidNotPlay || (!stat.IsStarter && homeStarterCount >= 5))"
+                                                               OnClick="@(() => ToggleStarter(_homeStats, stat))" />
+                                            }
+                                            else if (stat.IsStarter)
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Warning" />
+                                            }
                                         </td>
                                         <td class="mds-td-player">
                                             <MudLink Href="@($"/players/{stat.PlayerId}")" Class="mds-player-name mds-player-link">@stat.PlayerName</MudLink>
@@ -392,6 +416,7 @@
                             <tfoot>
                                 <tr class="mds-total-row">
                                     <td class="mds-td-jersey"></td>
+                                    <td class="mds-td-starter"></td>
                                     <td class="mds-td-player mds-total-label">Total</td>
                                     <td class="mds-td-num @(HomeTotalPts == _homeScore && _homeScore > 0 ? "mds-total-match" : HomeTotalPts != _homeScore && _homeScore > 0 ? "mds-total-mismatch" : "")">
                                         @HomeTotalPts
@@ -457,6 +482,7 @@
                             <thead>
                                 <tr>
                                     <th class="mds-th-jersey">#</th>
+                                    <th class="mds-th-starter">S</th>
                                     <th class="mds-th-player">Player</th>
                                     <th class="mds-th-num">PTS</th>
                                     <th class="mds-th-num">3PT</th>
@@ -465,12 +491,35 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var stat in _awayStats)
+                                @{
+                                    var orderedAway = _awayStats.OrderBy(s => s.IsStarter ? 0 : 1).ThenBy(s => s.Position).ToList();
+                                    var awayStarterCount = _awayStats.Count(s => s.IsStarter);
+                                }
+                                @for (int i = 0; i < orderedAway.Count; i++)
                                 {
+                                    var stat = orderedAway[i];
+                                    @if (i > 0 && !stat.IsStarter && orderedAway[i - 1].IsStarter)
+                                    {
+                                        <tr class="mds-bench-divider"><td colspan="7">bench</td></tr>
+                                    }
                                     var rowInvalid = !PlayerValid(stat);
                                     <tr class="mds-row @(stat.DidNotPlay ? "mds-dnp" : "") @(rowInvalid ? "mds-invalid" : "")">
                                         <td class="mds-td-jersey">
                                             @(stat.JerseyNumber.HasValue ? stat.JerseyNumber.ToString() : "–")
+                                        </td>
+                                        <td class="mds-td-starter">
+                                            @if (_canEditAwayStats)
+                                            {
+                                                <MudIconButton Icon="@(stat.IsStarter ? Icons.Material.Filled.Star : Icons.Material.Outlined.StarBorder)"
+                                                               Size="Size.Small"
+                                                               Color="@(stat.IsStarter ? Color.Warning : Color.Default)"
+                                                               Disabled="@(stat.DidNotPlay || (!stat.IsStarter && awayStarterCount >= 5))"
+                                                               OnClick="@(() => ToggleStarter(_awayStats, stat))" />
+                                            }
+                                            else if (stat.IsStarter)
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Warning" />
+                                            }
                                         </td>
                                         <td class="mds-td-player">
                                             <MudLink Href="@($"/players/{stat.PlayerId}")" Class="mds-player-name mds-player-link">@stat.PlayerName</MudLink>
@@ -516,6 +565,7 @@
                             <tfoot>
                                 <tr class="mds-total-row">
                                     <td class="mds-td-jersey"></td>
+                                    <td class="mds-td-starter"></td>
                                     <td class="mds-td-player mds-total-label">Total</td>
                                     <td class="mds-td-num @(AwayTotalPts == _awayScore && _awayScore > 0 ? "mds-total-match" : AwayTotalPts != _awayScore && _awayScore > 0 ? "mds-total-mismatch" : "")">
                                         @AwayTotalPts

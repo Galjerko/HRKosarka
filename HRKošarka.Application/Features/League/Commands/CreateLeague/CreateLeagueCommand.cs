@@ -16,6 +16,10 @@ namespace HRKošarka.Application.Features.League.Commands.CreateLeague
         public int NumberOfRounds { get; set; } = 1;
         public bool IsActive { get; set; } = true;
         public bool IsFeatured { get; set; } = false;
+        public bool HasPlayoff { get; set; } = false;
+        public int? PlayoffTeamCount { get; set; }
+        public bool PlayoffHas3rdPlace { get; set; } = false;
+        public DateTime? PlayoffEndDate { get; set; }
         public string? DefaultVenue { get; set; }
         public string? ImageName { get; set; }
         public string? ImageContentType { get; set; }

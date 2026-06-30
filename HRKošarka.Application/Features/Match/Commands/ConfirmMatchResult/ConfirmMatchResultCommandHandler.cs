@@ -1,6 +1,7 @@
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Models.Responses;
+using HRKošarka.Application.Services;
 using HRKošarka.Domain;
 using HRKošarka.Domain.Common;
 using HRKošarka.Domain.Helpers;
@@ -17,6 +18,7 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
         private readonly IPlayerSeasonStatsRepository _seasonStatsRepository;
         private readonly ITeamRepresentativeRepository _repRepository;
         private readonly ILeagueRepository _leagueRepository;
+        private readonly PlayoffAdvancementService _playoffAdvancement;
 
         public ConfirmMatchResultCommandHandler(
             IMatchRepository matchRepository,
@@ -24,7 +26,8 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             ILeagueStandingRepository standingRepository,
             IPlayerSeasonStatsRepository seasonStatsRepository,
             ITeamRepresentativeRepository repRepository,
-            ILeagueRepository leagueRepository)
+            ILeagueRepository leagueRepository,
+            PlayoffAdvancementService playoffAdvancement)
         {
             _matchRepository = matchRepository;
             _statsRepository = statsRepository;
@@ -32,6 +35,7 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             _seasonStatsRepository = seasonStatsRepository;
             _repRepository = repRepository;
             _leagueRepository = leagueRepository;
+            _playoffAdvancement = playoffAdvancement;
         }
 
         public async Task<CommandResponse<bool>> Handle(ConfirmMatchResultCommand request, CancellationToken ct)
@@ -86,17 +90,23 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             match.ConfirmedAt = DateTime.UtcNow;
             await _matchRepository.UpdateAsync(match, ct);
 
-            var seasonId = match.League.SeasonId;
-            await UpdateStanding(match.LeagueId, match.HomeTeamId, seasonId,
-                match.HomeScore.Value, match.AwayScore.Value, ct);
-            await UpdateStanding(match.LeagueId, match.AwayTeamId, seasonId,
-                match.AwayScore.Value, match.HomeScore.Value, ct);
-            await RecalculatePositions(match.LeagueId, ct);
+            // Playoff matches do not update regular-season standings or leaderboard stats
+            if (!match.PlayoffSeriesId.HasValue)
+            {
+                var seasonId = match.League.SeasonId;
+                await UpdateStanding(match.LeagueId, match.HomeTeamId, seasonId,
+                    match.HomeScore.Value, match.AwayScore.Value, ct);
+                await UpdateStanding(match.LeagueId, match.AwayTeamId, seasonId,
+                    match.AwayScore.Value, match.HomeScore.Value, ct);
+                await RecalculatePositions(match.LeagueId, ct);
 
-            foreach (var stat in allStats)
-                await UpdatePlayerSeasonStats(stat, match.LeagueId, seasonId, ct);
+                foreach (var stat in allStats)
+                    await UpdatePlayerSeasonStats(stat, match.LeagueId, seasonId, ct);
+            }
 
-            if (match.League.CompetitionType == CompetitionType.Cup)
+            if (match.PlayoffSeriesId.HasValue)
+                await _playoffAdvancement.AdvanceIfCompleteAsync(match, ct);
+            else if (match.League.CompetitionType == CompetitionType.Cup)
                 await AdvanceCupBracketIfRoundComplete(match, ct);
 
             return CommandResponse<bool>.Success(true, "Match result confirmed.");

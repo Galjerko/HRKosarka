@@ -118,7 +118,7 @@ namespace HRKošarka.Persistence.Repositories
                            && pth.SeasonId == seasonId
                            && pth.IsActive
                            && pth.Player.DateDeleted == null)
-                .OrderBy(pth => pth.Player.LastName).ThenBy(pth => pth.Player.FirstName)
+                .OrderBy(pth => pth.Player.Position).ThenBy(pth => pth.JerseyNumber)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }

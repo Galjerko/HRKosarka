@@ -38,6 +38,7 @@ namespace HRKošarka.Persistence.DatabaseContext
         public DbSet<LeagueStanding> LeagueStandings { get; set; }
         public DbSet<UserFavoriteTeam> UserFavoriteTeams { get; set; }
         public DbSet<EmailNotification> EmailNotifications { get; set; }
+        public DbSet<PlayoffSeries> PlayoffSeries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -22,5 +22,6 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
         public int ThreePointers { get; set; }
         public int Fouls { get; set; }
         public bool DidNotPlay { get; set; }
+        public bool IsStarter { get; set; }
     }
 }

@@ -15,6 +15,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
         private CreateLeagueCommand _model = new();
         private DateTime? _startDate;
         private DateTime? _endDate;
+        private DateTime? _playoffEndDate;
         private bool _isLoading = false;
         private MudForm _form = default!;
         private bool _isFormValid = false;
@@ -82,6 +83,12 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
 
             _model.StartDate = _startDate.Value;
             _model.EndDate = _endDate.Value;
+            _model.PlayoffEndDate = _model.HasPlayoff ? _playoffEndDate : null;
+            if (!_model.HasPlayoff)
+            {
+                _model.PlayoffTeamCount = null;
+                _model.PlayoffHas3rdPlace = false;
+            }
             _isLoading = true;
 
             try

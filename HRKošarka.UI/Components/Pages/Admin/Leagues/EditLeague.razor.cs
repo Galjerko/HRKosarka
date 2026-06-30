@@ -19,8 +19,10 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
         private bool _isProcessing = false;
         private DateTime? _startDate;
         private DateTime? _endDate;
+        private DateTime? _playoffEndDate;
         private MudForm _form = default!;
         private bool _isFormValid = false;
+        private bool _isLocked => _league?.ScheduleGenerated == true;
         private List<SeasonDTO> _seasons = new();
         private List<AgeCategoryDTO> _ageCategories = new();
 
@@ -69,6 +71,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                     _league = response.Data;
                     _startDate = _league.StartDate;
                     _endDate = _league.EndDate;
+                    _playoffEndDate = _league.PlayoffEndDate;
                     _model = new UpdateLeagueCommand
                     {
                         Id = _league.Id,
@@ -80,6 +83,10 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                         NumberOfRounds = _league.NumberOfRounds,
                         IsActive = _league.IsActive,
                         IsFeatured = _league.IsFeatured,
+                        HasPlayoff = _league.HasPlayoff,
+                        PlayoffTeamCount = _league.PlayoffTeamCount,
+                        PlayoffHas3rdPlace = _league.PlayoffHas3rdPlace,
+                        PlayoffEndDate = _league.PlayoffEndDate,
                         DefaultVenue = _league.DefaultVenue,
                         StartDate = _league.StartDate,
                         EndDate = _league.EndDate
@@ -138,6 +145,12 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
 
             _model.StartDate = _startDate.Value;
             _model.EndDate = _endDate.Value;
+            _model.PlayoffEndDate = _model.HasPlayoff ? _playoffEndDate : null;
+            if (!_model.HasPlayoff)
+            {
+                _model.PlayoffTeamCount = null;
+                _model.PlayoffHas3rdPlace = false;
+            }
             _isProcessing = true;
 
             try

@@ -317,6 +317,24 @@ namespace HRKošarka.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PlayoffBracketDTOQueryResponse> GetPlayoffBracketAsync(System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PlayoffBracketDTOQueryResponse> GetPlayoffBracketAsync(System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<BooleanCommandResponse> GeneratePlayoffAsync(System.Guid id, GeneratePlayoffCommand body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<BooleanCommandResponse> GeneratePlayoffAsync(System.Guid id, GeneratePlayoffCommand body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<PendingActionDTOListQueryResponse> GetPendingActionsAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -4190,6 +4208,234 @@ namespace HRKošarka.UI.Services.Base
                         if (status_ == 200)
                         {
                             var objectResponse_ = await ReadObjectResponseAsync<Int32CommandResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CustomProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<CustomProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Unauthorized", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 403)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Forbidden", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CustomProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<CustomProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<PlayoffBracketDTOQueryResponse> GetPlayoffBracketAsync(System.Guid id)
+        {
+            return GetPlayoffBracketAsync(id, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<PlayoffBracketDTOQueryResponse> GetPlayoffBracketAsync(System.Guid id, System.Threading.CancellationToken cancellationToken)
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/leagues/{id}/playoff"
+                    urlBuilder_.Append("api/leagues/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/playoff");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<PlayoffBracketDTOQueryResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CustomProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<CustomProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<BooleanCommandResponse> GeneratePlayoffAsync(System.Guid id, GeneratePlayoffCommand body)
+        {
+            return GeneratePlayoffAsync(id, body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<BooleanCommandResponse> GeneratePlayoffAsync(System.Guid id, GeneratePlayoffCommand body, System.Threading.CancellationToken cancellationToken)
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/leagues/{id}/generate-playoff"
+                    urlBuilder_.Append("api/leagues/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/generate-playoff");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<BooleanCommandResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -11132,6 +11378,18 @@ namespace HRKošarka.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("isFeatured")]
         public bool IsFeatured { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("hasPlayoff")]
+        public bool HasPlayoff { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffTeamCount")]
+        public int? PlayoffTeamCount { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffHas3rdPlace")]
+        public bool PlayoffHas3rdPlace { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffEndDate")]
+        public System.DateTime? PlayoffEndDate { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("defaultVenue")]
         public string DefaultVenue { get; set; }
 
@@ -11424,6 +11682,24 @@ namespace HRKošarka.UI.Services.Base
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class GeneratePlayoffCommand
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("leagueId")]
+        public System.Guid LeagueId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffStartDate")]
+        public System.DateTime PlayoffStartDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roundWinsNeeded")]
+        public System.Collections.Generic.ICollection<int> RoundWinsNeeded { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("include3rdPlace")]
+        public bool Include3rdPlace { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class GuidCommandResponse
     {
 
@@ -11610,6 +11886,15 @@ namespace HRKošarka.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("isActive")]
         public bool IsActive { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("scheduleGenerated")]
+        public bool ScheduleGenerated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("hasPlayoff")]
+        public bool HasPlayoff { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffGenerated")]
+        public bool PlayoffGenerated { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -11693,6 +11978,24 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isFeatured")]
         public bool IsFeatured { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("hasPlayoff")]
+        public bool HasPlayoff { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffTeamCount")]
+        public int? PlayoffTeamCount { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffGenerated")]
+        public bool PlayoffGenerated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffHas3rdPlace")]
+        public bool PlayoffHas3rdPlace { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffEndDate")]
+        public System.DateTime? PlayoffEndDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allRegularMatchesComplete")]
+        public bool AllRegularMatchesComplete { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("defaultVenue")]
         public string DefaultVenue { get; set; }
@@ -12572,6 +12875,9 @@ namespace HRKošarka.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("jerseyNumber")]
         public int? JerseyNumber { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("position")]
+        public int Position { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("points")]
         public int Points { get; set; }
 
@@ -12583,6 +12889,9 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("didNotPlay")]
         public bool DidNotPlay { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isStarter")]
+        public bool IsStarter { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("statsEntered")]
         public bool StatsEntered { get; set; }
@@ -12652,6 +12961,135 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("didNotPlay")]
         public bool DidNotPlay { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isStarter")]
+        public bool IsStarter { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PlayoffBracketDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("leagueId")]
+        public System.Guid LeagueId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("rounds")]
+        public System.Collections.Generic.ICollection<PlayoffRoundDTO> Rounds { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PlayoffBracketDTOQueryResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("isSuccess")]
+        public bool IsSuccess { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string Message { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("errors")]
+        public System.Collections.Generic.ICollection<string> Errors { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public PlayoffBracketDTO Data { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PlayoffMatchSlimDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("matchId")]
+        public System.Guid MatchId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gameNumber")]
+        public int GameNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("scheduledDate")]
+        public System.DateTime ScheduledDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public MatchStatus Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("homeScore")]
+        public int? HomeScore { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("awayScore")]
+        public int? AwayScore { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isResultConfirmed")]
+        public bool IsResultConfirmed { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("venue")]
+        public string Venue { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PlayoffRoundDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("roundNumber")]
+        public int RoundNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roundName")]
+        public string RoundName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("series")]
+        public System.Collections.Generic.ICollection<PlayoffSeriesDTO> Series { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PlayoffSeriesDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("seriesId")]
+        public System.Guid SeriesId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public int SeriesNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("homeTeamId")]
+        public System.Guid? HomeTeamId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("homeTeamName")]
+        public string HomeTeamName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("awayTeamId")]
+        public System.Guid? AwayTeamId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("awayTeamName")]
+        public string AwayTeamName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("homeSeedNumber")]
+        public int? HomeSeedNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("awaySeedNumber")]
+        public int? AwaySeedNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("winsNeeded")]
+        public int WinsNeeded { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("homeWins")]
+        public int HomeWins { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("awayWins")]
+        public int AwayWins { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
+        public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("winnerId")]
+        public System.Guid? WinnerId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("winnerName")]
+        public string WinnerName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("matches")]
+        public System.Collections.Generic.ICollection<PlayoffMatchSlimDTO> Matches { get; set; }
 
     }
 
@@ -13601,6 +14039,18 @@ namespace HRKošarka.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isFeatured")]
         public bool IsFeatured { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("hasPlayoff")]
+        public bool HasPlayoff { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffTeamCount")]
+        public int? PlayoffTeamCount { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffHas3rdPlace")]
+        public bool PlayoffHas3rdPlace { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("playoffEndDate")]
+        public System.DateTime? PlayoffEndDate { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("defaultVenue")]
         public string DefaultVenue { get; set; }

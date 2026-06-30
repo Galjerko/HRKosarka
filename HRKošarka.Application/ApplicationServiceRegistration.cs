@@ -1,4 +1,5 @@
 ﻿using HRKošarka.Application.Images;
+using HRKošarka.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -13,6 +14,7 @@ namespace HRKošarka.Application
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
             services.AddScoped<IImageService, ImageService>();
+            services.AddScoped<PlayoffAdvancementService>();
 
             return services;
         }

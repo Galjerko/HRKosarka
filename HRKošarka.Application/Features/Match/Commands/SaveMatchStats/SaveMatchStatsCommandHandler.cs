@@ -48,6 +48,9 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
 
             if (request.PlayerStats.Count(p => !p.DidNotPlay) < 5)
                 throw new BadRequestException("At least 5 players must have played (not DNP) before stats can be saved.");
+
+            if (request.PlayerStats.Count(p => p.IsStarter) != 5)
+                throw new BadRequestException("Exactly 5 starters must be selected before stats can be saved.");
             if (!isAdmin)
             {
                 bool authorized = false;
@@ -84,6 +87,7 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
                     existing.ThreePointers = entry.DidNotPlay ? 0 : entry.ThreePointers;
                     existing.Fouls = entry.DidNotPlay ? 0 : entry.Fouls;
                     existing.DidNotPlay = entry.DidNotPlay;
+                    existing.IsStarter = !entry.DidNotPlay && entry.IsStarter;
                     existing.TeamId = request.TeamId;
                     await _statsRepository.UpdateAsync(existing, ct);
                 }
@@ -97,7 +101,8 @@ namespace HRKošarka.Application.Features.Match.Commands.SaveMatchStats
                         Points = entry.DidNotPlay ? 0 : entry.Points,
                         ThreePointers = entry.DidNotPlay ? 0 : entry.ThreePointers,
                         Fouls = entry.DidNotPlay ? 0 : entry.Fouls,
-                        DidNotPlay = entry.DidNotPlay
+                        DidNotPlay = entry.DidNotPlay,
+                        IsStarter = !entry.DidNotPlay && entry.IsStarter
                     }, ct);
                 }
             }

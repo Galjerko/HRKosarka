@@ -420,5 +420,50 @@ namespace HRKošarka.UI.Services
                 return ConvertApiExceptionsToQuery<List<LeaguePlayerStatDTO>>(ex);
             }
         }
+
+        public async Task<QueryResponse<PlayoffBracketDTO>> GetPlayoffBracket(Guid leagueId)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetPlayoffBracketAsync(leagueId);
+                return new QueryResponse<PlayoffBracketDTO>
+                {
+                    Data = response.Data,
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<PlayoffBracketDTO>(ex);
+            }
+        }
+
+        public async Task<CommandResponse<bool>> GeneratePlayoff(Guid leagueId, GeneratePlayoffCommand command)
+        {
+            try
+            {
+                await AddBearerToken();
+                command.LeagueId = leagueId;
+                var response = await _client.GeneratePlayoffAsync(leagueId, command);
+                return new CommandResponse<bool>
+                {
+                    Data = response.Data,
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException<CustomProblemDetails> ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptions<bool>(ex);
+            }
+        }
     }
 }

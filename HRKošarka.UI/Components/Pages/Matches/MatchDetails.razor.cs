@@ -58,7 +58,8 @@ namespace HRKošarka.UI.Components.Pages.Matches
             _canEditScore && _isHomeManager &&
             _homeStats.Any() && HomeScoreMatchesStats &&
             !_homeStats.Any(s => !PlayerValid(s)) &&
-            QuarterSumsMatchScore;
+            QuarterSumsMatchScore &&
+            _homeStats.Count(s => s.IsStarter) == 5;
 
         private bool _canEditAwayStats =>
             !(_match?.IsResultConfirmed ?? true) && !_isDisputed &&
@@ -133,7 +134,14 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private void OnDnpChanged(PlayerStatViewModel stat, bool isDnp)
         {
             stat.DidNotPlay = isDnp;
-            if (isDnp) { stat.Points = 0; stat.ThreePointers = 0; stat.Fouls = 0; }
+            if (isDnp) { stat.Points = 0; stat.ThreePointers = 0; stat.Fouls = 0; stat.IsStarter = false; }
+        }
+
+        private static void ToggleStarter(List<PlayerStatViewModel> stats, PlayerStatViewModel stat)
+        {
+            if (stat.DidNotPlay) return;
+            if (!stat.IsStarter && stats.Count(s => s.IsStarter) >= 5) return;
+            stat.IsStarter = !stat.IsStarter;
         }
 
         private static List<PlayerStatViewModel> CloneStats(List<PlayerStatViewModel> source) =>
@@ -142,10 +150,12 @@ namespace HRKošarka.UI.Components.Pages.Matches
                 PlayerId = s.PlayerId,
                 PlayerName = s.PlayerName,
                 JerseyNumber = s.JerseyNumber,
+                Position = s.Position,
                 Points = s.Points,
                 ThreePointers = s.ThreePointers,
                 Fouls = s.Fouls,
                 DidNotPlay = s.DidNotPlay,
+                IsStarter = s.IsStarter,
                 StatsEntered = s.StatsEntered
             }).ToList();
 
@@ -164,7 +174,8 @@ namespace HRKošarka.UI.Components.Pages.Matches
                     Points = s.Points,
                     ThreePointers = s.ThreePointers,
                     Fouls = s.Fouls,
-                    DidNotPlay = s.DidNotPlay
+                    DidNotPlay = s.DidNotPlay,
+                    IsStarter = s.IsStarter
                 }).ToList()
             };
             var response = await MatchService.SaveMatchStats(_match.Id, command);
@@ -177,6 +188,12 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private async Task SaveStats(Guid teamId, List<PlayerStatViewModel> stats)
         {
             if (_match is null) return;
+            var starterCount = stats.Count(s => s.IsStarter);
+            if (starterCount != 5)
+            {
+                Snackbar.Add($"Select exactly 5 starters before saving ({starterCount} selected).", Severity.Error);
+                return;
+            }
             _isSaving = true;
             try
             {
@@ -193,6 +210,12 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private async Task SaveHomeStatsDraft()
         {
             if (_match is null) return;
+            var starterCount = _homeStats.Count(s => s.IsStarter);
+            if (starterCount != 5)
+            {
+                Snackbar.Add($"Select exactly 5 home starters before saving ({starterCount} selected).", Severity.Error);
+                return;
+            }
             _isSaving = true;
             try
             {
@@ -211,6 +234,12 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private async Task SaveAwayStatsDraft()
         {
             if (_match is null) return;
+            var starterCount = _awayStats.Count(s => s.IsStarter);
+            if (starterCount != 5)
+            {
+                Snackbar.Add($"Select exactly 5 away starters before saving ({starterCount} selected).", Severity.Error);
+                return;
+            }
             _isSaving = true;
             try
             {
@@ -229,6 +258,13 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private async Task SaveAllDraft()
         {
             if (_match is null) return;
+            var homeStarters = _homeStats.Count(s => s.IsStarter);
+            var awayStarters = _awayStats.Count(s => s.IsStarter);
+            if (homeStarters != 5 || awayStarters != 5)
+            {
+                Snackbar.Add($"Both teams need 5 starters selected (home: {homeStarters}, away: {awayStarters}).", Severity.Error);
+                return;
+            }
             _isSaving = true;
             try
             {
@@ -279,6 +315,12 @@ namespace HRKošarka.UI.Components.Pages.Matches
             if (!QuarterSumsMatchScore)
             {
                 Snackbar.Add($"Cannot submit: quarter totals ({HomeQuarterSum}:{AwayQuarterSum}) do not match the score ({_homeScore}:{_awayScore}).", Severity.Error);
+                return;
+            }
+            var homeStarterCount = _homeStats.Count(s => s.IsStarter);
+            if (homeStarterCount != 5)
+            {
+                Snackbar.Add($"Cannot submit: exactly 5 starters must be selected ({homeStarterCount} currently marked).", Severity.Error);
                 return;
             }
 
@@ -492,10 +534,12 @@ namespace HRKošarka.UI.Components.Pages.Matches
         public Guid PlayerId { get; set; }
         public string PlayerName { get; set; } = string.Empty;
         public int? JerseyNumber { get; set; }
+        public int Position { get; set; }
         public int Points { get; set; }
         public int ThreePointers { get; set; }
         public int Fouls { get; set; }
         public bool DidNotPlay { get; set; }
+        public bool IsStarter { get; set; }
         public bool StatsEntered { get; set; }
 
         public PlayerStatViewModel() { }
@@ -505,10 +549,12 @@ namespace HRKošarka.UI.Components.Pages.Matches
             PlayerId = dto.PlayerId;
             PlayerName = dto.PlayerName ?? string.Empty;
             JerseyNumber = dto.JerseyNumber;
+            Position = dto.Position;
             Points = dto.Points;
             ThreePointers = dto.ThreePointers;
             Fouls = dto.Fouls;
             DidNotPlay = dto.DidNotPlay;
+            IsStarter = dto.IsStarter;
             StatsEntered = dto.StatsEntered;
         }
     }

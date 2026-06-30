@@ -75,7 +75,12 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                 {
                     _league = response.Data;
                     if (_league.ScheduleGenerated)
-                        await Task.WhenAll(LoadSchedule(), LoadStandings());
+                    {
+                        var tasks = new List<Task> { LoadSchedule(), LoadStandings() };
+                        if (_league.HasPlayoff && _league.PlayoffGenerated)
+                            tasks.Add(LoadBracket());
+                        await Task.WhenAll(tasks);
+                    }
                 }
                 else
                 {
@@ -430,7 +435,48 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
         private bool IsTournamentFinished =>
             _league?.ScheduleGenerated == true
             && _schedule.Any()
-            && _schedule.All(r => r.Matches.All(m =>
-                m.Status == MatchStatus._2 || m.Status == MatchStatus._3));
+            && _schedule.All(r => r.Matches.All(m => m.Status == MatchStatus._2 || m.Status == MatchStatus._3))
+            && (!_league.HasPlayoff
+                || (_league.PlayoffGenerated
+                    && _bracket != null
+                    && _bracket.Rounds.SelectMany(r => r.Series).All(s => s.IsCompleted)));
+
+
+        private PlayoffBracketDTO? _bracket;
+        private bool _isLoadingBracket = false;
+        private string? _bracketError;
+        private readonly HashSet<Guid> _expandedSeries = new();
+
+        private async Task LoadBracket()
+        {
+            _isLoadingBracket = true;
+            _bracketError = null;
+            try
+            {
+                var response = await LeagueService.GetPlayoffBracket(Id);
+                if (response.IsSuccess)
+                    _bracket = response.Data;
+                else
+                    _bracketError = response.Message ?? "Failed to load playoff bracket.";
+            }
+            catch (Exception ex)
+            {
+                _bracketError = "An unexpected error occurred while loading the playoff bracket.";
+                Console.WriteLine($"Error loading bracket: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingBracket = false;
+            }
+        }
+
+        private void OpenGeneratePlayoffDialog()
+            => NavigationManager.NavigateTo($"/admin/leagues/{Id}/generate-playoff");
+
+        private void ToggleSeries(Guid seriesId)
+        {
+            if (!_expandedSeries.Add(seriesId))
+                _expandedSeries.Remove(seriesId);
+        }
     }
 }

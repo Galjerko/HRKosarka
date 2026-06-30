@@ -29,6 +29,15 @@ namespace HRKošarka.Application.Features.League.Commands.UpdateLeague
 
             RuleFor(x => x.NumberOfRounds)
                 .GreaterThanOrEqualTo(1).WithMessage("Number of rounds must be at least 1.");
+
+            RuleFor(x => x.PlayoffTeamCount)
+                .NotNull().WithMessage("Playoff team count is required when playoff is enabled.")
+                .Must(c => c is 2 or 4 or 8).WithMessage("Playoff team count must be 2, 4, or 8.")
+                .When(x => x.HasPlayoff);
+
+            RuleFor(x => x.PlayoffEndDate)
+                .GreaterThanOrEqualTo(x => x.StartDate).WithMessage("Playoff end date must be on or after the league start date.")
+                .When(x => x.HasPlayoff && x.PlayoffEndDate.HasValue);
         }
     }
 }

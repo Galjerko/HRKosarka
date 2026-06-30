@@ -750,6 +750,161 @@
                     }
                 }
 
+                @if (_league.HasPlayoff && _league.ScheduleGenerated)
+                {
+                    <MudExpansionPanel IsInitiallyExpanded="true" Class="expansion-panel">
+                        <TitleContent>
+                            <div class="panel-title">
+                                <MudIcon Icon="@Icons.Material.Filled.AccountTree" Class="panel-icon" />
+                                <MudText Typo="Typo.h6">Playoff Bracket</MudText>
+                                @if (_league.PlayoffGenerated)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="ml-2">Generated</MudChip>
+                                }
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            @if (!_league.PlayoffGenerated)
+                            {
+                                <AuthorizeView Roles="Administrator">
+                                    <Authorized>
+                                        @if (_league.AllRegularMatchesComplete)
+                                        {
+                                            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+                                                Regular season is complete. You can now generate the playoff bracket.
+                                            </MudAlert>
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="Color.Warning"
+                                                       StartIcon="@Icons.Material.Filled.AccountTree"
+                                                       OnClick="OpenGeneratePlayoffDialog"
+                                                       Disabled="_isProcessing">
+                                                Generate Playoff Bracket
+                                            </MudButton>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Dense="true">
+                                                All regular-season matches must be completed before generating the playoff.
+                                            </MudAlert>
+                                        }
+                                    </Authorized>
+                                </AuthorizeView>
+                            }
+                            else if (_isLoadingBracket)
+                            {
+                                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-3" />
+                            }
+                            else if (_bracketError != null)
+                            {
+                                <MudAlert Severity="Severity.Error" Dense="true">@_bracketError</MudAlert>
+                            }
+                            else if (_bracket != null)
+                            {
+                                <div class="playoff-bracket">
+                                    @foreach (var round in _bracket.Rounds)
+                                    {
+                                        <div>
+                                            <div class="playoff-round-header">
+                                                <MudText Typo="Typo.subtitle1" Style="font-weight:700;text-transform:uppercase;letter-spacing:0.06em;opacity:0.6;font-size:0.8rem">
+                                                    @round.RoundName
+                                                </MudText>
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Default">Round @round.RoundNumber</MudChip>
+                                            </div>
+                                            <div class="playoff-series-list">
+                                                @foreach (var series in round.Series)
+                                                {
+                                                    <div class="playoff-series-card @(series.IsCompleted ? "psc-completed" : "")">
+                                                        <div class="psc-header">
+                                                            <div class="psc-team @(series.WinnerId == series.HomeTeamId ? "psc-winner" : "")">
+                                                                @if (series.HomeSeedNumber.HasValue)
+                                                                {
+                                                                    <span class="psc-seed">#@series.HomeSeedNumber</span>
+                                                                }
+                                                                @if (series.HomeTeamId.HasValue && series.HomeTeamName != null)
+                                                                {
+                                                                    <MudLink Href="@($"/teams/{series.HomeTeamId}")">@series.HomeTeamName</MudLink>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>TBD</span>
+                                                                }
+                                                            </div>
+                                                            <div class="psc-score-block">
+                                                                <span class="psc-wins @(series.HomeWins > series.AwayWins ? "psc-wins-leading" : "")">
+                                                                    @series.HomeWins
+                                                                </span>
+                                                                <span class="psc-dash">–</span>
+                                                                <span class="psc-wins @(series.AwayWins > series.HomeWins ? "psc-wins-leading" : "")">
+                                                                    @series.AwayWins
+                                                                </span>
+                                                            </div>
+                                                            <div class="psc-team @(series.WinnerId == series.AwayTeamId ? "psc-winner" : "")">
+                                                                @if (series.AwaySeedNumber.HasValue)
+                                                                {
+                                                                    <span class="psc-seed">#@series.AwaySeedNumber</span>
+                                                                }
+                                                                @if (series.AwayTeamId.HasValue && series.AwayTeamName != null)
+                                                                {
+                                                                    <MudLink Href="@($"/teams/{series.AwayTeamId}")">@series.AwayTeamName</MudLink>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>TBD</span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="psc-footer">
+                                                            <span class="psc-bestof">Best of @(series.WinsNeeded * 2 - 1)</span>
+                                                            <MudChip T="string" Size="Size.Small"
+                                                                     Color="@(series.IsCompleted ? Color.Success : series.Matches.Any() ? Color.Info : Color.Default)">
+                                                                @(series.IsCompleted ? "Completed" : series.Matches.Any() ? "In Progress" : "Upcoming")
+                                                            </MudChip>
+                                                            @if (series.Matches.Any())
+                                                            {
+                                                                <MudIconButton Size="Size.Small"
+                                                                               Icon="@(_expandedSeries.Contains(series.SeriesId) ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                                                               OnClick="@(() => ToggleSeries(series.SeriesId))" />
+                                                            }
+                                                        </div>
+                                                        @if (_expandedSeries.Contains(series.SeriesId))
+                                                        {
+                                                            <div class="psc-matches">
+                                                                @foreach (var match in series.Matches.OrderBy(m => m.GameNumber))
+                                                                {
+                                                                    <a href="@($"/matches/{match.MatchId}")" class="psc-match-row">
+                                                                        <div class="psc-match-left">
+                                                                            @if (!string.IsNullOrEmpty(match.Venue))
+                                                                            {
+                                                                                <span class="psc-match-venue">@match.Venue</span>
+                                                                            }
+                                                                            <span class="psc-match-date">@match.ScheduledDate.ToString("dd.MM. HH:mm")</span>
+                                                                            <span class="psc-match-num">G@(match.GameNumber)</span>
+                                                                        </div>
+                                                                        <span class="psc-match-score">
+                                                                            @if (match.HomeScore.HasValue)
+                                                                            { @match.HomeScore <text> : </text> @match.AwayScore }
+                                                                            else { <text>–</text> }
+                                                                        </span>
+                                                                        <div class="psc-match-right">
+                                                                            <MudChip T="string" Size="Size.Small" Color="@match.Status.ToColor()">
+                                                                                @match.Status.ToDisplayString()
+                                                                            </MudChip>
+                                                                        </div>
+                                                                    </a>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </ChildContent>
+                    </MudExpansionPanel>
+                }
+
             </MudExpansionPanels>
         </MudPaper>
     }

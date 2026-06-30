@@ -94,13 +94,18 @@ namespace HRKošarka.Application.Features.Match.Queries.GetMatchWithStats
                     PlayerId = pth.PlayerId,
                     PlayerName = $"{pth.Player.FirstName} {pth.Player.LastName}",
                     JerseyNumber = pth.JerseyNumber,
+                    Position = (int)pth.Player.Position,
                     Points = stat?.Points ?? 0,
                     ThreePointers = stat?.ThreePointers ?? 0,
                     Fouls = stat?.Fouls ?? 0,
                     DidNotPlay = stat?.DidNotPlay ?? false,
+                    IsStarter = stat?.IsStarter ?? false,
                     StatsEntered = stat != null
                 };
-            }).ToList();
+            })
+            .OrderBy(p => p.IsStarter ? 0 : 1)
+            .ThenBy(p => p.Position)
+            .ToList();
         }
     }
 }

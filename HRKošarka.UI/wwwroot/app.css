@@ -796,7 +796,6 @@ html, body {
     padding: var(--spacing-2xl) var(--spacing-md) !important;
 }
 
-/* My Favorite Teams page */
 .fav-empty-state {
     display: flex;
     flex-direction: column;
@@ -1261,6 +1260,20 @@ html, body {
 @media (max-width: 480px) {
     .view-schedule-label { display: none; }
     .view-schedule-icon-only { display: inline; }
+
+    .panel-title .mud-typography {
+        font-size: 1rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+        flex-shrink: 1;
+    }
+
+    .panel-icon {
+        font-size: 1.1rem !important;
+        flex-shrink: 0;
+    }
 }
 
 .panel-icon {
@@ -1947,10 +1960,11 @@ html, body {
 }
 
 .match-col-sep {
-    flex: 0 0 48px;
+    flex: 0 0 68px;
     text-align: center;
     font-weight: 700;
     color: var(--mud-palette-text-secondary);
+    white-space: nowrap;
 }
 
 .match-col-away {
@@ -2484,6 +2498,35 @@ html, body {
     width: 52px;
 }
 .mds-th-dnp { width: 44px; }
+
+.mds-th-starter {
+    text-align: center;
+    padding: 0 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--mud-palette-text-secondary);
+    width: 36px;
+}
+.mds-td-starter {
+    text-align: center;
+    padding: 1px 2px;
+    width: 36px;
+    vertical-align: middle;
+}
+.mds-bench-divider td {
+    padding: 2px 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--mud-palette-text-secondary);
+    opacity: 0.5;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+}
 
 .mds-row {
     border-top: 1px solid rgba(255,255,255,0.04);
@@ -3260,14 +3303,14 @@ html, body {
 
 .standings-native-table {
     border-collapse: collapse;
+    table-layout: fixed;
     width: 100%;
-    min-width: 560px;
+    min-width: 760px;
     font-size: 0.82rem;
 }
 
 .standings-native-table th {
-    padding: 6px 8px;
-    text-align: left;
+    padding: 6px 12px;
     font-weight: 600;
     color: var(--text-secondary);
     font-size: 0.70rem;
@@ -3279,7 +3322,7 @@ html, body {
 }
 
 .standings-native-table td {
-    padding: 6px 8px;
+    padding: 6px 12px;
     white-space: nowrap;
     border-bottom: 1px solid var(--border-secondary);
 }
@@ -3294,23 +3337,27 @@ html, body {
 }
 
 .standings-col-pos {
-    width: 30px;
+    width: 4%;
     text-align: center;
     font-weight: 600;
 }
 
 .standings-col-team {
-    min-width: 110px;
+    width: 24%;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .standings-col-stat {
-    width: 38px;
+    width: 7%;
     text-align: center;
     font-variant-numeric: tabular-nums;
 }
 
 .standings-col-last5 {
-    min-width: 90px;
+    width: 23%;
+    text-align: left;
 }
 
 .standings-pts {
@@ -3563,4 +3610,295 @@ html, body {
 
 .details-table tbody tr.career-group-start:first-child td {
     border-top: none;
+}
+
+.playoff-bracket {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.playoff-round-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.playoff-series-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.playoff-series-card {
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    overflow: hidden;
+}
+
+.playoff-series-card.psc-completed {
+    border-left: 3px solid var(--mud-palette-success);
+}
+
+.psc-header {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+}
+
+.psc-team {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.psc-team:first-child {
+    text-align: right;
+}
+
+.psc-team.psc-winner {
+    font-weight: 700;
+    color: var(--mud-palette-success);
+}
+
+.psc-seed {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--mud-palette-text-secondary);
+    margin-right: 0.3rem;
+}
+
+.psc-score-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.psc-wins {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    min-width: 1.5rem;
+    text-align: center;
+    opacity: 0.5;
+}
+
+.psc-wins.psc-wins-leading {
+    opacity: 1;
+    color: var(--mud-palette-primary);
+}
+
+.psc-dash {
+    opacity: 0.4;
+    font-size: 1rem;
+}
+
+.psc-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(0,0,0,0.12);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    flex-wrap: wrap;
+}
+
+.psc-bestof {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    margin-right: auto;
+}
+
+.psc-matches {
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.psc-match-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.875rem;
+    transition: background 0.15s;
+}
+.psc-match-left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+.psc-match-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.psc-match-row:last-child {
+    border-bottom: none;
+}
+
+.psc-match-row:hover {
+    background: rgba(255,255,255,0.04);
+}
+
+.psc-match-num {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.5;
+    white-space: nowrap;
+}
+
+.psc-match-date {
+    font-size: 0.78rem;
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.psc-match-score {
+    width: 80px;
+    text-align: center;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.psc-match-venue {
+    font-size: 0.72rem;
+    opacity: 0.55;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.playoff-config-box {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-top: 0.75rem;
+    background: rgba(255,255,255,0.02);
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.playoff-config-box.pco-enabled {
+    border-left: 3px solid var(--mud-palette-primary);
+    padding-left: calc(1.25rem - 2px);
+    background: rgba(88,166,255,0.05);
+}
+
+.playoff-config-toggle {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.playoff-config-sub {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.playoff-option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.02);
+}
+
+.playoff-gen-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.playoff-gen-label {
+    font-weight: 600;
+    flex: 1;
+}
+
+@media (max-width: 600px) {
+    .playoff-bracket {
+        gap: 1rem;
+    }
+
+    .playoff-round-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .playoff-series-list {
+        gap: 0.5rem;
+    }
+
+    .psc-header {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+        text-align: center;
+        padding: 0.625rem 0.75rem;
+    }
+
+    .psc-team:first-child {
+        text-align: center;
+    }
+
+    .psc-score-block {
+        justify-content: center;
+    }
+
+    .psc-footer {
+        padding: 0.375rem 0.75rem;
+    }
+
+    .psc-match-row {
+        grid-template-columns: 1fr auto auto;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    .psc-match-left {
+        justify-content: flex-start;
+        gap: 0.375rem;
+        overflow: hidden;
+    }
+
+    .psc-match-venue {
+        max-width: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .psc-match-date {
+        display: none;
+    }
+
+    .psc-match-score {
+        width: 60px;
+    }
 }

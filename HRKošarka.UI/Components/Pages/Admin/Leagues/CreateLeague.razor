@@ -141,6 +141,66 @@
                                         </MudRadio>
                                     </MudRadioGroup>
                                 </MudItem>
+
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.h6" Class="section-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Class="section-icon" />
+                                        Playoff Configuration
+                                    </MudText>
+                                    <MudDivider Class="section-divider" />
+
+                                    <div class="playoff-config-box @(_model.HasPlayoff ? "pco-enabled" : "")">
+                                        <div class="playoff-config-toggle">
+                                            <div style="min-width:0">
+                                                <MudText Typo="Typo.body1" Style="font-weight:600;margin-bottom:2px">Enable Playoff</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    Once the regular season is complete, an admin can generate a playoff bracket.
+                                                </MudText>
+                                            </div>
+                                            <MudSwitch @bind-Value="_model.HasPlayoff"
+                                                       Color="Color.Primary"
+                                                       Class="flex-shrink-0 mt-n1" />
+                                        </div>
+
+                                        @if (_model.HasPlayoff)
+                                        {
+                                            <div class="playoff-config-sub">
+                                                <MudGrid Spacing="3">
+                                                    <MudItem xs="12" sm="6">
+                                                        <MudSelect T="int?"
+                                                                   @bind-Value="_model.PlayoffTeamCount"
+                                                                   Label="Teams in Playoff"
+                                                                   Variant="Variant.Text"
+                                                                   Adornment="Adornment.Start"
+                                                                   AdornmentIcon="@Icons.Material.Filled.Groups"
+                                                                   Required="true"
+                                                                   RequiredError="Team count is required"
+                                                                   Dense="true">
+                                                            <MudSelectItem T="int?" Value="2">2 teams — Final only</MudSelectItem>
+                                                            <MudSelectItem T="int?" Value="4">4 teams — Semi-Finals + Final</MudSelectItem>
+                                                            <MudSelectItem T="int?" Value="8">8 teams — Quarters + Semis + Final</MudSelectItem>
+                                                        </MudSelect>
+                                                    </MudItem>
+
+                                                    <MudItem xs="12" sm="6">
+                                                        <MudDatePicker Date="_playoffEndDate"
+                                                                       DateChanged="@(value => _playoffEndDate = value)"
+                                                                       Label="Playoff End Date (optional)"
+                                                                       Variant="Variant.Text"
+                                                                       Margin="Margin.Dense"
+                                                                       DateFormat="dd.MM.yyyy."
+                                                                       Editable="true"
+                                                                       Adornment="Adornment.Start"
+                                                                       AdornmentIcon="@Icons.Material.Filled.EventAvailable"
+                                                                       MinDate="@_startDate"
+                                                                       HelperText="Leave empty to use the league end date." />
+                                                    </MudItem>
+
+                                                </MudGrid>
+                                            </div>
+                                        }
+                                    </div>
+                                </MudItem>
                             }
 
                             @if (_model.CompetitionType == HRKošarka.UI.Services.Base.CompetitionType._1)

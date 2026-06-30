@@ -123,6 +123,39 @@
             <MudDivider Class="mb-5" />
         }
 
+        <!-- Admin: Leagues needing playoff generation -->
+        @if (_isAdmin && _leaguesNeedingPlayoff.Any())
+        {
+            <div class="resp-group-panel mb-5">
+                <button class="resp-group-header-btn" @onclick="@(() => _playoffLeaguesExpanded = !_playoffLeaguesExpanded)">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountTree" Color="Color.Warning" Size="Size.Small" Class="mr-2" />
+                    <span class="resp-group-title-text">Generate Playoff Bracket</span>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="ml-2 flex-shrink-0">
+                        @_leaguesNeedingPlayoff.Count
+                    </MudChip>
+                    <MudIcon Icon="@(_playoffLeaguesExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                             Size="Size.Small" Class="ml-auto" Color="Color.Secondary" />
+                </button>
+                @if (_playoffLeaguesExpanded)
+                {
+                    @foreach (var league in _leaguesNeedingPlayoff.OrderBy(l => l.Name))
+                    {
+                        <a href="@($"/admin/leagues/{league.Id}/generate-playoff")" class="resp-row">
+                            <MudIcon Icon="@Icons.Material.Filled.EmojiEvents"
+                                     Size="Size.Small" Color="Color.Warning" Class="mr-3 flex-shrink-0" />
+                            <div class="resp-row-main">
+                                <div class="resp-match">@league.Name</div>
+                                <div class="resp-meta">@league.SeasonName · Regular season complete</div>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.ChevronRight"
+                                     Color="Color.Secondary" Size="Size.Small" />
+                        </a>
+                    }
+                }
+            </div>
+            <MudDivider Class="mb-5" />
+        }
+
         <!-- Pending Actions -->
         @if (!_actions.Any())
         {

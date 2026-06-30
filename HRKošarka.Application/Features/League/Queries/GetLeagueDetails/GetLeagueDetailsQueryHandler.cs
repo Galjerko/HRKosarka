@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Models.Responses;
@@ -23,13 +23,19 @@ namespace HRKošarka.Application.Features.League.Queries.GetLeagueDetails
             var league = await _leagueRepository.GetLeagueWithDetailsAsync(request.Id, cancellationToken);
 
             if (league == null)
-            {
                 throw new NotFoundException(nameof(League), request.Id);
-            }
 
             var dto = _mapper.Map<LeagueDetailsDTO>(league);
             dto.SeasonName = league.Season?.Name ?? string.Empty;
             dto.AgeCategoryCode = league.AgeCategory?.Code ?? string.Empty;
+            dto.HasPlayoff = league.HasPlayoff;
+            dto.PlayoffTeamCount = league.PlayoffTeamCount;
+            dto.PlayoffGenerated = league.PlayoffGenerated;
+            dto.PlayoffHas3rdPlace = league.PlayoffHas3rdPlace;
+            dto.PlayoffEndDate = league.PlayoffEndDate;
+
+            if (league.HasPlayoff && league.ScheduleGenerated && !league.PlayoffGenerated)
+                dto.AllRegularMatchesComplete = !await _leagueRepository.HasUnfinishedRegularSeasonMatchesAsync(league.Id, cancellationToken);
 
             return QueryResponse<LeagueDetailsDTO>.Success(dto);
         }

@@ -16,6 +16,12 @@ namespace HRKošarka.Application.Features.League.Queries.GetLeagueDetails
         public int NumberOfRounds { get; set; }
         public bool ScheduleGenerated { get; set; }
         public bool IsFeatured { get; set; }
+        public bool HasPlayoff { get; set; }
+        public int? PlayoffTeamCount { get; set; }
+        public bool PlayoffGenerated { get; set; }
+        public bool PlayoffHas3rdPlace { get; set; }
+        public DateTime? PlayoffEndDate { get; set; }
+        public bool AllRegularMatchesComplete { get; set; }
         public string? DefaultVenue { get; set; }
         public DateTime? DeactivateDate { get; set; }
         public bool IsActive => DeactivateDate == null;

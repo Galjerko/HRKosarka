@@ -1,0 +1,74 @@
+@page "/admin/leagues/{Id:guid}/generate-playoff"
+@using HRKošarka.UI.Services.Base
+@using MudBlazor
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+@attribute [Authorize(Roles = "Administrator")]
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-6 mb-6">
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" Class="d-block mx-auto mt-10" />
+    }
+    else if (_league is not null)
+    {
+        <MudText Typo="Typo.h5" Class="mb-1">Generate Playoff Bracket</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">@_league.Name</MudText>
+
+        <MudPaper Class="pa-6" Elevation="2">
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-5">
+                Set the playoff start date and configure how many wins a team needs to advance in each round.
+            </MudText>
+
+            <MudDatePicker @bind-Date="_playoffStartDate"
+                           Label="Game 1 date"
+                           MinDate="@_minStartDate"
+                           MaxDate="@((_league.PlayoffEndDate ?? _league.EndDate).Date)"
+                           DateFormat="dd.MM.yyyy."
+                           Variant="Variant.Outlined"
+                           Class="mb-4"
+                           HelperText="@(_minStartDate.HasValue ? $"Earliest: {_minStartDate.Value:dd.MM.yyyy.}" : null)" />
+
+            @foreach (var round in _rounds)
+            {
+                <MudNumericField T="int"
+                                 @bind-Value="round.WinsNeeded"
+                                 Min="2" Max="4"
+                                 Label="@($"{round.RoundName} — Wins to advance")"
+                                 Variant="Variant.Outlined"
+                                 Class="mb-4" />
+            }
+
+            @if ((_league.PlayoffTeamCount ?? 2) >= 4)
+            {
+                <div class="mb-4">
+                    <MudSwitch @bind-Value="_include3rdPlace"
+                               Color="Color.Primary"
+                               Label="Include 3rd Place Match" />
+                </div>
+            }
+
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-6">
+                Generating the playoff bracket is permanent and cannot be undone.
+            </MudAlert>
+
+            <div class="d-flex gap-3">
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Secondary"
+                           OnClick="@(() => NavigationManager.NavigateTo($"/leagues/{Id}"))">
+                    Cancel
+                </MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Warning"
+                           StartIcon="@Icons.Material.Filled.AccountTree"
+                           Disabled="@_saving"
+                           OnClick="Submit">
+                    @if (_saving)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    }
+                    Generate Bracket
+                </MudButton>
+            </div>
+        </MudPaper>
+    }
+</MudContainer>

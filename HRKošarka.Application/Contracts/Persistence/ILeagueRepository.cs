@@ -27,5 +27,6 @@ namespace HRKošarka.Application.Contracts.Persistence
         Task<bool> HasActiveMatchesForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
         Task<List<FeaturedLeagueRoundDTO>> GetFeaturedLeagueMatchesAsync(CancellationToken cancellationToken = default);
         Task<List<LeaguePlayerStatDTO>> GetLeagueLeaderboardAsync(Guid leagueId, string? sortBy, string? sortDirection, CancellationToken cancellationToken = default);
+        Task<bool> HasUnfinishedRegularSeasonMatchesAsync(Guid leagueId, CancellationToken cancellationToken = default);
     }
 }

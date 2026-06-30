@@ -62,10 +62,13 @@ namespace HRKošarka.Domain
         [MaxLength(500)]
         public string? DisputeReason { get; set; }
 
+        public Guid? PlayoffSeriesId { get; set; }
+
         // Navigation properties
         public virtual League League { get; set; } = null!;
         public virtual Team HomeTeam { get; set; } = null!;
         public virtual Team AwayTeam { get; set; } = null!;
+        public virtual PlayoffSeries? PlayoffSeries { get; set; }
         public virtual ICollection<MatchReschedulingRequest> ReschedulingRequests { get; set; } = new List<MatchReschedulingRequest>();
         public virtual ICollection<PlayerMatchStats> PlayerStats { get; set; } = new List<PlayerMatchStats>();
         public virtual ICollection<EmailNotification> EmailNotifications { get; set; } = new List<EmailNotification>();

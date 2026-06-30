@@ -33,6 +33,19 @@ namespace HRKošarka.Domain
 
         public bool IsFeatured { get; set; } = false;
 
+        public bool HasPlayoff { get; set; } = false;
+
+        public int? PlayoffTeamCount { get; set; } // 2, 4, or 8
+
+        public bool PlayoffGenerated { get; set; } = false;
+
+        public bool PlayoffHas3rdPlace { get; set; } = false;
+
+        public DateTime? PlayoffEndDate { get; set; }
+
+        [MaxLength(200)]
+        public string? PlayoffRoundWinsNeeded { get; set; } // JSON {"1":3,"2":2} stored at generation
+
         public bool IsActive { get; set; } = true;
 
         public DateTime? DeactivateDate { get; set; }
@@ -54,5 +67,6 @@ namespace HRKošarka.Domain
         public virtual ICollection<Match> Matches { get; set; } = new List<Match>();
         public virtual ICollection<LeagueStanding> Standings { get; set; } = new List<LeagueStanding>();
         public virtual ICollection<LeagueBreak> Breaks { get; set; } = new List<LeagueBreak>();
+        public virtual ICollection<PlayoffSeries> PlayoffSeries { get; set; } = new List<PlayoffSeries>();
     }
 }

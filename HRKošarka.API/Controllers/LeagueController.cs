@@ -5,6 +5,7 @@ using HRKošarka.Application.Features.League.Commands.CreateLeague;
 using HRKošarka.Application.Features.League.Commands.DeactivateLeague;
 using HRKošarka.Application.Features.League.Commands.DeleteLeague;
 using HRKošarka.Application.Features.League.Commands.GenerateLeagueSchedule;
+using HRKošarka.Application.Features.League.Commands.GeneratePlayoff;
 using HRKošarka.Application.Features.League.Commands.RegisterTeamInLeague;
 using HRKošarka.Application.Features.League.Commands.RemoveLeagueBreak;
 using HRKošarka.Application.Features.League.Commands.RemoveTeamFromLeague;
@@ -18,6 +19,7 @@ using HRKošarka.Application.Features.League.Queries.GetLeagueLeaderboard;
 using HRKošarka.Application.Features.League.Queries.GetLeagueSchedule;
 using HRKošarka.Application.Features.League.Queries.GetLeagueStandings;
 using HRKošarka.Application.Features.League.Queries.GetLeagueTeams;
+using HRKošarka.Application.Features.League.Queries.GetPlayoffBracket;
 using HRKošarka.Application.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -253,6 +255,31 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<CommandResponse<int>>> GenerateSchedule(Guid id)
         {
             var response = await _mediator.Send(new GenerateLeagueScheduleCommand(id));
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/playoff", Name = "GetPlayoffBracket")]
+        [ProducesResponseType(typeof(QueryResponse<PlayoffBracketDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<PlayoffBracketDTO>>> GetPlayoff(Guid id)
+        {
+            var response = await _mediator.Send(new GetPlayoffBracketQuery(id));
+            return Ok(response);
+        }
+
+        [HttpPost("{id}/generate-playoff", Name = "GeneratePlayoff")]
+        [Authorize(Roles = "Administrator")]
+        [ProducesResponseType(typeof(CommandResponse<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(CustomProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<CommandResponse<bool>>> GeneratePlayoff(Guid id, GeneratePlayoffCommand command)
+        {
+            command.LeagueId = id;
+            var response = await _mediator.Send(command);
             return Ok(response);
         }
     }

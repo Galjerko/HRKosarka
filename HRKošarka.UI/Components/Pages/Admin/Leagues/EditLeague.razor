@@ -1,4 +1,4 @@
-﻿@page "/admin/leagues/{Id:guid}/edit"
+@page "/admin/leagues/{Id:guid}/edit"
 @using HRKošarka.UI.Services.Base
 @inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
@@ -40,6 +40,13 @@
                         <MudText Typo="Typo.h6" Class="form-subtitle">Update league information</MudText>
                     </div>
 
+                    @if (_isLocked)
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mb-4" Icon="@Icons.Material.Filled.Lock" Dense="true">
+                            The schedule has been generated. Only the <strong>Feature on Dashboard</strong> setting can be changed.
+                        </MudAlert>
+                    }
+
                     <MudForm @ref="_form" @bind-IsValid="_isFormValid">
                         <MudGrid Spacing="4">
 
@@ -61,6 +68,7 @@
                                               RequiredError="League name is required"
                                               Counter="200" Immediate="true"
                                               MaxLength="200"
+                                              Disabled="@_isLocked"
                                               Validation="@(new Func<string, IEnumerable<string>>(ValidateLeagueName))" />
                             </MudItem>
 
@@ -74,6 +82,7 @@
                                            Dense="true"
                                            Required="true"
                                            RequiredError="Season is required"
+                                           Disabled="@_isLocked"
                                            ToStringFunc="@(id => _seasons.FirstOrDefault(s => s.Id == id)?.Name ?? string.Empty)"
                                            Validation="@(new Func<Guid, string?>(id => id == Guid.Empty ? "Season is required" : null))">
                                     @foreach (var season in _seasons)
@@ -93,6 +102,7 @@
                                            Dense="true"
                                            Required="true"
                                            RequiredError="Age category is required"
+                                           Disabled="@_isLocked"
                                            ToStringFunc="@(id => _ageCategories.FirstOrDefault(a => a.Id == id)?.Code ?? string.Empty)"
                                            Validation="@(new Func<Guid, string?>(id => id == Guid.Empty ? "Age category is required" : null))">
                                     @foreach (var ac in _ageCategories)
@@ -111,7 +121,8 @@
                                            AdornmentIcon="@Icons.Material.Filled.Person"
                                            Dense="true"
                                            Required="true"
-                                           RequiredError="Gender is required">
+                                           RequiredError="Gender is required"
+                                           Disabled="@_isLocked">
                                     <MudSelectItem Value="@HRKošarka.UI.Services.Base.Gender._0">Male</MudSelectItem>
                                     <MudSelectItem Value="@HRKošarka.UI.Services.Base.Gender._1">Female</MudSelectItem>
                                 </MudSelect>
@@ -126,7 +137,8 @@
                                            AdornmentIcon="@Icons.Material.Filled.EmojiEvents"
                                            Dense="true"
                                            Required="true"
-                                           RequiredError="Competition type is required">
+                                           RequiredError="Competition type is required"
+                                           Disabled="@_isLocked">
                                     <MudSelectItem Value="@HRKošarka.UI.Services.Base.CompetitionType._0">League</MudSelectItem>
                                     <MudSelectItem Value="@HRKošarka.UI.Services.Base.CompetitionType._1">Cup</MudSelectItem>
                                 </MudSelect>
@@ -146,7 +158,7 @@
                                     <MudText Typo="Typo.body2" Class="mb-2" Style="color: var(--mud-palette-text-secondary)">
                                         Select how many times each team plays against every other team:
                                     </MudText>
-                                    <MudRadioGroup T="int" @bind-Value="_model.NumberOfRounds">
+                                    <MudRadioGroup T="int" @bind-Value="_model.NumberOfRounds" Disabled="@_isLocked">
                                         <MudRadio T="int" Value="1" Color="Color.Primary">
                                             <MudText Typo="Typo.body1"><strong>Single Round Robin</strong> — each team plays every other team once</MudText>
                                         </MudRadio>
@@ -154,6 +166,76 @@
                                             <MudText Typo="Typo.body1"><strong>Double Round Robin</strong> — each team plays every other team twice (home &amp; away)</MudText>
                                         </MudRadio>
                                     </MudRadioGroup>
+                                </MudItem>
+
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.h6" Class="section-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Class="section-icon" />
+                                        Playoff Configuration
+                                    </MudText>
+                                    <MudDivider Class="section-divider" />
+
+                                    <div class="playoff-config-box @(_model.HasPlayoff ? "pco-enabled" : "")">
+                                        <div class="playoff-config-toggle">
+                                            <div style="min-width:0">
+                                                <MudText Typo="Typo.body1" Style="font-weight:600;margin-bottom:2px">Enable Playoff</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    Once the regular season is complete, an admin can generate a playoff bracket.
+                                                </MudText>
+                                            </div>
+                                            <MudSwitch @bind-Value="_model.HasPlayoff"
+                                                       Color="Color.Primary"
+                                                       Disabled="@_isLocked"
+                                                       Class="flex-shrink-0 mt-n1" />
+                                        </div>
+
+                                        @if (_model.HasPlayoff)
+                                        {
+                                            <div class="playoff-config-sub">
+                                                <MudGrid Spacing="3">
+                                                    <MudItem xs="12" sm="6">
+                                                        <MudSelect T="int?"
+                                                                   @bind-Value="_model.PlayoffTeamCount"
+                                                                   Label="Teams in Playoff"
+                                                                   Variant="Variant.Text"
+                                                                   Adornment="Adornment.Start"
+                                                                   AdornmentIcon="@Icons.Material.Filled.Groups"
+                                                                   Required="true"
+                                                                   RequiredError="Team count is required"
+                                                                   Disabled="@(_isLocked || _league?.PlayoffGenerated == true)"
+                                                                   Dense="true">
+                                                            <MudSelectItem T="int?" Value="2">2 teams — Final only</MudSelectItem>
+                                                            <MudSelectItem T="int?" Value="4">4 teams — Semi-Finals + Final</MudSelectItem>
+                                                            <MudSelectItem T="int?" Value="8">8 teams — Quarters + Semis + Final</MudSelectItem>
+                                                        </MudSelect>
+                                                    </MudItem>
+
+                                                    <MudItem xs="12" sm="6">
+                                                        <MudDatePicker Date="_playoffEndDate"
+                                                                       DateChanged="@(value => _playoffEndDate = value)"
+                                                                       Label="Playoff End Date (optional)"
+                                                                       Variant="Variant.Text"
+                                                                       Margin="Margin.Dense"
+                                                                       DateFormat="dd.MM.yyyy."
+                                                                       Editable="true"
+                                                                       Adornment="Adornment.Start"
+                                                                       AdornmentIcon="@Icons.Material.Filled.EventAvailable"
+                                                                       MinDate="@_startDate"
+                                                                       Disabled="@_isLocked"
+                                                                       HelperText="Leave empty to use the league end date." />
+                                                    </MudItem>
+
+                                                </MudGrid>
+
+                                                @if (_league?.PlayoffGenerated == true)
+                                                {
+                                                    <MudAlert Severity="Severity.Info" Class="mt-3" Dense="true">
+                                                        The playoff bracket has been generated — team count can no longer be changed.
+                                                    </MudAlert>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
                                 </MudItem>
                             }
 
@@ -175,6 +257,7 @@
                                                   AdornmentIcon="@Icons.Material.Filled.LocationOn"
                                                   Counter="255" Immediate="true"
                                                   MaxLength="255"
+                                                  Disabled="@_isLocked"
                                                   HelperText="Auto-applied to all generated matches. Home team manager or representative can override per match." />
                                 </MudItem>
                             }
@@ -198,6 +281,7 @@
                                                Adornment="Adornment.Start"
                                                AdornmentIcon="@Icons.Material.Filled.Event"
                                                Required="true"
+                                               Disabled="@_isLocked"
                                                RequiredError="Start date is required" />
                             </MudItem>
 
@@ -213,6 +297,7 @@
                                                AdornmentIcon="@Icons.Material.Filled.EventAvailable"
                                                MinDate="@_startDate"
                                                Required="true"
+                                               Disabled="@_isLocked"
                                                RequiredError="End date is required" />
                             </MudItem>
 

@@ -262,6 +262,7 @@ namespace HRKošarka.Persistence.Repositories
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Where(m => m.LeagueId == leagueId
+                         && m.PlayoffSeriesId == null
                          && m.HomeTeam.DateDeleted == null
                          && m.AwayTeam.DateDeleted == null)
                 .OrderBy(m => m.Round)
@@ -464,6 +465,15 @@ namespace HRKošarka.Persistence.Repositories
             if (string.Equals(sortBy, nameof(LeaguePlayerStatDTO.TotalFouls), StringComparison.OrdinalIgnoreCase))
                 return asc ? list.OrderBy(x => x.TotalFouls).ToList() : list.OrderByDescending(x => x.TotalFouls).ToList();
             return list.OrderByDescending(x => x.PPG).ToList();
+        }
+
+        public async Task<bool> HasUnfinishedRegularSeasonMatchesAsync(Guid leagueId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Matches
+                .AnyAsync(m => m.LeagueId == leagueId
+                            && m.PlayoffSeriesId == null
+                            && (m.Status == MatchStatus.Scheduled || m.Status == MatchStatus.Rescheduled),
+                          cancellationToken);
         }
     }
 }

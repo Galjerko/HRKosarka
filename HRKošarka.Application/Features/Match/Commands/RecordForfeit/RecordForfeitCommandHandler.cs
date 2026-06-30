@@ -1,6 +1,7 @@
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Models.Responses;
+using HRKošarka.Application.Services;
 using HRKošarka.Domain;
 using HRKošarka.Domain.Common;
 using MediatR;
@@ -11,13 +12,16 @@ namespace HRKošarka.Application.Features.Match.Commands.RecordForfeit
     {
         private readonly IMatchRepository _matchRepository;
         private readonly ILeagueStandingRepository _standingRepository;
+        private readonly PlayoffAdvancementService _playoffAdvancement;
 
         public RecordForfeitCommandHandler(
             IMatchRepository matchRepository,
-            ILeagueStandingRepository standingRepository)
+            ILeagueStandingRepository standingRepository,
+            PlayoffAdvancementService playoffAdvancement)
         {
             _matchRepository = matchRepository;
             _standingRepository = standingRepository;
+            _playoffAdvancement = playoffAdvancement;
         }
 
         public async Task<CommandResponse<bool>> Handle(RecordForfeitCommand request, CancellationToken ct)
@@ -41,12 +45,20 @@ namespace HRKošarka.Application.Features.Match.Commands.RecordForfeit
             match.ConfirmedAt = DateTime.UtcNow;
             await _matchRepository.UpdateAsync(match, ct);
 
-            var seasonId = match.League.SeasonId;
-            await UpdateStanding(match.LeagueId, match.HomeTeamId, seasonId,
-                match.HomeScore.Value, match.AwayScore.Value, ct);
-            await UpdateStanding(match.LeagueId, match.AwayTeamId, seasonId,
-                match.AwayScore.Value, match.HomeScore.Value, ct);
-            await RecalculatePositions(match.LeagueId, ct);
+            // Playoff forfeits advance the series; regular-season forfeits update standings
+            if (match.PlayoffSeriesId.HasValue)
+            {
+                await _playoffAdvancement.AdvanceIfCompleteAsync(match, ct);
+            }
+            else
+            {
+                var seasonId = match.League.SeasonId;
+                await UpdateStanding(match.LeagueId, match.HomeTeamId, seasonId,
+                    match.HomeScore.Value, match.AwayScore.Value, ct);
+                await UpdateStanding(match.LeagueId, match.AwayTeamId, seasonId,
+                    match.AwayScore.Value, match.HomeScore.Value, ct);
+                await RecalculatePositions(match.LeagueId, ct);
+            }
 
             return CommandResponse<bool>.Success(true, "Forfeit recorded.");
         }
