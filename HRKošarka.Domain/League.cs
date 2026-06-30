@@ -46,6 +46,8 @@ namespace HRKošarka.Domain
         [MaxLength(200)]
         public string? PlayoffRoundWinsNeeded { get; set; } // JSON {"1":3,"2":2} stored at generation
 
+        public DateTime PlayoffCapDate => (PlayoffEndDate ?? EndDate).Date.AddHours(19);
+
         public bool IsActive { get; set; } = true;
 
         public DateTime? DeactivateDate { get; set; }

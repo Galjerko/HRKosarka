@@ -1,7 +1,5 @@
 using HRKošarka.Application.Contracts.Persistence;
-using HRKošarka.Application.Exceptions;
 using HRKošarka.Domain;
-using HRKošarka.Domain.Common;
 using HRKošarka.Domain.Helpers;
 
 namespace HRKošarka.Application.Services
@@ -34,14 +32,14 @@ namespace HRKošarka.Application.Services
 
             var confirmedGameNumber = confirmedGameIndex + 1;
 
-            var league = await _leagueRepository.GetLeagueWithDetailsAsync(series.LeagueId, ct);
-            var capDate = (league!.PlayoffEndDate ?? league.EndDate).Date.AddHours(19);
-
             int homeWins = series.HomeWins;
             int awayWins = series.AwayWins;
 
             if (homeWins >= series.WinsNeeded || awayWins >= series.WinsNeeded)
             {
+                var league = await _leagueRepository.GetLeagueWithDetailsAsync(series.LeagueId, ct);
+                var capDate = league!.PlayoffCapDate;
+
                 bool homeWon = homeWins >= series.WinsNeeded;
                 series.IsCompleted = true;
                 series.WinnerId = homeWon ? series.HomeTeamId : series.AwayTeamId;
@@ -99,26 +97,9 @@ namespace HRKošarka.Application.Services
 
                         foreach (var slot in gameSlots)
                         {
-                            if (slot.Date > capDate)
-                                throw new BadRequestException(
-                                    $"Playoff scheduling would exceed the configured end date ({capDate:dd.MM.yyyy}). " +
-                                    "Adjust the playoff end date.");
-
-                            matchesToCreate.Add(new Match
-                            {
-                                LeagueId = stub.LeagueId,
-                                HomeTeamId = slot.HomeTeamId,
-                                AwayTeamId = slot.AwayTeamId,
-                                Round = stub.RoundNumber,
-                                RoundName = stub.RoundName,
-                                DefaultScheduledDate = slot.Date,
-                                ActualScheduledDate = slot.Date,
-                                Status = MatchStatus.Scheduled,
-                                SchedulingStatus = SchedulingStatus.Default,
-                                LastSchedulingUpdate = DateTime.Now,
-                                VenueOverride = league.DefaultVenue,
-                                PlayoffSeriesId = stub.Id
-                            });
+                            PlayoffSchedulingGuard.EnsureWithinCapDate(slot.Date, capDate);
+                            matchesToCreate.Add(PlayoffSeriesScheduler.ToMatch(
+                                slot, stub.LeagueId, stub.RoundNumber, stub.RoundName, league.DefaultVenue, stub.Id));
                         }
                     }
                 }
@@ -133,43 +114,25 @@ namespace HRKošarka.Application.Services
                     return;
 
                 // Series went beyond its pre-generated minimum — create the next game on-the-fly
+                var league = await _leagueRepository.GetLeagueWithDetailsAsync(series.LeagueId, ct);
+                var capDate = league!.PlayoffCapDate;
+
                 var lastMatch = orderedMatches.Last();
                 var slot = PlayoffSeriesScheduler.GenerateNextGame(
                     series.HomeTeamId!.Value, series.AwayTeamId!.Value,
                     series.WinsNeeded, orderedMatches.Count, lastMatch.DefaultScheduledDate);
 
-                if (slot.Date > capDate)
-                    throw new BadRequestException(
-                        $"Playoff scheduling would exceed the configured end date ({capDate:dd.MM.yyyy}). " +
-                        "Adjust the playoff end date.");
+                PlayoffSchedulingGuard.EnsureWithinCapDate(slot.Date, capDate);
 
-                var nextMatch = new Match
-                {
-                    LeagueId = series.LeagueId,
-                    HomeTeamId = slot.HomeTeamId,
-                    AwayTeamId = slot.AwayTeamId,
-                    Round = series.RoundNumber,
-                    RoundName = series.RoundName,
-                    DefaultScheduledDate = slot.Date,
-                    ActualScheduledDate = slot.Date,
-                    Status = MatchStatus.Scheduled,
-                    SchedulingStatus = SchedulingStatus.Default,
-                    LastSchedulingUpdate = DateTime.Now,
-                    VenueOverride = league.DefaultVenue,
-                    PlayoffSeriesId = series.Id
-                };
+                var nextMatch = PlayoffSeriesScheduler.ToMatch(
+                    slot, series.LeagueId, series.RoundNumber, series.RoundName, league.DefaultVenue, series.Id);
 
                 await _playoffRepository.UpdateSeriesAndActivateNextAsync(
                     series, new List<PlayoffSeries>(), new List<Match> { nextMatch }, ct);
             }
         }
 
-        private async Task<List<PlayoffSeries>> FindNextRoundStubsAsync(PlayoffSeries completedSeries, CancellationToken ct)
-        {
-            var allLeagueSeries = await _playoffRepository.GetAllSeriesForLeagueAsync(completedSeries.LeagueId, ct);
-            return allLeagueSeries.Where(s =>
-                s.HomeFeederSeriesId == completedSeries.Id ||
-                s.AwayFeederSeriesId == completedSeries.Id).ToList();
-        }
+        private Task<List<PlayoffSeries>> FindNextRoundStubsAsync(PlayoffSeries completedSeries, CancellationToken ct)
+            => _playoffRepository.GetUpcomingSeriesPopulatedByThisSeriesAsync(completedSeries.Id, ct);
     }
 }

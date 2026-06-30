@@ -22,7 +22,11 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
         {
             await base.OnInitializedAsync();
 
-            var leagueResponse = await LeagueService.GetLeagueById(Id);
+            var leagueTask = LeagueService.GetLeagueById(Id);
+            var scheduleTask = LeagueService.GetLeagueSchedule(Id);
+            await Task.WhenAll(leagueTask, scheduleTask);
+
+            var leagueResponse = await leagueTask;
             if (!leagueResponse.IsSuccess || leagueResponse.Data is null)
             {
                 NavigationManager.NavigateTo($"/leagues/{Id}");
@@ -30,7 +34,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
             }
             _league = leagueResponse.Data;
 
-            var scheduleResponse = await LeagueService.GetLeagueSchedule(Id);
+            var scheduleResponse = await scheduleTask;
             if (scheduleResponse.IsSuccess && scheduleResponse.Data?.Any() == true)
             {
                 var lastDate = scheduleResponse.Data
@@ -45,6 +49,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
 
             _playoffStartDate = _minStartDate;
             _rounds = BuildRoundConfigs(_league.PlayoffTeamCount ?? 4);
+            _include3rdPlace = _league.PlayoffHas3rdPlace;
             _loading = false;
         }
 

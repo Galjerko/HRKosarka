@@ -813,6 +813,7 @@
                                             <div class="playoff-series-list">
                                                 @foreach (var series in round.Series)
                                                 {
+                                                    var hasMatches = series.Matches.Any();
                                                     <div class="playoff-series-card @(series.IsCompleted ? "psc-completed" : "")">
                                                         <div class="psc-header">
                                                             <div class="psc-team @(series.WinnerId == series.HomeTeamId ? "psc-winner" : "")">
@@ -856,10 +857,10 @@
                                                         <div class="psc-footer">
                                                             <span class="psc-bestof">Best of @(series.WinsNeeded * 2 - 1)</span>
                                                             <MudChip T="string" Size="Size.Small"
-                                                                     Color="@(series.IsCompleted ? Color.Success : series.Matches.Any() ? Color.Info : Color.Default)">
-                                                                @(series.IsCompleted ? "Completed" : series.Matches.Any() ? "In Progress" : "Upcoming")
+                                                                     Color="@(series.IsCompleted ? Color.Success : hasMatches ? Color.Info : Color.Default)">
+                                                                @(series.IsCompleted ? "Completed" : hasMatches ? "In Progress" : "Upcoming")
                                                             </MudChip>
-                                                            @if (series.Matches.Any())
+                                                            @if (hasMatches)
                                                             {
                                                                 <MudIconButton Size="Size.Small"
                                                                                Icon="@(_expandedSeries.Contains(series.SeriesId) ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
@@ -869,7 +870,7 @@
                                                         @if (_expandedSeries.Contains(series.SeriesId))
                                                         {
                                                             <div class="psc-matches">
-                                                                @foreach (var match in series.Matches.OrderBy(m => m.GameNumber))
+                                                                @foreach (var match in series.Matches)
                                                                 {
                                                                     <a href="@($"/matches/{match.MatchId}")" class="psc-match-row">
                                                                         <div class="psc-match-left">

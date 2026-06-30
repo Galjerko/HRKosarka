@@ -1,3 +1,5 @@
+using HRKošarka.Domain.Common;
+
 namespace HRKošarka.Domain.Helpers
 {
     public record PlayoffGameSlot(int GameNumber, DateTime Date, Guid HomeTeamId, Guid AwayTeamId);
@@ -61,6 +63,26 @@ namespace HRKošarka.Domain.Helpers
                 nextDate,
                 homeSideHosts ? homeSeriesTeamId : awaySeriesTeamId,
                 homeSideHosts ? awaySeriesTeamId : homeSeriesTeamId);
+        }
+
+        public static Match ToMatch(
+            PlayoffGameSlot slot, Guid leagueId, int round, string roundName, string? venue, Guid seriesId)
+        {
+            return new Match
+            {
+                LeagueId = leagueId,
+                HomeTeamId = slot.HomeTeamId,
+                AwayTeamId = slot.AwayTeamId,
+                Round = round,
+                RoundName = roundName,
+                DefaultScheduledDate = slot.Date,
+                ActualScheduledDate = slot.Date,
+                Status = MatchStatus.Scheduled,
+                SchedulingStatus = SchedulingStatus.Default,
+                LastSchedulingUpdate = DateTime.Now,
+                VenueOverride = venue,
+                PlayoffSeriesId = seriesId
+            };
         }
     }
 }
