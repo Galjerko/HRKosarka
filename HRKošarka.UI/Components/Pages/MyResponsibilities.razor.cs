@@ -94,10 +94,21 @@ namespace HRKošarka.UI.Components.Pages
             try
             {
                 var response = await LeagueService.GetLeagues(new() { Page = 1, PageSize = 200 }, isActive: true);
-                if (response.IsSuccess && response.Data != null)
-                    _leaguesNeedingPlayoff = response.Data
-                        .Where(l => l.HasPlayoff && l.ScheduleGenerated && !l.PlayoffGenerated)
-                        .ToList();
+                if (!response.IsSuccess || response.Data == null)
+                    return;
+
+                var candidates = response.Data
+                    .Where(l => l.HasPlayoff && l.ScheduleGenerated && !l.PlayoffGenerated)
+                    .ToList();
+
+                // LeagueDTO doesn't carry AllRegularMatchesComplete, so check each remaining candidate
+                var detailsResponses = await Task.WhenAll(candidates.Select(l => LeagueService.GetLeagueById(l.Id)));
+                var completedIds = detailsResponses
+                    .Where(r => r.IsSuccess && r.Data?.AllRegularMatchesComplete == true)
+                    .Select(r => r.Data!.Id)
+                    .ToHashSet();
+
+                _leaguesNeedingPlayoff = candidates.Where(l => completedIds.Contains(l.Id)).ToList();
             }
             catch (Exception ex) { Console.WriteLine($"Error loading leagues needing playoff: {ex.Message}"); }
         }

@@ -11,6 +11,7 @@ namespace HRKošarka.Application.Features.Team.Queries.GetTeamMatchHistory
         public string LeagueName { get; set; } = string.Empty;
         public string SeasonName { get; set; } = string.Empty;
         public CompetitionType CompetitionType { get; set; }
+        public bool IsPlayoff { get; set; }
         public bool IsHome { get; set; }
         public Guid OpponentTeamId { get; set; }
         public string OpponentTeamName { get; set; } = string.Empty;

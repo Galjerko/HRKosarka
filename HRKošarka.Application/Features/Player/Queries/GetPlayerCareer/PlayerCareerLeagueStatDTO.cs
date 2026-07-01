@@ -5,6 +5,7 @@ namespace HRKošarka.Application.Features.Player.Queries.GetPlayerCareer
         public Guid LeagueId { get; set; }
         public string LeagueName { get; set; } = string.Empty;
         public string CompetitionType { get; set; } = string.Empty;
+        public bool IsPlayoff { get; set; }
         public int GamesPlayed { get; set; }
         public decimal PPG { get; set; }
         public decimal ThreePG { get; set; }

@@ -270,6 +270,7 @@ namespace HRKošarka.Persistence.Repositories
                     LeagueName = m.League.Name,
                     SeasonName = m.League.Season.Name,
                     CompetitionType = m.League.CompetitionType,
+                    IsPlayoff = m.PlayoffSeriesId != null,
                     IsHome = m.HomeTeamId == teamId,
                     OpponentTeamId = m.HomeTeamId == teamId ? m.AwayTeamId : m.HomeTeamId,
                     OpponentTeamName = m.HomeTeamId == teamId ? m.AwayTeam.Name : m.HomeTeam.Name,

@@ -10,13 +10,16 @@ namespace HRKošarka.Application.Features.Player.Queries.GetPlayerCareer
     {
         private readonly IPlayerTeamHistoryRepository _historyRepository;
         private readonly IPlayerSeasonStatsRepository _statsRepository;
+        private readonly IPlayerMatchStatsRepository _matchStatsRepository;
 
         public GetPlayerCareerQueryHandler(
             IPlayerTeamHistoryRepository historyRepository,
-            IPlayerSeasonStatsRepository statsRepository)
+            IPlayerSeasonStatsRepository statsRepository,
+            IPlayerMatchStatsRepository matchStatsRepository)
         {
             _historyRepository = historyRepository;
             _statsRepository = statsRepository;
+            _matchStatsRepository = matchStatsRepository;
         }
 
         public async Task<QueryResponse<List<PlayerCareerItemDTO>>> Handle(
@@ -24,15 +27,13 @@ namespace HRKošarka.Application.Features.Player.Queries.GetPlayerCareer
         {
             var history = await _historyRepository.GetAllByPlayerAsync(request.PlayerId, ct);
             var allStats = await _statsRepository.GetAllByPlayerAsync(request.PlayerId, ct);
+            var playoffMatchStats = await _matchStatsRepository.GetAllByPlayerPlayoffWithMatchAsync(request.PlayerId, ct);
 
-            // Per-competition rows grouped by (TeamId, SeasonId)
             var statsByTeamSeason = allStats
                 .GroupBy(s => (s.TeamId, s.SeasonId))
                 .ToDictionary(
                     g => g.Key,
                     g => g
-                        .OrderBy(s => s.League.CompetitionType)   // League(0) before Cup(1)
-                        .ThenBy(s => s.League.Name)
                         .Select(s => new PlayerCareerLeagueStatDTO
                         {
                             LeagueId = s.LeagueId,
@@ -44,11 +45,43 @@ namespace HRKošarka.Application.Features.Player.Queries.GetPlayerCareer
                             FPG = s.AverageFouls
                         }).ToList());
 
+            // Playoff games never write to PlayerSeasonStats, so aggregate them from PlayerMatchStats directly
+            var playoffStatsByTeamSeason = playoffMatchStats
+                .GroupBy(s => (s.TeamId!.Value, s.Match.League.SeasonId))
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.GroupBy(s => s.Match.LeagueId)
+                        .Select(lg =>
+                        {
+                            var gamesPlayed = lg.Count();
+                            return new PlayerCareerLeagueStatDTO
+                            {
+                                LeagueId = lg.Key,
+                                LeagueName = lg.First().Match.League.Name,
+                                CompetitionType = "Playoffs",
+                                IsPlayoff = true,
+                                GamesPlayed = gamesPlayed,
+                                PPG = Math.Round((decimal)lg.Sum(s => s.Points) / gamesPlayed, 1),
+                                ThreePG = Math.Round((decimal)lg.Sum(s => s.ThreePointers) / gamesPlayed, 1),
+                                FPG = Math.Round((decimal)lg.Sum(s => s.Fouls) / gamesPlayed, 1)
+                            };
+                        }).ToList());
+
             var data = history
                 .OrderByDescending(h => h.JoinDate)
                 .Select(h =>
                 {
-                    statsByTeamSeason.TryGetValue((h.TeamId, h.SeasonId), out var compStats);
+                    var key = (h.TeamId, h.SeasonId);
+                    statsByTeamSeason.TryGetValue(key, out var regularStats);
+                    playoffStatsByTeamSeason.TryGetValue(key, out var playoffStats);
+
+                    var compStats = (regularStats ?? new List<PlayerCareerLeagueStatDTO>())
+                        .Concat(playoffStats ?? new List<PlayerCareerLeagueStatDTO>())
+                        .OrderBy(s => s.CompetitionType == "Cup" ? 1 : 0)
+                        .ThenBy(s => s.LeagueName)
+                        .ThenBy(s => s.IsPlayoff)
+                        .ToList();
+
                     return new PlayerCareerItemDTO
                     {
                         Id = h.Id,
@@ -60,7 +93,7 @@ namespace HRKošarka.Application.Features.Player.Queries.GetPlayerCareer
                         JoinDate = h.JoinDate,
                         LeaveDate = h.LeaveDate,
                         IsActive = h.IsActive,
-                        CompetitionStats = compStats ?? new List<PlayerCareerLeagueStatDTO>()
+                        CompetitionStats = compStats
                     };
                 }).ToList();
 

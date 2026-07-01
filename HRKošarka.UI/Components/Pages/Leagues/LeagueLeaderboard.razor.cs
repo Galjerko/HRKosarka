@@ -14,12 +14,14 @@ namespace HRKošarka.UI.Components.Pages.Leagues
         private LeagueDetailsDTO? _league;
         private List<LeaguePlayerStatDTO> _players = new();
         private bool _isLoading = true;
+        private bool _isPlayoff;
         private string _sortBy = nameof(LeaguePlayerStatDTO.Ppg);
         private bool _sortAsc = false;
 
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
+            _isPlayoff = NavigationManager.Uri.Contains("/playoff-leaderboard", StringComparison.OrdinalIgnoreCase);
             await Task.WhenAll(LoadLeague(), LoadLeaderboard());
             _isLoading = false;
         }
@@ -40,7 +42,9 @@ namespace HRKošarka.UI.Components.Pages.Leagues
             try
             {
                 var direction = _sortAsc ? "asc" : "desc";
-                var response = await LeagueService.GetLeagueLeaderboard(Id, _sortBy, direction);
+                var response = _isPlayoff
+                    ? await LeagueService.GetPlayoffLeaderboard(Id, _sortBy, direction)
+                    : await LeagueService.GetLeagueLeaderboard(Id, _sortBy, direction);
                 if (response.IsSuccess)
                     _players = response.Data ?? new();
             }

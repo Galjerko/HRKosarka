@@ -18,10 +18,12 @@ namespace HRKošarka.UI.Components.Pages.Player
         private PlayerDetailsDTO? _player;
         private List<PlayerAssignmentDTO> _assignments = new();
         private List<PlayerSeasonGroupDTO> _seasonStats = new();
+        private List<PlayerSeasonGroupDTO> _playoffStats = new();
         private List<PlayerCareerItemDTO> _career = new();
         private bool _isLoading = true;
         private bool _isLoadingAssignments = false;
         private bool _isLoadingStats = false;
+        private bool _isLoadingPlayoffStats = false;
         private bool _isLoadingCareer = false;
         private bool _isProcessing = false;
         private bool _isAdmin = false;
@@ -180,6 +182,26 @@ namespace HRKošarka.UI.Components.Pages.Player
             }
         }
 
+        private async Task LoadPlayoffStats()
+        {
+            _isLoadingPlayoffStats = true;
+
+            try
+            {
+                var response = await PlayerService.GetPlayerPlayoffStats(Id);
+                if (response.IsSuccess && response.Data != null)
+                    _playoffStats = response.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading player playoff stats: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingPlayoffStats = false;
+            }
+        }
+
         private async Task LoadPlayerDetails()
         {
             _isLoading = true;
@@ -191,7 +213,7 @@ namespace HRKošarka.UI.Components.Pages.Player
                 if (response.IsSuccess && response.Data != null)
                 {
                     _player = response.Data;
-                    await Task.WhenAll(LoadAssignments(), LoadSeasonStats(), LoadCareer());
+                    await Task.WhenAll(LoadAssignments(), LoadSeasonStats(), LoadPlayoffStats(), LoadCareer());
                 }
                 else
                 {

@@ -10,6 +10,7 @@ using HRKošarka.Application.Features.Player.Queries.GetPlayerAssignments;
 using HRKošarka.Application.Features.Team.Queries.GetAvailableTeamsForPlayer;
 using HRKošarka.Application.Features.Player.Queries.GetPlayerDetails;
 using HRKošarka.Application.Features.Player.Queries.GetPlayerCareer;
+using HRKošarka.Application.Features.Player.Queries.GetPlayerPlayoffStats;
 using HRKošarka.Application.Features.Player.Queries.GetPlayerSeasonStats;
 using HRKošarka.Application.Models.Responses;
 using MediatR;
@@ -81,6 +82,15 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<QueryResponse<List<PlayerSeasonGroupDTO>>>> GetSeasonStats(Guid id)
         {
             var response = await _mediator.Send(new GetPlayerSeasonStatsQuery(id));
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/playoff-stats", Name = "GetPlayerPlayoffStats")]
+        [ProducesResponseType(typeof(QueryResponse<List<PlayerSeasonGroupDTO>>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<PlayerSeasonGroupDTO>>>> GetPlayoffStats(Guid id)
+        {
+            var response = await _mediator.Send(new GetPlayerPlayoffStatsQuery(id));
             return Ok(response);
         }
 

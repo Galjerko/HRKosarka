@@ -1,4 +1,6 @@
 using HRKošarka.Application.Contracts.Persistence;
+using HRKošarka.Application.Features.League.Queries.GetLeagueLeaderboard;
+using HRKošarka.Application.Features.League.Queries.GetLeagueStandings;
 using HRKošarka.Application.Features.League.Queries.GetPlayoffBracket;
 using HRKošarka.Domain;
 using HRKošarka.Domain.Common;
@@ -98,6 +100,110 @@ namespace HRKošarka.Persistence.Repositories
                 }).ToList();
 
             return new PlayoffBracketDTO { LeagueId = leagueId, Rounds = rounds };
+        }
+
+        public async Task<LeagueLeadersDTO> GetPlayoffLeadersAsync(Guid leagueId, CancellationToken ct = default)
+        {
+            var stats = await _context.PlayerMatchStats
+                .Include(s => s.Player)
+                .Include(s => s.Team)
+                .Where(s => s.Match.LeagueId == leagueId && s.Match.PlayoffSeriesId != null
+                    && !s.DidNotPlay && s.TeamId.HasValue)
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            var perPlayer = stats
+                .GroupBy(s => s.PlayerId)
+                .Select(g => new
+                {
+                    PlayerId = g.Key,
+                    PlayerName = $"{g.First().Player.FirstName} {g.First().Player.LastName}",
+                    TeamName = g.First().Team!.Name,
+                    GamesPlayed = g.Count(),
+                    AveragePoints = (decimal)g.Sum(s => s.Points) / g.Count(),
+                    AverageThreePointers = (decimal)g.Sum(s => s.ThreePointers) / g.Count(),
+                    AverageFouls = (decimal)g.Sum(s => s.Fouls) / g.Count()
+                }).ToList();
+
+            return new LeagueLeadersDTO
+            {
+                TopScorers = perPlayer
+                    .OrderByDescending(s => s.AveragePoints)
+                    .Take(5)
+                    .Select(s => new LeaderEntryDTO
+                    {
+                        PlayerId = s.PlayerId,
+                        PlayerName = s.PlayerName,
+                        TeamName = s.TeamName,
+                        Value = Math.Round(s.AveragePoints, 1),
+                        GamesPlayed = s.GamesPlayed
+                    }).ToList(),
+                TopThreePointers = perPlayer
+                    .OrderByDescending(s => s.AverageThreePointers)
+                    .Take(5)
+                    .Select(s => new LeaderEntryDTO
+                    {
+                        PlayerId = s.PlayerId,
+                        PlayerName = s.PlayerName,
+                        TeamName = s.TeamName,
+                        Value = Math.Round(s.AverageThreePointers, 1),
+                        GamesPlayed = s.GamesPlayed
+                    }).ToList(),
+                TopFoulMakers = perPlayer
+                    .OrderByDescending(s => s.AverageFouls)
+                    .Take(5)
+                    .Select(s => new LeaderEntryDTO
+                    {
+                        PlayerId = s.PlayerId,
+                        PlayerName = s.PlayerName,
+                        TeamName = s.TeamName,
+                        Value = Math.Round(s.AverageFouls, 1),
+                        GamesPlayed = s.GamesPlayed
+                    }).ToList()
+            };
+        }
+
+        public async Task<List<LeaguePlayerStatDTO>> GetPlayoffLeaderboardAsync(
+            Guid leagueId, string? sortBy, string? sortDirection, CancellationToken ct = default)
+        {
+            var stats = await _context.PlayerMatchStats
+                .Include(s => s.Player)
+                .Include(s => s.Team)
+                .Where(s => s.Match.LeagueId == leagueId && s.Match.PlayoffSeriesId != null
+                    && !s.DidNotPlay && s.TeamId.HasValue)
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            var list = stats
+                .GroupBy(s => s.PlayerId)
+                .Select(g =>
+                {
+                    var first = g.First();
+                    var gp = g.Count();
+                    var totalPoints = g.Sum(s => s.Points);
+                    var totalThrees = g.Sum(s => s.ThreePointers);
+                    var totalFouls = g.Sum(s => s.Fouls);
+
+                    return new LeaguePlayerStatDTO
+                    {
+                        PlayerId = g.Key,
+                        PlayerName = $"{first.Player.FirstName} {first.Player.LastName}",
+                        PlayerPosition = first.Player.Position,
+                        TeamId = first.TeamId!.Value,
+                        TeamName = first.Team!.Name,
+                        GamesPlayed = gp,
+                        PPG = Math.Round((decimal)totalPoints / gp, 1),
+                        TotalPoints = totalPoints,
+                        ThreePointsPerGame = Math.Round((decimal)totalThrees / gp, 1),
+                        TotalThreePoints = totalThrees,
+                        FoulsPerGame = Math.Round((decimal)totalFouls / gp, 1),
+                        TotalFouls = totalFouls
+                    };
+                })
+                .ToList();
+
+            bool asc = string.Equals(sortDirection, "asc", StringComparison.OrdinalIgnoreCase);
+            return RepositorySortHelper.ApplySort(list, sortBy, asc, RepositorySortHelper.LeaguePlayerStatSortSelectors, x => x.PPG);
         }
 
         public async Task<List<PlayoffSeries>> GetUpcomingSeriesPopulatedByThisSeriesAsync(Guid completedSeriesId, CancellationToken ct = default)

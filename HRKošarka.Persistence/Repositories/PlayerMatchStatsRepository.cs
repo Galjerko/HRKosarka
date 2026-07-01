@@ -40,7 +40,19 @@ namespace HRKošarka.Persistence.Repositories
             return await _context.PlayerMatchStats
                 .Include(s => s.Match).ThenInclude(m => m.HomeTeam)
                 .Include(s => s.Match).ThenInclude(m => m.AwayTeam)
-                .Where(s => s.PlayerId == playerId && !s.DidNotPlay && s.TeamId.HasValue)
+                .Where(s => s.PlayerId == playerId && !s.DidNotPlay && s.TeamId.HasValue && s.Match.PlayoffSeriesId == null)
+                .AsNoTracking()
+                .ToListAsync(ct);
+        }
+
+        public async Task<List<PlayerMatchStats>> GetAllByPlayerPlayoffWithMatchAsync(Guid playerId, CancellationToken ct = default)
+        {
+            return await _context.PlayerMatchStats
+                .Include(s => s.Match).ThenInclude(m => m.HomeTeam)
+                .Include(s => s.Match).ThenInclude(m => m.AwayTeam)
+                .Include(s => s.Match).ThenInclude(m => m.League).ThenInclude(l => l.Season)
+                .Include(s => s.Team)
+                .Where(s => s.PlayerId == playerId && !s.DidNotPlay && s.TeamId.HasValue && s.Match.PlayoffSeriesId != null)
                 .AsNoTracking()
                 .ToListAsync(ct);
         }

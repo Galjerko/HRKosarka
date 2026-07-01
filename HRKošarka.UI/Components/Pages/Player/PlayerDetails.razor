@@ -379,7 +379,7 @@
                                                         <td>
                                                             <MudLink Href="@($"/leagues/{comp.LeagueId}")">@comp.LeagueName</MudLink>
                                                             <MudChip T="string" Size="Size.Small"
-                                                                     Color="@(comp.CompetitionType == "League" ? Color.Info : Color.Secondary)"
+                                                                     Color="@(comp.IsPlayoff ? Color.Warning : comp.CompetitionType == "League" ? Color.Info : Color.Secondary)"
                                                                      Class="ml-1">
                                                                 @comp.CompetitionType
                                                             </MudChip>
@@ -481,18 +481,20 @@
                                         <div class="season-total-pts">Total: <strong>@ls.TotalPoints pts</strong></div>
                                         @if (ls.BestGame != null && ls.BestGame.Points > 0)
                                         {
-                                            <div class="season-best-game">
+                                            var bestGame = ls.BestGame;
+                                            <div class="season-best-game clickable"
+                                                 @onclick="@(() => NavigationManager.NavigateTo($"/matches/{bestGame.MatchId}"))">
                                                 <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Warning" Style="flex-shrink:0;margin-top:2px;" />
                                                 <div>
                                                     <div>
-                                                        <strong>@ls.BestGame.Points pts</strong>
-                                                        @if (ls.BestGame.ThreePointers > 0)
+                                                        <strong>@bestGame.Points pts</strong>
+                                                        @if (bestGame.ThreePointers > 0)
                                                         {
-                                                            <span class="season-best-detail"> · @ls.BestGame.ThreePointers× 3PT</span>
+                                                            <span class="season-best-detail"> · @bestGame.ThreePointers× 3PT</span>
                                                         }
                                                     </div>
-                                                    <div>vs @ls.BestGame.OpponentTeamName</div>
-                                                    <div class="season-best-date">@ls.BestGame.MatchDate.ToString("dd.MM.yyyy.")</div>
+                                                    <div>vs @bestGame.OpponentTeamName</div>
+                                                    <div class="season-best-date">@bestGame.MatchDate.ToString("dd.MM.yyyy.")</div>
                                                 </div>
                                             </div>
                                         }
@@ -507,6 +509,113 @@
                         }
                     </ChildContent>
                 </MudExpansionPanel>
+
+                @if (_playoffStats.Any())
+                {
+                    <MudExpansionPanel Class="expansion-panel">
+                        <TitleContent>
+                            <div class="panel-title">
+                                <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Class="panel-icon" />
+                                <MudText Typo="Typo.h6">
+                                    Playoff Statistics
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2">@_playoffStats.Count</MudChip>
+                                </MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            @if (_isLoadingPlayoffStats)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                            }
+                            else
+                            {
+                                @foreach (var season in _playoffStats)
+                                {
+                                    <MudText Typo="Typo.subtitle1" Class="mb-3 mt-2"><strong>@season.SeasonName</strong></MudText>
+
+                                    <MudPaper Elevation="0" Class="pa-2 mb-3 season-combined-card">
+                                        <div class="season-combined-label">Combined</div>
+                                        <div class="stats-grid four-cols">
+                                            <div class="stat-chip">
+                                                <span class="stat-value">@season.TotalGamesPlayed</span>
+                                                <span class="stat-label">GP</span>
+                                            </div>
+                                            <div class="stat-chip">
+                                                <span class="stat-value">@season.CombinedPPG.ToString("F1")</span>
+                                                <span class="stat-label">PPG</span>
+                                            </div>
+                                            <div class="stat-chip">
+                                                <span class="stat-value">@season.Combined3PG.ToString("F1")</span>
+                                                <span class="stat-label">3PG</span>
+                                            </div>
+                                            <div class="stat-chip">
+                                                <span class="stat-value">@season.CombinedFPG.ToString("F1")</span>
+                                                <span class="stat-label">FPG</span>
+                                            </div>
+                                        </div>
+                                    </MudPaper>
+
+                                    @foreach (var ls in season.LeagueStats)
+                                    {
+                                        <MudPaper Elevation="1" Class="pa-2 mb-2 season-league-card">
+                                            <div class="season-league-header">
+                                                <MudLink Href="@($"/leagues/{ls.LeagueId}")" Typo="Typo.body2" Style="font-weight:600;">@ls.LeagueName</MudLink>
+                                                <MudChip T="string" Size="Size.Small"
+                                                         Color="@(ls.CompetitionType == "League" ? Color.Info : Color.Secondary)">
+                                                    @ls.CompetitionType
+                                                </MudChip>
+                                            </div>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">@ls.TeamName</MudText>
+                                            <div class="stats-grid four-cols">
+                                                <div class="stat-chip">
+                                                    <span class="stat-value">@ls.GamesPlayed</span>
+                                                    <span class="stat-label">GP</span>
+                                                </div>
+                                                <div class="stat-chip">
+                                                    <span class="stat-value">@ls.Ppg.ToString("F1")</span>
+                                                    <span class="stat-label">PPG</span>
+                                                </div>
+                                                <div class="stat-chip">
+                                                    <span class="stat-value">@ls.ThreePG.ToString("F1")</span>
+                                                    <span class="stat-label">3PG</span>
+                                                </div>
+                                                <div class="stat-chip">
+                                                    <span class="stat-value">@ls.Fpg.ToString("F1")</span>
+                                                    <span class="stat-label">FPG</span>
+                                                </div>
+                                            </div>
+                                            <div class="season-total-pts">Total: <strong>@ls.TotalPoints pts</strong></div>
+                                            @if (ls.BestGame != null && ls.BestGame.Points > 0)
+                                            {
+                                                var bestGame = ls.BestGame;
+                                                <div class="season-best-game clickable"
+                                                     @onclick="@(() => NavigationManager.NavigateTo($"/matches/{bestGame.MatchId}"))">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Warning" Style="flex-shrink:0;margin-top:2px;" />
+                                                    <div>
+                                                        <div>
+                                                            <strong>@bestGame.Points pts</strong>
+                                                            @if (bestGame.ThreePointers > 0)
+                                                            {
+                                                                <span class="season-best-detail"> · @bestGame.ThreePointers× 3PT</span>
+                                                            }
+                                                        </div>
+                                                        <div>vs @bestGame.OpponentTeamName</div>
+                                                        <div class="season-best-date">@bestGame.MatchDate.ToString("dd.MM.yyyy.")</div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </MudPaper>
+                                    }
+
+                                    @if (season != _playoffStats.Last())
+                                    {
+                                        <MudDivider Class="my-4" />
+                                    }
+                                }
+                            }
+                        </ChildContent>
+                    </MudExpansionPanel>
+                }
             </MudExpansionPanels>
         </MudPaper>
     }

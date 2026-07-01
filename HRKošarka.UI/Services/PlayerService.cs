@@ -247,6 +247,26 @@ namespace HRKošarka.UI.Services
             }
         }
 
+        public async Task<QueryResponse<List<PlayerSeasonGroupDTO>>> GetPlayerPlayoffStats(Guid playerId)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetPlayerPlayoffStatsAsync(playerId);
+                return new QueryResponse<List<PlayerSeasonGroupDTO>>
+                {
+                    Data = response.Data?.ToList() ?? new List<PlayerSeasonGroupDTO>(),
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<List<PlayerSeasonGroupDTO>>(ex);
+            }
+        }
+
         public async Task<QueryResponse<List<PlayerCareerItemDTO>>> GetPlayerCareer(Guid playerId)
         {
             try

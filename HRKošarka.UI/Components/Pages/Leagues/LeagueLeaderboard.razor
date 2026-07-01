@@ -1,8 +1,9 @@
 @page "/leagues/{Id:guid}/leaderboard"
+@page "/leagues/{Id:guid}/playoff-leaderboard"
 @using HRKošarka.UI.Services.Base
 @inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
-<PageTitle>Player Leaderboard - Basketball Management</PageTitle>
+<PageTitle>@(_isPlayoff ? "Playoff Leaderboard" : "Player Leaderboard") - Basketball Management</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="details-container">
     @if (_isLoading)
@@ -29,7 +30,7 @@
                 <MudText Typo="Typo.h4" Class="details-title">
                     @(_league?.Name ?? "League")
                 </MudText>
-                <MudText Typo="Typo.h6" Color="Color.Secondary">Player Leaderboard</MudText>
+                <MudText Typo="Typo.h6" Color="Color.Secondary">@(_isPlayoff ? "Playoff Leaderboard" : "Player Leaderboard")</MudText>
             </div>
 
             @if (!_players.Any())

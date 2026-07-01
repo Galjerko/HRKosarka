@@ -17,6 +17,7 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
         private List<LeagueBreakDTO> _breaks = new();
         private List<LeagueRoundDTO> _schedule = new();
         private LeagueStandingsDTO? _standings;
+        private LeagueLeadersDTO? _playoffLeaders;
 
         private bool _isLoading = true;
         private bool _isLoadingTeams = false;
@@ -78,7 +79,10 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
                     {
                         var tasks = new List<Task> { LoadSchedule(), LoadStandings() };
                         if (_league.HasPlayoff && _league.PlayoffGenerated)
+                        {
                             tasks.Add(LoadBracket());
+                            tasks.Add(LoadPlayoffLeaders());
+                        }
                         await Task.WhenAll(tasks);
                     }
                 }
@@ -467,6 +471,20 @@ namespace HRKošarka.UI.Components.Pages.Admin.Leagues
             finally
             {
                 _isLoadingBracket = false;
+            }
+        }
+
+        private async Task LoadPlayoffLeaders()
+        {
+            try
+            {
+                var response = await LeagueService.GetPlayoffLeaders(Id);
+                if (response.IsSuccess)
+                    _playoffLeaders = response.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading playoff leaders: {ex.Message}");
             }
         }
 

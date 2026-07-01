@@ -61,6 +61,7 @@ namespace HRKošarka.Application.Features.Player.Queries.GetPlayerSeasonStats
 
                                 bestGame = new PlayerBestGameDTO
                                 {
+                                    MatchId = best.MatchId,
                                     Points = best.Points,
                                     ThreePointers = best.ThreePointers,
                                     OpponentTeamName = opponentName,

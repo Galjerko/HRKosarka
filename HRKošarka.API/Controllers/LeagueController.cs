@@ -20,6 +20,8 @@ using HRKošarka.Application.Features.League.Queries.GetLeagueSchedule;
 using HRKošarka.Application.Features.League.Queries.GetLeagueStandings;
 using HRKošarka.Application.Features.League.Queries.GetLeagueTeams;
 using HRKošarka.Application.Features.League.Queries.GetPlayoffBracket;
+using HRKošarka.Application.Features.League.Queries.GetPlayoffLeaderboard;
+using HRKošarka.Application.Features.League.Queries.GetPlayoffLeaders;
 using HRKošarka.Application.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -265,6 +267,25 @@ namespace HRKošarka.API.Controllers
         public async Task<ActionResult<QueryResponse<PlayoffBracketDTO>>> GetPlayoff(Guid id)
         {
             var response = await _mediator.Send(new GetPlayoffBracketQuery(id));
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/playoff/leaders", Name = "GetPlayoffLeaders")]
+        [ProducesResponseType(typeof(QueryResponse<LeagueLeadersDTO>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<LeagueLeadersDTO?>>> GetPlayoffLeaders(Guid id)
+        {
+            var response = await _mediator.Send(new GetPlayoffLeadersQuery(id));
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/playoff/leaderboard", Name = "GetPlayoffLeaderboard")]
+        [ProducesResponseType(typeof(QueryResponse<List<LeaguePlayerStatDTO>>), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<QueryResponse<List<LeaguePlayerStatDTO>>>> GetPlayoffLeaderboard(
+            Guid id, [FromQuery] string? sortBy = null, [FromQuery] string? sortDirection = null)
+        {
+            var response = await _mediator.Send(new GetPlayoffLeaderboardQuery(id, sortBy, sortDirection));
             return Ok(response);
         }
 

@@ -63,6 +63,15 @@ namespace HRKošarka.Application.Features.Team.Commands.AssignPlayerToTeam
             if (!player.IsActive)
                 throw new BadRequestException("Cannot assign an inactive player to a team.");
 
+            // close out any leftover assignment from a different season first
+            var activeAssignments = await _playerTeamHistoryRepository.GetActiveByPlayerAsync(request.PlayerId, cancellationToken);
+            foreach (var stale in activeAssignments.Where(a => a.SeasonId != request.SeasonId))
+            {
+                stale.IsActive = false;
+                stale.LeaveDate = stale.Season.EndDate;
+                await _historyRepository.UpdateAsync(stale, cancellationToken);
+            }
+
             var alreadyInTeam = await _playerRepository.IsAlreadyActiveInTeamAsync(request.PlayerId, request.TeamId, cancellationToken);
             if (alreadyInTeam)
                 throw new BadRequestException("Player is already an active member of this team.");

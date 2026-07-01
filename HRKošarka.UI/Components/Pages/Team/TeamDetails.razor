@@ -577,7 +577,7 @@
                                 Match History
                                 @if (_matchHistory.Any())
                                 {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Class="ml-2">@_matchHistory.Count</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2">@_matchHistory.Count</MudChip>
                                 }
                             </MudText>
                         </div>
@@ -622,8 +622,21 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach (var match in league.OrderByDescending(m => m.ScheduledDate).ToList())
+                                                @{
+                                                    var leagueMatches = league.OrderByDescending(m => m.ScheduledDate).ToList();
+                                                    var showDividers = leagueMatches.Any(m => m.IsPlayoff) && leagueMatches.Any(m => !m.IsPlayoff);
+                                                    bool? prevIsPlayoff = null;
+                                                }
+                                                @foreach (var match in leagueMatches)
                                                 {
+                                                    if (showDividers && match.IsPlayoff != prevIsPlayoff)
+                                                    {
+                                                        <tr class="tmh-divider-row">
+                                                            <td colspan="7" class="tmh-divider-label">@(match.IsPlayoff ? "Playoffs" : "Regular Season")</td>
+                                                        </tr>
+                                                    }
+                                                    prevIsPlayoff = match.IsPlayoff;
+
                                                     var won        = match.TeamScore > match.OpponentScore;
                                                     var lost       = match.TeamScore < match.OpponentScore;
                                                     var hasScore   = match.TeamScore.HasValue && match.OpponentScore.HasValue;

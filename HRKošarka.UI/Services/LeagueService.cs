@@ -441,6 +441,47 @@ namespace HRKošarka.UI.Services
             }
         }
 
+        public async Task<QueryResponse<LeagueLeadersDTO>> GetPlayoffLeaders(Guid leagueId)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetPlayoffLeadersAsync(leagueId);
+                return new QueryResponse<LeagueLeadersDTO>
+                {
+                    Data = response.Data,
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<LeagueLeadersDTO>(ex);
+            }
+        }
+
+        public async Task<QueryResponse<List<LeaguePlayerStatDTO>>> GetPlayoffLeaderboard(
+            Guid leagueId, string? sortBy = null, string? sortDirection = null)
+        {
+            try
+            {
+                await AddBearerToken();
+                var response = await _client.GetPlayoffLeaderboardAsync(leagueId, sortBy, sortDirection);
+                return new QueryResponse<List<LeaguePlayerStatDTO>>
+                {
+                    Data = response.Data?.ToList() ?? new List<LeaguePlayerStatDTO>(),
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Errors = response.Errors?.ToList() ?? new List<string>()
+                };
+            }
+            catch (ApiException ex)
+            {
+                return ConvertApiExceptionsToQuery<List<LeaguePlayerStatDTO>>(ex);
+            }
+        }
+
         public async Task<CommandResponse<bool>> GeneratePlayoff(Guid leagueId, GeneratePlayoffCommand command)
         {
             try

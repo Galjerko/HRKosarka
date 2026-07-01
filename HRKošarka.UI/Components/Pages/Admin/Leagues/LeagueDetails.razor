@@ -654,7 +654,7 @@
 
                                     <div class="leaders-card">
                                         <div class="leaders-card-header leaders-header-scorers">
-                                            <MudIcon Icon="@Icons.Material.Filled.SportsSoccer" Size="Size.Small" />
+                                            <MudIcon Icon="@Icons.Material.Filled.SportsBasketball" Size="Size.Small" />
                                             <MudText Typo="Typo.subtitle2"><strong>Top Scorers</strong></MudText>
                                             <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-auto">PPG</MudChip>
                                         </div>
@@ -902,6 +902,115 @@
                                     }
                                 </div>
                             }
+                        </ChildContent>
+                    </MudExpansionPanel>
+                }
+
+                @if (_league.PlayoffGenerated && _playoffLeaders != null)
+                {
+                    <MudExpansionPanel IsInitiallyExpanded="true" Class="expansion-panel">
+                        <TitleContent>
+                            <div class="panel-title">
+                                <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Class="panel-icon" />
+                                <MudText Typo="Typo.h6">Playoff Leaders</MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <div class="leaders-grid">
+
+                                <div class="leaders-card">
+                                    <div class="leaders-card-header leaders-header-scorers">
+                                        <MudIcon Icon="@Icons.Material.Filled.SportsBasketball" Size="Size.Small" />
+                                        <MudText Typo="Typo.subtitle2"><strong>Top Scorers</strong></MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-auto">PPG</MudChip>
+                                    </div>
+                                    <div class="leaders-table-scroll"><table class="leaders-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="ldr-th-player">Player</th>
+                                                <th class="ldr-th-team">Team</th>
+                                                <th class="ldr-th-gp">GP</th>
+                                                <th class="ldr-th-val">PPG</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var entry in _playoffLeaders.TopScorers)
+                                            {
+                                                <tr class="ldr-row">
+                                                    <td class="ldr-td-player"><MudLink Href="@($"/players/{entry.PlayerId}")">@entry.PlayerName</MudLink></td>
+                                                    <td class="ldr-td-team">@entry.TeamName</td>
+                                                    <td class="ldr-td-gp">@entry.GamesPlayed</td>
+                                                    <td class="ldr-td-val">@entry.Value.ToString("F1")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table></div>
+                                </div>
+
+                                <div class="leaders-card">
+                                    <div class="leaders-card-header leaders-header-threes">
+                                        <MudIcon Icon="@Icons.Material.Filled.Looks3" Size="Size.Small" />
+                                        <MudText Typo="Typo.subtitle2"><strong>Three-Pointers</strong></MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="ml-auto">3PG</MudChip>
+                                    </div>
+                                    <div class="leaders-table-scroll"><table class="leaders-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="ldr-th-player">Player</th>
+                                                <th class="ldr-th-team">Team</th>
+                                                <th class="ldr-th-gp">GP</th>
+                                                <th class="ldr-th-val">3PG</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var entry in _playoffLeaders.TopThreePointers)
+                                            {
+                                                <tr class="ldr-row">
+                                                    <td class="ldr-td-player"><MudLink Href="@($"/players/{entry.PlayerId}")">@entry.PlayerName</MudLink></td>
+                                                    <td class="ldr-td-team">@entry.TeamName</td>
+                                                    <td class="ldr-td-gp">@entry.GamesPlayed</td>
+                                                    <td class="ldr-td-val">@entry.Value.ToString("F1")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table></div>
+                                </div>
+
+                                <div class="leaders-card">
+                                    <div class="leaders-card-header leaders-header-fouls">
+                                        <MudIcon Icon="@Icons.Material.Filled.PanTool" Size="Size.Small" />
+                                        <MudText Typo="Typo.subtitle2"><strong>Foul Leaders</strong></MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="ml-auto">FPG</MudChip>
+                                    </div>
+                                    <div class="leaders-table-scroll"><table class="leaders-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="ldr-th-player">Player</th>
+                                                <th class="ldr-th-team">Team</th>
+                                                <th class="ldr-th-gp">GP</th>
+                                                <th class="ldr-th-val">FPG</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var entry in _playoffLeaders.TopFoulMakers)
+                                            {
+                                                <tr class="ldr-row">
+                                                    <td class="ldr-td-player"><MudLink Href="@($"/players/{entry.PlayerId}")">@entry.PlayerName</MudLink></td>
+                                                    <td class="ldr-td-team">@entry.TeamName</td>
+                                                    <td class="ldr-td-gp">@entry.GamesPlayed</td>
+                                                    <td class="ldr-td-val">@entry.Value.ToString("F1")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table></div>
+                                </div>
+
+                            </div>
+                            <div class="d-flex justify-end mt-2">
+                                <MudLink Href="@($"/leagues/{_league.Id}/playoff-leaderboard")" Typo="Typo.body2">
+                                    Full Playoff Leaderboard →
+                                </MudLink>
+                            </div>
                         </ChildContent>
                     </MudExpansionPanel>
                 }
