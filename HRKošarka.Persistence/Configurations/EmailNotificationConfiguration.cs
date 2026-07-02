@@ -11,7 +11,11 @@ namespace HRKošarka.Persistence.Configurations
             builder.HasOne(en => en.Match)
                    .WithMany(m => m.EmailNotifications)
                    .HasForeignKey(en => en.MatchId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Cascade)
+                   .IsRequired(false);
+
+            builder.Property(e => e.Subject).HasMaxLength(300);
+            builder.Property(e => e.Body).HasColumnType("nvarchar(max)");
 
             // Indexes for performance
             builder.HasIndex(e => e.UserId)

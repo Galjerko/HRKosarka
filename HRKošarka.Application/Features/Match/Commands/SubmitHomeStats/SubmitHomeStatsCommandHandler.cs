@@ -1,6 +1,7 @@
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Models.Responses;
+using HRKošarka.Application.Services;
 using HRKošarka.Domain.Common;
 using MediatR;
 
@@ -10,13 +11,16 @@ namespace HRKošarka.Application.Features.Match.Commands.SubmitHomeStats
     {
         private readonly IMatchRepository _matchRepository;
         private readonly ITeamRepresentativeRepository _repRepository;
+        private readonly EmailNotificationService _emailNotificationService;
 
         public SubmitHomeStatsCommandHandler(
             IMatchRepository matchRepository,
-            ITeamRepresentativeRepository repRepository)
+            ITeamRepresentativeRepository repRepository,
+            EmailNotificationService emailNotificationService)
         {
             _matchRepository = matchRepository;
             _repRepository = repRepository;
+            _emailNotificationService = emailNotificationService;
         }
 
         public async Task<CommandResponse<bool>> Handle(SubmitHomeStatsCommand request, CancellationToken ct)
@@ -50,6 +54,18 @@ namespace HRKošarka.Application.Features.Match.Commands.SubmitHomeStats
 
             match.ResultSubmissionStatus = ResultSubmissionStatus.HomeSubmitted;
             await _matchRepository.UpdateAsync(match, ct);
+
+            var awayRecipients = await _emailNotificationService.GetTeamRecipientsAsync(
+                match.AwayTeamId, match.AwayTeam.ClubId, ct);
+            await _emailNotificationService.SendNotificationAsync(
+                awayRecipients,
+                NotificationType.StatsSubmitted,
+                $"Action required: confirm the result of {match.HomeTeam.Name} vs {match.AwayTeam.Name}",
+                $"{match.HomeTeam.Name} submitted the result ({match.HomeScore}-{match.AwayScore}) for your match on {match.ActualScheduledDate:d}. Please confirm or dispute it.",
+                match.Id,
+                linkPath: $"/matches/{match.Id}",
+                linkText: "View match",
+                ct: ct);
 
             return CommandResponse<bool>.Success(true, "Stats submitted. The away team can now confirm or dispute.");
         }

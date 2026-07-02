@@ -32,6 +32,7 @@ namespace HRKošarka.Persistence
             services.AddScoped<ITeamRepresentativeRepository, TeamRepresentativeRepository>();
             services.AddScoped<IUserFavoriteTeamRepository, UserFavoriteTeamRepository>();
             services.AddScoped<IPlayoffRepository, PlayoffRepository>();
+            services.AddScoped<IEmailNotificationRepository, EmailNotificationRepository>();
 
             return services;
         }

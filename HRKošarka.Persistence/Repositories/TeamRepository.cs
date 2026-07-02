@@ -98,6 +98,13 @@ namespace HRKošarka.Persistence.Repositories
                 .FirstOrDefaultAsync(t => t.Id == teamId, cancellationToken);
         }
 
+        public async Task<Dictionary<Guid, Team>> GetByIdsAsync(IEnumerable<Guid> teamIds, CancellationToken cancellationToken = default)
+        {
+            return await _context.Teams
+                .Where(t => teamIds.Contains(t.Id))
+                .ToDictionaryAsync(t => t.Id, cancellationToken);
+        }
+
         public async Task<List<PlayerTeamHistory>> GetTeamRosterAsync(Guid teamId, CancellationToken cancellationToken = default)
         {
             return await _context.PlayerTeamHistory

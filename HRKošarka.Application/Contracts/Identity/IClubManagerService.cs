@@ -7,5 +7,6 @@ namespace HRKošarka.Application.Contracts.Identity
         Task<ClubManagerResult> AssignClubManager(string userId, Guid clubId);
         Task<ClubManagerResult> RemoveClubManager(string userId);
         Task<Guid?> GetManagedClubId(string userId);
+        Task<string?> GetClubManagerUserId(Guid clubId, CancellationToken cancellationToken = default);
     }
 }

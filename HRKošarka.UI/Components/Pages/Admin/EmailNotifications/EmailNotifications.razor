@@ -1,0 +1,92 @@
+@page "/admin/email-notifications"
+@using HRKošarka.UI.Services.Base
+@using HRKošarka.UI.Components.Base
+@inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
+
+<AuthorizeView Roles="Administrator">
+    <Authorized>
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h5" Class="mb-4">Email notifications</MudText>
+
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" sm="6" md="4">
+                    <MudSelect T="NotificationType?" Label="Notification type" @bind-Value="_notificationTypeFilter"
+                               @bind-Value:after="OnFilterChanged" Clearable="true">
+                        @foreach (var type in Enum.GetValues<NotificationType>())
+                        {
+                            <MudSelectItem T="NotificationType?" Value="@type">@type</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudSelect T="bool?" Label="Status" @bind-Value="_successFilter"
+                               @bind-Value:after="OnFilterChanged" Clearable="true">
+                        <MudSelectItem T="bool?" Value="true">Successful</MudSelectItem>
+                        <MudSelectItem T="bool?" Value="false">Failed</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+
+            <MudTable @ref="_table"
+                      ServerData="LoadServerData"
+                      Loading="_loading"
+                      Hover="true"
+                      Striped="true"
+                      Dense="true"
+                      FixedHeader="true"
+                      Height="600px">
+
+                <HeaderContent>
+                    <MudTh>Sent at</MudTh>
+                    <MudTh>Recipient</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Match</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh>Content</MudTh>
+                </HeaderContent>
+
+                <RowTemplate Context="notification">
+                    <MudTd DataLabel="Sent at">@notification.SentAt.ToLocalTime().ToString("g")</MudTd>
+                    <MudTd DataLabel="Recipient">@notification.RecipientEmail</MudTd>
+                    <MudTd DataLabel="Type">@notification.NotificationType</MudTd>
+                    <MudTd DataLabel="Match">
+                        @if (notification.MatchId.HasValue)
+                        {
+                            <MudLink Href="@($"/matches/{notification.MatchId}")">View match</MudLink>
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudChip T="string" Color="@(notification.IsSuccessful ? Color.Success : Color.Error)" Size="Size.Small">
+                            @(notification.IsSuccessful ? "Sent" : "Failed")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Content">
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                       Size="Size.Small"
+                                       title="View email content"
+                                       OnClick="@(() => ViewContent(notification))" />
+                    </MudTd>
+                </RowTemplate>
+
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">No email notifications found</MudText>
+                </NoRecordsContent>
+
+                <LoadingContent>
+                    <MudText Typo="Typo.body1" Align="Align.Center" Class="pa-4">Loading notifications...</MudText>
+                </LoadingContent>
+
+                <PagerContent>
+                    <MudTablePager Class="styled-dropdown" HidePageNumber="false" PageSizeOptions="@_pageSizeOptions" />
+                </PagerContent>
+            </MudTable>
+        </MudPaper>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>

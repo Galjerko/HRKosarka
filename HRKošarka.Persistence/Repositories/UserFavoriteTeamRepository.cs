@@ -47,7 +47,7 @@ namespace HRKošarka.Persistence.Repositories
             Guid teamId, CancellationToken ct = default)
         {
             return await _context.UserFavoriteTeams
-                .Where(f => f.TeamId == teamId)
+                .Where(f => f.TeamId == teamId && f.NotifyByEmail)
                 .Select(f => f.UserId)
                 .ToListAsync(ct);
         }

@@ -20,7 +20,10 @@ namespace HRKošarka.Infrastructure.EmailService
             smtpClient.Credentials = new System.Net.NetworkCredential(_emailSettings.Email, _emailSettings.Password);
 
 
-            var message = new MailMessage(_emailSettings.Email, email.To, email.Subject, email.Body);
+            var message = new MailMessage(_emailSettings.Email, email.To, email.Subject, email.Body)
+            {
+                IsBodyHtml = true
+            };
             await smtpClient.SendMailAsync(message);
         }
     }

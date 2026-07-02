@@ -1,34 +1,17 @@
-﻿using HRKošarka.Domain.Common;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using HRKošarka.Domain.Common;
 
-namespace HRKošarka.Domain
+namespace HRKošarka.Application.Features.EmailNotification.Queries.GetEmailNotifications
 {
-    public class EmailNotification : BaseEntity
+    public class EmailNotificationDTO
     {
-        [Required]
-        [Column(TypeName = "varchar(450)")]
+        public Guid Id { get; set; }
         public string UserId { get; set; } = string.Empty;
-
         public string? RecipientEmail { get; set; }
-
         public Guid? MatchId { get; set; }
-
-        [Required]
         public NotificationType NotificationType { get; set; }
-
-        [Required]
         public string Subject { get; set; } = string.Empty;
-
-        [Required]
         public string Body { get; set; } = string.Empty;
-
-        [Required]
         public DateTime SentAt { get; set; }
-
         public bool IsSuccessful { get; set; }
-
-        // Navigation properties
-        public virtual Match? Match { get; set; }
     }
 }

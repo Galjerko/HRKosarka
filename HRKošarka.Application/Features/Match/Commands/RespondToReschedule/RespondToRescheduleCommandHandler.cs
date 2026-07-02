@@ -1,6 +1,7 @@
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Models.Responses;
+using HRKošarka.Application.Services;
 using HRKošarka.Domain.Common;
 using MediatR;
 
@@ -11,15 +12,18 @@ namespace HRKošarka.Application.Features.Match.Commands.RespondToReschedule
         private readonly IMatchRepository _matchRepository;
         private readonly IMatchReschedulingRequestRepository _reschedulingRepository;
         private readonly ITeamRepresentativeRepository _repRepository;
+        private readonly EmailNotificationService _emailNotificationService;
 
         public RespondToRescheduleCommandHandler(
             IMatchRepository matchRepository,
             IMatchReschedulingRequestRepository reschedulingRepository,
-            ITeamRepresentativeRepository repRepository)
+            ITeamRepresentativeRepository repRepository,
+            EmailNotificationService emailNotificationService)
         {
             _matchRepository = matchRepository;
             _reschedulingRepository = reschedulingRepository;
             _repRepository = repRepository;
+            _emailNotificationService = emailNotificationService;
         }
 
         public async Task<CommandResponse<bool>> Handle(RespondToRescheduleCommand request, CancellationToken ct)
@@ -63,6 +67,10 @@ namespace HRKošarka.Application.Features.Match.Commands.RespondToReschedule
             proposal.ResponseByUserId = request.ResponderUserId;
             proposal.RespondedAt = DateTime.UtcNow;
 
+            var proposingTeamId = proposal.RequestedByTeamId
+                ?? (match.HomeTeam.ClubId == proposal.RequestedByClubId ? match.HomeTeamId : match.AwayTeamId);
+            var proposingClubId = proposingTeamId == match.HomeTeamId ? match.HomeTeam.ClubId : match.AwayTeam.ClubId;
+
             if (request.Accept)
             {
                 proposal.Status = RequestStatus.Accepted;
@@ -72,6 +80,20 @@ namespace HRKošarka.Application.Features.Match.Commands.RespondToReschedule
                 match.LastSchedulingUpdate = DateTime.UtcNow;
                 await _matchRepository.UpdateAsync(match, ct);
                 await _reschedulingRepository.UpdateAsync(proposal, ct);
+
+                var recipients = await _emailNotificationService.GetTeamRecipientsAsync(proposingTeamId, proposingClubId, ct);
+                recipients.UnionWith(await _emailNotificationService.GetTeamFanRecipientsAsync(match.HomeTeamId, ct));
+                recipients.UnionWith(await _emailNotificationService.GetTeamFanRecipientsAsync(match.AwayTeamId, ct));
+                await _emailNotificationService.SendNotificationAsync(
+                    recipients,
+                    NotificationType.RescheduleAccepted,
+                    $"Reschedule accepted: {match.HomeTeam.Name} vs {match.AwayTeam.Name}",
+                    $"The reschedule proposal for the match between {match.HomeTeam.Name} and {match.AwayTeam.Name} was accepted. New date: {match.ActualScheduledDate:d}.",
+                    match.Id,
+                    linkPath: $"/matches/{match.Id}",
+                    linkText: "View match",
+                    ct: ct);
+
                 return CommandResponse<bool>.Success(true, "Reschedule accepted. The match has been moved to the new date.");
             }
             else
@@ -81,6 +103,18 @@ namespace HRKošarka.Application.Features.Match.Commands.RespondToReschedule
                 match.LastSchedulingUpdate = DateTime.UtcNow;
                 await _matchRepository.UpdateAsync(match, ct);
                 await _reschedulingRepository.UpdateAsync(proposal, ct);
+
+                var recipients = await _emailNotificationService.GetTeamRecipientsAsync(proposingTeamId, proposingClubId, ct);
+                await _emailNotificationService.SendNotificationAsync(
+                    recipients,
+                    NotificationType.RescheduleRejected,
+                    $"Reschedule rejected: {match.HomeTeam.Name} vs {match.AwayTeam.Name}",
+                    $"The reschedule proposal for the match between {match.HomeTeam.Name} and {match.AwayTeam.Name} was rejected. The match remains on {match.ActualScheduledDate:d}.",
+                    match.Id,
+                    linkPath: $"/matches/{match.Id}",
+                    linkText: "View match",
+                    ct: ct);
+
                 return CommandResponse<bool>.Success(true, "Reschedule rejected. The match remains on the original date.");
             }
         }

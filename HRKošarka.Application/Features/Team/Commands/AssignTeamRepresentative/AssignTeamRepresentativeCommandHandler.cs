@@ -1,7 +1,9 @@
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Models.Responses;
+using HRKošarka.Application.Services;
 using HRKošarka.Domain;
+using HRKošarka.Domain.Common;
 using MediatR;
 
 namespace HRKošarka.Application.Features.Team.Commands.AssignTeamRepresentative
@@ -11,13 +13,16 @@ namespace HRKošarka.Application.Features.Team.Commands.AssignTeamRepresentative
     {
         private readonly ITeamRepresentativeRepository _repRepository;
         private readonly ITeamRepository _teamRepository;
+        private readonly EmailNotificationService _emailNotificationService;
 
         public AssignTeamRepresentativeCommandHandler(
             ITeamRepresentativeRepository repRepository,
-            ITeamRepository teamRepository)
+            ITeamRepository teamRepository,
+            EmailNotificationService emailNotificationService)
         {
             _repRepository = repRepository;
             _teamRepository = teamRepository;
+            _emailNotificationService = emailNotificationService;
         }
 
         public async Task<CommandResponse<Guid>> Handle(
@@ -33,6 +38,9 @@ namespace HRKošarka.Application.Features.Team.Commands.AssignTeamRepresentative
             if (!team.IsActive)
                 throw new BadRequestException("Cannot assign a representative to an inactive team.");
 
+            Guid repId;
+            string resultMessage;
+
             var existing = await _repRepository.GetByUserAndTeamAsync(request.UserId, request.TeamId, ct);
             if (existing != null)
             {
@@ -42,17 +50,33 @@ namespace HRKošarka.Application.Features.Team.Commands.AssignTeamRepresentative
                 existing.DeactivateDate = null;
                 existing.AssignedDate = DateTime.Now;
                 await _repRepository.UpdateAsync(existing, ct);
-                return CommandResponse<Guid>.Success(existing.Id, "Team representative reactivated.");
+                repId = existing.Id;
+                resultMessage = "Team representative reactivated.";
+            }
+            else
+            {
+                var rep = new TeamRepresentative
+                {
+                    TeamId = request.TeamId,
+                    UserId = request.UserId,
+                    AssignedDate = DateTime.Now
+                };
+                await _repRepository.CreateAsync(rep, ct);
+                repId = rep.Id;
+                resultMessage = "Team representative assigned successfully.";
             }
 
-            var rep = new TeamRepresentative
-            {
-                TeamId = request.TeamId,
-                UserId = request.UserId,
-                AssignedDate = DateTime.Now
-            };
-            await _repRepository.CreateAsync(rep, ct);
-            return CommandResponse<Guid>.Success(rep.Id, "Team representative assigned successfully.");
+            await _emailNotificationService.SendNotificationAsync(
+                new[] { request.UserId },
+                NotificationType.RepresentativeAssigned,
+                "You have been assigned as a team representative",
+                $"You have been assigned as a representative for {team.Name}.",
+                matchId: null,
+                linkPath: $"/teams/{team.Id}",
+                linkText: "View team",
+                ct: ct);
+
+            return CommandResponse<Guid>.Success(repId, resultMessage);
         }
     }
 }

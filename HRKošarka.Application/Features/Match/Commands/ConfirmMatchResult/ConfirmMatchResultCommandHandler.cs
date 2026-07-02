@@ -19,6 +19,7 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
         private readonly ITeamRepresentativeRepository _repRepository;
         private readonly ILeagueRepository _leagueRepository;
         private readonly PlayoffAdvancementService _playoffAdvancement;
+        private readonly EmailNotificationService _emailNotificationService;
 
         public ConfirmMatchResultCommandHandler(
             IMatchRepository matchRepository,
@@ -27,7 +28,8 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             IPlayerSeasonStatsRepository seasonStatsRepository,
             ITeamRepresentativeRepository repRepository,
             ILeagueRepository leagueRepository,
-            PlayoffAdvancementService playoffAdvancement)
+            PlayoffAdvancementService playoffAdvancement,
+            EmailNotificationService emailNotificationService)
         {
             _matchRepository = matchRepository;
             _statsRepository = statsRepository;
@@ -36,6 +38,7 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             _repRepository = repRepository;
             _leagueRepository = leagueRepository;
             _playoffAdvancement = playoffAdvancement;
+            _emailNotificationService = emailNotificationService;
         }
 
         public async Task<CommandResponse<bool>> Handle(ConfirmMatchResultCommand request, CancellationToken ct)
@@ -108,6 +111,19 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
                 await _playoffAdvancement.AdvanceIfCompleteAsync(match, ct);
             else if (match.League.CompetitionType == CompetitionType.Cup)
                 await AdvanceCupBracketIfRoundComplete(match, ct);
+
+            // Fans and reps still care who won a playoff game, so this fires regardless of PlayoffSeriesId.
+            var resultRecipients = await _emailNotificationService.GetMatchRecipientsAsync(
+                match.HomeTeamId, match.HomeTeam.ClubId, match.AwayTeamId, match.AwayTeam.ClubId, includeFans: true, ct);
+            await _emailNotificationService.SendNotificationAsync(
+                resultRecipients,
+                NotificationType.MatchResult,
+                $"Result confirmed: {match.HomeTeam.Name} {match.HomeScore}-{match.AwayScore} {match.AwayTeam.Name}",
+                $"The result of the match between {match.HomeTeam.Name} and {match.AwayTeam.Name} on {match.ActualScheduledDate:d} has been confirmed: {match.HomeScore}-{match.AwayScore}.",
+                match.Id,
+                linkPath: $"/matches/{match.Id}",
+                linkText: "View match",
+                ct: ct);
 
             return CommandResponse<bool>.Success(true, "Match result confirmed.");
         }
@@ -219,6 +235,7 @@ namespace HRKošarka.Application.Features.Match.Commands.ConfirmMatchResult
             }
 
             await _matchRepository.CreateRangeAsync(newMatches, ct);
+            await _emailNotificationService.NotifyCupRoundAdvancedAsync(newMatches, ct);
         }
 
         private static void ValidateQuarterResults(string? raw, int homeScore, int awayScore)

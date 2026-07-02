@@ -136,6 +136,14 @@ namespace HRKošarka.Identity.Services
             var user = await _userManager.FindByIdAsync(userId);
             return user?.ManagedClubId;
         }
+
+        public async Task<string?> GetClubManagerUserId(Guid clubId, CancellationToken cancellationToken = default)
+        {
+            return await _userManager.Users
+                .Where(u => u.ManagedClubId == clubId)
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 
 }

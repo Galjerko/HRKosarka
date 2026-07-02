@@ -15,6 +15,7 @@ namespace HRKošarka.Application
 
             services.AddScoped<IImageService, ImageService>();
             services.AddScoped<PlayoffAdvancementService>();
+            services.AddScoped<EmailNotificationService>();
 
             return services;
         }

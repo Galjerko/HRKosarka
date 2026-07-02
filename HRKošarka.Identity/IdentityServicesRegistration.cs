@@ -43,6 +43,7 @@ namespace HRKošarka.Identity
 
             services.AddScoped<IClubManagerService, ClubManagerService>();
             services.AddScoped<IClubAuthorizationService, ClubAuthorizationService>();
+            services.AddScoped<IIdentityLookupService, IdentityLookupService>();
 
 
             services.AddAuthentication(options =>

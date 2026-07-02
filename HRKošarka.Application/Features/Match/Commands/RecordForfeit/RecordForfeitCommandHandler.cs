@@ -13,15 +13,18 @@ namespace HRKošarka.Application.Features.Match.Commands.RecordForfeit
         private readonly IMatchRepository _matchRepository;
         private readonly ILeagueStandingRepository _standingRepository;
         private readonly PlayoffAdvancementService _playoffAdvancement;
+        private readonly EmailNotificationService _emailNotificationService;
 
         public RecordForfeitCommandHandler(
             IMatchRepository matchRepository,
             ILeagueStandingRepository standingRepository,
-            PlayoffAdvancementService playoffAdvancement)
+            PlayoffAdvancementService playoffAdvancement,
+            EmailNotificationService emailNotificationService)
         {
             _matchRepository = matchRepository;
             _standingRepository = standingRepository;
             _playoffAdvancement = playoffAdvancement;
+            _emailNotificationService = emailNotificationService;
         }
 
         public async Task<CommandResponse<bool>> Handle(RecordForfeitCommand request, CancellationToken ct)
@@ -59,6 +62,20 @@ namespace HRKošarka.Application.Features.Match.Commands.RecordForfeit
                     match.AwayScore.Value, match.HomeScore.Value, ct);
                 await RecalculatePositions(match.LeagueId, ct);
             }
+
+            // Fans and reps still care who won a playoff game, so this fires regardless of PlayoffSeriesId.
+            var recipients = await _emailNotificationService.GetMatchRecipientsAsync(
+                match.HomeTeamId, match.HomeTeam.ClubId, match.AwayTeamId, match.AwayTeam.ClubId, includeFans: true, ct);
+            var forfeitingTeamName = homeTeamForfeit ? match.HomeTeam.Name : match.AwayTeam.Name;
+            await _emailNotificationService.SendNotificationAsync(
+                recipients,
+                NotificationType.ForfeitRecorded,
+                $"Forfeit recorded: {match.HomeTeam.Name} vs {match.AwayTeam.Name}",
+                $"{forfeitingTeamName} forfeited the match against {(homeTeamForfeit ? match.AwayTeam.Name : match.HomeTeam.Name)} on {match.ActualScheduledDate:d}. Final score: {match.HomeScore}-{match.AwayScore}.",
+                match.Id,
+                linkPath: $"/matches/{match.Id}",
+                linkText: "View match",
+                ct: ct);
 
             return CommandResponse<bool>.Success(true, "Forfeit recorded.");
         }

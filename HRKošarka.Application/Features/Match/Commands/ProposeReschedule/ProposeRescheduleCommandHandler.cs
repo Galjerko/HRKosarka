@@ -1,6 +1,7 @@
 using HRKošarka.Application.Contracts.Persistence;
 using HRKošarka.Application.Exceptions;
 using HRKošarka.Application.Models.Responses;
+using HRKošarka.Application.Services;
 using HRKošarka.Domain;
 using HRKošarka.Domain.Common;
 using MediatR;
@@ -12,15 +13,18 @@ namespace HRKošarka.Application.Features.Match.Commands.ProposeReschedule
         private readonly IMatchRepository _matchRepository;
         private readonly IMatchReschedulingRequestRepository _reschedulingRepository;
         private readonly ITeamRepresentativeRepository _repRepository;
+        private readonly EmailNotificationService _emailNotificationService;
 
         public ProposeRescheduleCommandHandler(
             IMatchRepository matchRepository,
             IMatchReschedulingRequestRepository reschedulingRepository,
-            ITeamRepresentativeRepository repRepository)
+            ITeamRepresentativeRepository repRepository,
+            EmailNotificationService emailNotificationService)
         {
             _matchRepository = matchRepository;
             _reschedulingRepository = reschedulingRepository;
             _repRepository = repRepository;
+            _emailNotificationService = emailNotificationService;
         }
 
         public async Task<CommandResponse<bool>> Handle(ProposeRescheduleCommand request, CancellationToken ct)
@@ -90,6 +94,19 @@ namespace HRKošarka.Application.Features.Match.Commands.ProposeReschedule
             match.SchedulingStatus = SchedulingStatus.ProposalPending;
             match.LastSchedulingUpdate = DateTime.UtcNow;
             await _matchRepository.UpdateAsync(match, ct);
+
+            var otherTeamId = proposerTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+            var otherClubId = proposerTeamId == match.HomeTeamId ? match.AwayTeam.ClubId : match.HomeTeam.ClubId;
+            var recipients = await _emailNotificationService.GetTeamRecipientsAsync(otherTeamId, otherClubId, ct);
+            await _emailNotificationService.SendNotificationAsync(
+                recipients,
+                NotificationType.RescheduleProposed,
+                $"Reschedule proposed: {match.HomeTeam.Name} vs {match.AwayTeam.Name}",
+                $"A new date of {request.ProposedDate:d} has been proposed for your match between {match.HomeTeam.Name} and {match.AwayTeam.Name}. You have 48 hours to respond.",
+                match.Id,
+                linkPath: $"/matches/{match.Id}",
+                linkText: "View match",
+                ct: ct);
 
             return CommandResponse<bool>.Success(true, "Reschedule proposal submitted. The other team has 48 hours to respond.");
         }

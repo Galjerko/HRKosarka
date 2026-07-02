@@ -54,10 +54,23 @@
 
     public enum NotificationType
     {
-        MatchScheduled,  
+        MatchScheduled,
         MatchRescheduled,
-        MatchCancelled, 
-        MatchResult
+        MatchCancelled,
+        MatchResult,
+        RepresentativeAssigned,
+        RepresentativeRevoked,
+        ClubManagerAssigned,
+        ClubManagerRemoved,
+        StatsSubmitted,
+        MatchDisputed,
+        MatchReset,
+        RescheduleProposed,
+        RescheduleAccepted,
+        RescheduleRejected,
+        VenueChanged,
+        ForfeitRecorded,
+        CupRoundAdvanced
     }
 
 }
