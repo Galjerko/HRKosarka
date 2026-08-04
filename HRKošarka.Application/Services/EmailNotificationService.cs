@@ -12,6 +12,8 @@ namespace HRKošarka.Application.Services
 {
     public class EmailNotificationService
     {
+        private static readonly SemaphoreSlim _smtpConcurrencyLimiter = new(5, 5);
+
         private readonly IEmailSender _emailSender;
         private readonly IEmailNotificationRepository _emailNotificationRepository;
         private readonly ITeamRepresentativeRepository _teamRepresentativeRepository;
@@ -44,16 +46,18 @@ namespace HRKošarka.Application.Services
             _clientBaseUrl = clientAppSettings.Value.BaseUrl.TrimEnd('/');
         }
 
-        // Active reps for the team; falls back to the club's manager if there are no active reps.
+        // All active reps for the team, plus the club's manager if one is assigned — everyone
+        // who can act on behalf of the team gets notified, not just one or the other.
         public async Task<HashSet<string>> GetTeamRecipientsAsync(Guid teamId, Guid clubId, CancellationToken ct = default)
         {
             var reps = await _teamRepresentativeRepository.GetByTeamAsync(teamId, ct);
-            var activeRepIds = reps.Where(r => r.IsActive).Select(r => r.UserId).ToHashSet();
-            if (activeRepIds.Count > 0)
-                return activeRepIds;
+            var recipients = reps.Where(r => r.IsActive).Select(r => r.UserId).ToHashSet();
 
             var managerId = await _clubManagerService.GetClubManagerUserId(clubId, ct);
-            return managerId != null ? new HashSet<string> { managerId } : new HashSet<string>();
+            if (managerId != null)
+                recipients.Add(managerId);
+
+            return recipients;
         }
 
         public async Task<HashSet<string>> GetTeamFanRecipientsAsync(Guid teamId, CancellationToken ct = default)
@@ -131,46 +135,62 @@ namespace HRKošarka.Application.Services
                 ? encodedBody
                 : $"{encodedBody}<br/><br/><a href=\"{_clientBaseUrl}{linkPath}\">{System.Net.WebUtility.HtmlEncode(linkText)}</a>";
 
-            var notifications = new List<EmailNotification>();
-
+            // Email lookups stay sequential (they share one scoped DbContext via UserManager,
+            // which isn't safe for concurrent calls). Each lookup is just a fast PK read though —
+            // the real cost is the SMTP round-trip below, so that's what actually needs to be parallel.
+            var recipients = new List<(string UserId, string? Email)>();
             foreach (var userId in recipientUserIds.Distinct())
+                recipients.Add((userId, await _identityLookupService.GetEmailByUserIdAsync(userId, ct)));
+
+            // EmailSender opens a fresh SmtpClient (full TLS handshake + auth) per call, so sending
+            // one-at-a-time made a 10-recipient notification take 10x a single send's latency and
+            // blocked the whole command (confirm/dispute/etc.) on it. Fire them concurrently instead.
+            var notifications = await Task.WhenAll(recipients.Select(r =>
+                SendToRecipientAsync(r.UserId, r.Email, type, subject, fullBody, matchId)));
+
+            if (notifications.Length > 0)
+                await _emailNotificationRepository.CreateRangeAsync(notifications.ToList(), ct);
+        }
+
+        private async Task<EmailNotification> SendToRecipientAsync(
+            string userId, string? email, NotificationType type, string subject, string fullBody, Guid? matchId)
+        {
+            var success = false;
+
+            if (!string.IsNullOrWhiteSpace(email))
             {
-                var email = await _identityLookupService.GetEmailByUserIdAsync(userId, ct);
-                var success = false;
-
-                if (!string.IsNullOrWhiteSpace(email))
+                await _smtpConcurrencyLimiter.WaitAsync();
+                try
                 {
-                    try
-                    {
-                        await _emailSender.SendEmail(new EmailMessage { To = email, Subject = subject, Body = fullBody });
-                        success = true;
-                        _logger.LogInformation("Sent {NotificationType} email to {Email}", type, email);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to send {NotificationType} email to {Email}", type, email);
-                    }
+                    await _emailSender.SendEmail(new EmailMessage { To = email, Subject = subject, Body = fullBody });
+                    success = true;
+                    _logger.LogInformation("Sent {NotificationType} email to {Email}", type, email);
                 }
-                else
+                catch (Exception ex)
                 {
-                    _logger.LogWarning("Skipping {NotificationType} email for user {UserId}: no email on file", type, userId);
+                    _logger.LogError(ex, "Failed to send {NotificationType} email to {Email}", type, email);
                 }
-
-                notifications.Add(new EmailNotification
+                finally
                 {
-                    UserId = userId,
-                    RecipientEmail = email,
-                    MatchId = matchId,
-                    NotificationType = type,
-                    Subject = subject,
-                    Body = fullBody,
-                    SentAt = DateTime.UtcNow,
-                    IsSuccessful = success
-                });
+                    _smtpConcurrencyLimiter.Release();
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Skipping {NotificationType} email for user {UserId}: no email on file", type, userId);
             }
 
-            if (notifications.Count > 0)
-                await _emailNotificationRepository.CreateRangeAsync(notifications, ct);
+            return new EmailNotification
+            {
+                UserId = userId,
+                RecipientEmail = email,
+                MatchId = matchId,
+                NotificationType = type,
+                Subject = subject,
+                Body = fullBody,
+                SentAt = DateTime.UtcNow,
+                IsSuccessful = success
+            };
         }
     }
 }

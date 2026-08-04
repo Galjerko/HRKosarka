@@ -75,6 +75,13 @@ namespace HRKošarka.UI.Components.Pages.Admin.EmailNotifications
             }
         }
 
+        private async Task ResetFilters()
+        {
+            _notificationTypeFilter = null;
+            _successFilter = null;
+            await OnFilterChanged();
+        }
+
         private async Task ViewContent(EmailNotificationDTO notification)
         {
             await DialogService.ShowMessageBox(

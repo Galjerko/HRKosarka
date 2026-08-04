@@ -1,6 +1,7 @@
 @page "/admin/email-notifications"
 @using HRKošarka.UI.Services.Base
 @using HRKošarka.UI.Components.Base
+@using HRKošarka.UI.Extensions
 @inherits HRKošarka.UI.Components.Base.PermissionBaseComponent
 
 <AuthorizeView Roles="Administrator">
@@ -8,24 +9,53 @@
         <MudPaper Class="pa-4">
             <MudText Typo="Typo.h5" Class="mb-4">Email notifications</MudText>
 
-            <MudGrid Class="mb-4">
-                <MudItem xs="12" sm="6" md="4">
-                    <MudSelect T="NotificationType?" Label="Notification type" @bind-Value="_notificationTypeFilter"
-                               @bind-Value:after="OnFilterChanged" Clearable="true">
+            <MudPaper Elevation="2" Class="pa-4 mb-4 team-filter-card" Square="false">
+                <div class="team-filters-header">
+                    <MudIcon Icon="@Icons.Material.Filled.FilterAlt" Color="Color.Secondary" Class="mr-2" />
+                    <MudText Typo="Typo.h6" Class="team-filters-title">Filter Notifications</MudText>
+                    <MudSpacer />
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="@(async () => await ResetFilters())"
+                               Class="filter-reset-btn">
+                        Reset
+                    </MudButton>
+                </div>
+                <div class="team-filters-container">
+                    <MudSelect T="NotificationType?" @bind-Value="_notificationTypeFilter"
+                               @bind-Value:after="OnFilterChanged"
+                               Label="Notification type"
+                               Variant="Variant.Outlined"
+                               Dense="true"
+                               Clearable="true"
+                               Class="team-filter-field">
+                        <MudSelectItem T="NotificationType?" Value="@null">All Types</MudSelectItem>
                         @foreach (var type in Enum.GetValues<NotificationType>())
                         {
-                            <MudSelectItem T="NotificationType?" Value="@type">@type</MudSelectItem>
+                            <MudSelectItem T="NotificationType?" Value="@type">@type.ToDisplayString()</MudSelectItem>
                         }
                     </MudSelect>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudSelect T="bool?" Label="Status" @bind-Value="_successFilter"
-                               @bind-Value:after="OnFilterChanged" Clearable="true">
-                        <MudSelectItem T="bool?" Value="true">Successful</MudSelectItem>
-                        <MudSelectItem T="bool?" Value="false">Failed</MudSelectItem>
+
+                    <MudSelect T="bool?" @bind-Value="_successFilter"
+                               @bind-Value:after="OnFilterChanged"
+                               Label="Status"
+                               Variant="Variant.Outlined"
+                               Dense="true"
+                               Clearable="true"
+                               Class="team-filter-field">
+                        <MudSelectItem T="bool?" Value="@null">All Status</MudSelectItem>
+                        <MudSelectItem T="bool?" Value="true">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Class="mr-1" Size="Size.Small" />
+                            Successful
+                        </MudSelectItem>
+                        <MudSelectItem T="bool?" Value="false">
+                            <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Class="mr-1" Size="Size.Small" />
+                            Failed
+                        </MudSelectItem>
                     </MudSelect>
-                </MudItem>
-            </MudGrid>
+                </div>
+            </MudPaper>
 
             <MudTable @ref="_table"
                       ServerData="LoadServerData"
@@ -48,7 +78,7 @@
                 <RowTemplate Context="notification">
                     <MudTd DataLabel="Sent at">@notification.SentAt.ToLocalTime().ToString("g")</MudTd>
                     <MudTd DataLabel="Recipient">@notification.RecipientEmail</MudTd>
-                    <MudTd DataLabel="Type">@notification.NotificationType</MudTd>
+                    <MudTd DataLabel="Type">@notification.NotificationType.ToDisplayString()</MudTd>
                     <MudTd DataLabel="Match">
                         @if (notification.MatchId.HasValue)
                         {

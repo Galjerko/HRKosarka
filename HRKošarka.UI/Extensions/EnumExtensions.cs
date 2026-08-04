@@ -64,5 +64,27 @@ namespace HRKošarka.UI.Extensions
 
         public static string ToAbbr(this HRKošarka.UI.Services.Base.Position position)
             => ((HRKošarka.UI.Services.Base.Position?)position).ToAbbr();
+
+        public static string ToDisplayString(this HRKošarka.UI.Services.Base.NotificationType type) => type switch
+        {
+            HRKošarka.UI.Services.Base.NotificationType._0 => "Match Scheduled",
+            HRKošarka.UI.Services.Base.NotificationType._1 => "Match Rescheduled",
+            HRKošarka.UI.Services.Base.NotificationType._2 => "Match Cancelled",
+            HRKošarka.UI.Services.Base.NotificationType._3 => "Match Result",
+            HRKošarka.UI.Services.Base.NotificationType._4 => "Representative Assigned",
+            HRKošarka.UI.Services.Base.NotificationType._5 => "Representative Revoked",
+            HRKošarka.UI.Services.Base.NotificationType._6 => "Club Manager Assigned",
+            HRKošarka.UI.Services.Base.NotificationType._7 => "Club Manager Removed",
+            HRKošarka.UI.Services.Base.NotificationType._8 => "Stats Submitted",
+            HRKošarka.UI.Services.Base.NotificationType._9 => "Match Disputed",
+            HRKošarka.UI.Services.Base.NotificationType._10 => "Match Reset",
+            HRKošarka.UI.Services.Base.NotificationType._11 => "Reschedule Proposed",
+            HRKošarka.UI.Services.Base.NotificationType._12 => "Reschedule Accepted",
+            HRKošarka.UI.Services.Base.NotificationType._13 => "Reschedule Rejected",
+            HRKošarka.UI.Services.Base.NotificationType._14 => "Venue Changed",
+            HRKošarka.UI.Services.Base.NotificationType._15 => "Forfeit Recorded",
+            HRKošarka.UI.Services.Base.NotificationType._16 => "Cup Round Advanced",
+            _ => type.ToString()
+        };
     }
 }

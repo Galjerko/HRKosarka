@@ -312,6 +312,7 @@
                                        StartIcon="@Icons.Material.Filled.Save"
                                        Disabled="@(_isSaving || _homeStats.Count < 5)"
                                        OnClick="@(_isAdmin ? SaveHomeStatsDraft : () => SaveStats(_match.HomeTeamId, _homeStats))">
+                                @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
                                 Save Home Stats
                             </MudButton>
                         }
@@ -435,6 +436,7 @@
                                            StartIcon="@Icons.Material.Filled.Send"
                                            Disabled="@(_isSaving || _homeStats.Count < 5)"
                                            OnClick="SubmitHome" Class="md-submit-btn">
+                                    @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
                                     <span class="md-submit-label-full">Submit to Away Team</span>
                                     <span class="md-submit-label-short">Submit</span>
                                 </MudButton>
@@ -461,6 +463,7 @@
                                        StartIcon="@Icons.Material.Filled.Save"
                                        Disabled="@(_isSaving || _awayStats.Count < 5)"
                                        OnClick="@(_isAdmin ? SaveAwayStatsDraft : () => SaveStats(_match.AwayTeamId, _awayStats))">
+                                @if (_isSaving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
                                 Save Away Stats
                             </MudButton>
                         }
@@ -652,10 +655,12 @@
                                   Class="mt-2" />
                     <div class="d-flex gap-2 mt-2">
                         <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small"
-                                   OnClick="SubmitDispute">
+                                   Disabled="_isDisputing" OnClick="SubmitDispute">
+                            @if (_isDisputing) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
                             Submit Dispute
                         </MudButton>
                         <MudButton Variant="Variant.Text" Size="Size.Small"
+                                   Disabled="_isDisputing"
                                    OnClick="@(() => { _showDisputeForm = false; _disputeReason = string.Empty; })">
                             Cancel
                         </MudButton>
@@ -696,6 +701,7 @@
                          SecondaryMessage="Result will be recorded as 0 : 20. Counts in standings. No player stats."
                          ConfirmText="Record Forfeit"
                          ConfirmColor="Color.Warning"
+                         IsProcessing="_isForfeiting"
                          OnConfirm="@(() => PerformForfeit(_match.HomeTeamId))" />
 
     <ConfirmActionDialog Visible="_showForfeitAwayDialog"
@@ -707,6 +713,7 @@
                          SecondaryMessage="Result will be recorded as 20 : 0. Counts in standings. No player stats."
                          ConfirmText="Record Forfeit"
                          ConfirmColor="Color.Warning"
+                         IsProcessing="_isForfeiting"
                          OnConfirm="@(() => PerformForfeit(_match.AwayTeamId))" />
 
     <ConfirmActionDialog Visible="_showResetDialog"
@@ -718,5 +725,6 @@
                          SecondaryMessage="Score and all player stats will be cleared. The home team must re-enter the result from scratch."
                          ConfirmText="Reset"
                          ConfirmColor="Color.Warning"
+                         IsProcessing="_isResetting"
                          OnConfirm="ResetResult" />
 }

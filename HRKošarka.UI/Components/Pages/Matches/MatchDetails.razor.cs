@@ -22,6 +22,9 @@ namespace HRKošarka.UI.Components.Pages.Matches
         private bool _isLoading = true;
         private bool _isSaving = false;
         private bool _isConfirming = false;
+        private bool _isDisputing = false;
+        private bool _isResetting = false;
+        private bool _isForfeiting = false;
         private bool _isAdmin = false;
         private bool _isHomeManager = false;
         private bool _isAwayManager = false;
@@ -387,58 +390,73 @@ namespace HRKošarka.UI.Components.Pages.Matches
                 return;
             }
 
-            var response = await MatchService.DisputeMatchResult(_match.Id, new DisputeMatchResultCommand
+            _isDisputing = true;
+            try
             {
-                Reason = _disputeReason
-            });
+                var response = await MatchService.DisputeMatchResult(_match.Id, new DisputeMatchResultCommand
+                {
+                    Reason = _disputeReason
+                });
 
-            if (response.IsSuccess)
-            {
-                Snackbar.Add("Result disputed. Admin will review.", Severity.Warning);
-                _showDisputeForm = false;
-                _disputeReason = string.Empty;
-                await LoadMatch();
+                if (response.IsSuccess)
+                {
+                    Snackbar.Add("Result disputed. Admin will review.", Severity.Warning);
+                    _showDisputeForm = false;
+                    _disputeReason = string.Empty;
+                    await LoadMatch();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to dispute.", Severity.Error);
+                }
             }
-            else
-            {
-                Snackbar.Add(response.Message ?? "Failed to dispute.", Severity.Error);
-            }
+            finally { _isDisputing = false; }
         }
 
         private async Task ResetResult()
         {
             if (_match is null) return;
-            _showResetDialog = false;
-            var response = await MatchService.ResetMatchResult(_match.Id);
-            if (response.IsSuccess)
+            _isResetting = true;
+            try
             {
-                Snackbar.Add("Match result reset. Home team can re-enter.", Severity.Info);
-                await LoadMatch();
+                var response = await MatchService.ResetMatchResult(_match.Id);
+                if (response.IsSuccess)
+                {
+                    Snackbar.Add("Match result reset. Home team can re-enter.", Severity.Info);
+                    _showResetDialog = false;
+                    await LoadMatch();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to reset.", Severity.Error);
+                }
             }
-            else
-            {
-                Snackbar.Add(response.Message ?? "Failed to reset.", Severity.Error);
-            }
+            finally { _isResetting = false; }
         }
 
         private async Task PerformForfeit(Guid forfeitingTeamId)
         {
             if (_match is null) return;
-            _showForfeitHomeDialog = false;
-            _showForfeitAwayDialog = false;
-            var response = await MatchService.RecordForfeit(_match.Id, new RecordForfeitCommand
+            _isForfeiting = true;
+            try
             {
-                ForfeitingTeamId = forfeitingTeamId
-            });
-            if (response.IsSuccess)
-            {
-                Snackbar.Add("Forfeit recorded.", Severity.Success);
-                await LoadMatch();
+                var response = await MatchService.RecordForfeit(_match.Id, new RecordForfeitCommand
+                {
+                    ForfeitingTeamId = forfeitingTeamId
+                });
+                if (response.IsSuccess)
+                {
+                    Snackbar.Add("Forfeit recorded.", Severity.Success);
+                    _showForfeitHomeDialog = false;
+                    _showForfeitAwayDialog = false;
+                    await LoadMatch();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to record forfeit.", Severity.Error);
+                }
             }
-            else
-            {
-                Snackbar.Add(response.Message ?? "Failed to record forfeit.", Severity.Error);
-            }
+            finally { _isForfeiting = false; }
         }
 
         private async Task SubmitProposal()
