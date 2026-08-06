@@ -39,7 +39,10 @@
                                    Class="action-btn details-action-btn">
                             Edit
                         </MudButton>
+                    }
 
+                    @if (CurrentPermissions.CanDeactivate)
+                    {
                         @if (_team.IsActive)
                         {
                             <MudButton Variant="Variant.Outlined"
